@@ -216,10 +216,10 @@ function showCardGet(name) {
 function chooseCard(title, correct, quote) {
   return new Promise(res => {
     let list = S.hand.slice();
-    if (S.narrow && correct) {
-      const others = list.filter(n => n !== correct).sort(() => Math.random() - .5).slice(0, 2);
-      list = [correct, ...others].sort(() => Math.random() - .5);
-      S.narrow = false; renderHud();
+    if (S.narrow) {
+      // 議論・論破：その証言のまとまり全体で同じ3まい（どの証言で開いても同じなので、答えがばれない）
+      if (S.narrowSet) list = S.narrowSet;
+      else if (correct) list = S.narrowCache[correct] || (S.narrowCache[correct] = pick3(correct));
     }
     const box = h("div", "hand");
     if (quote) box.appendChild(h("div", "hand-quote", `<b>${esc(quote.who)}</b>「${fmt(quote.text)}」`));
@@ -246,6 +246,19 @@ function chooseCard(title, correct, quote) {
     btns.appendChild(ok);
     box.appendChild(btns);
     openModal(box, "bottom");
+  });
+}
+function pick3(correct) {
+  const others = S.hand.filter(n => n !== correct).sort(() => Math.random() - .5).slice(0, 2);
+  return [correct, ...others].sort(() => Math.random() - .5);
+}
+function confirmBox(html, yes, no) {
+  return new Promise(res => {
+    const box = h("div", "inbox"); box.appendChild(h("div", "in-msg", html));
+    const row = h("div", "btnrow");
+    row.appendChild(btn(no || "やめる", "sub", () => { closeModal(); res(false); }));
+    row.appendChild(btn(yes || "はい", "red", () => { closeModal(); res(true); }));
+    box.appendChild(row); openModal(box);
   });
 }
 function inputBox(title, placeholder) {
@@ -285,17 +298,30 @@ function showHandViewer() {
 
 /* ---------- プレイ中の状態 ---------- */
 let S = null;   // { no, ep, idx, hearts, hand, hint2, failed, narrow, hintLv, node }
+const MAX_HEARTS = 5, RETRY_HEARTS = 3;
 function renderHud() {
   hud.hidden = !S;
   if (!S) return;
-  $("#hearts").innerHTML = [0, 1, 2].map(i => `<span class="heart${i < S.hearts ? "" : " lost"}">${i < S.hearts ? "❤️" : "🤍"}</span>`).join("");
+  $("#hearts").innerHTML = Array.from({ length: MAX_HEARTS }, (_, i) => `<span class="heart${i < S.hearts ? "" : " lost"}">${i < S.hearts ? "❤️" : "🤍"}</span>`).join("");
   $("#eptitle").textContent = S.no === 0 ? S.ep.title : `第${S.no}話　${S.ep.title.replace(/^第\d+話\s*/, "")}`;
   const hb = $("#hintBtn"), n = S.node;
   const interactive = n && ["inv", "spot", "testi", "battle", "sum"].includes(n.t);
   hb.hidden = !interactive;
-  hb.textContent = S.narrow ? "しぼりこみ中" : (S.hintLv === 0 ? "ヒント" : (n && n.t !== "inv" ? "しぼる ★−1" : "ヒント"));
-  hb.disabled = S.narrow;
+  const canJump = !!(S.hintCtx && S.hintCtx.jump);
+  let label = "ヒント", dis = false;
+  if (n && n.t !== "inv") {
+    if (S.hintLv === 1) label = "しぼる ♡−1";
+    else if (S.hintLv === 2 && canJump) label = "さらにしぼる ♡−1";
+    else if (S.hintLv >= 2) { label = "しぼりこみ中"; dis = true; }
+  }
+  hb.textContent = label; hb.disabled = dis;
   $("#cardBtn").hidden = !S.hand.length;
+}
+/* 証言のまとまり（ラウンド）が変わるたびに、しぼりこみをリセット */
+function newRound(ctx) {
+  S.hintCtx = ctx || null; S.narrow = false; S.narrowSet = null; S.narrowCache = {};
+  if (S.hintLv > 1) S.hintLv = 1;
+  renderHud();
 }
 async function loseHeart(who, expr, msg) {
   S.hearts = Math.max(0, S.hearts - 1); shake(); renderHud();
@@ -304,26 +330,38 @@ async function loseHeart(who, expr, msg) {
 }
 async function onHint() {
   if (!S || !S.node || S.busy) return;
-  const n = S.node;
+  const n = S.node, ctx = S.hintCtx || {};
   S.busy = true;
+  let fail = false;
   try {
     if (S.hintLv === 0 || n.t === "inv") {
       await say("本じい", "ふつう", n.hint || "教科書で キーワードを 調べてみるのじゃ", S.ep);
-      S.hintLv = 1;
-    } else {
-      S.narrow = true; S.hint2 = true;
-      if (S.onHint2) {   // 議論・論破：あやしい ところを 教えてから しぼる
-        await say("本じい", "ふつう", "しかたないのう。あやしい ところに しるしを つけて、カードも 3まいに しぼってやろう。（★が 1つ へるぞ）", S.ep);
-        S.onHint2();
-      } else await say("本じい", "ふつう", "よし、次に カードを えらぶとき、3まいに しぼってやろう。（★が 1つ へるぞ）", S.ep);
+      S.hintLv = Math.max(S.hintLv, 1);
+    } else if (S.hintLv === 1) {
+      if (await confirmBox("♡を 1つ 使って、つきつける カードを<br><b>3まいに しぼりますか？</b>", "しぼる")) {
+        S.hearts--; shake(); S.narrow = true; S.hintLv = 2;
+        if (ctx.correct) S.narrowSet = pick3(ctx.correct);
+        renderHud();
+        await say("本じい", "ふつう", "よし、つきつける カードを 3まいに しぼってやろう", S.ep);
+        if (S.hearts <= 0) fail = true;
+      }
+    } else if (S.hintLv === 2 && ctx.jump) {
+      if (await confirmBox("♡を もう 1つ 使って、<br><b>あやしい ところを 教えて もらいますか？</b>", "教えてもらう")) {
+        S.hearts--; shake(); S.hintLv = 3; renderHud();
+        await say("本じい", "ふつう", "しかたないのう。あやしい ところに しるしを つけてやろう", S.ep);
+        ctx.jump();
+        if (S.hearts <= 0) fail = true;
+      }
     }
   } finally { S.busy = false; hideTalk(); hidePortraits(); renderHud(); }
+  if (fail && S.rej) S.rej(FAIL);
 }
 
 /* ---------- 場面：調査 ---------- */
 function placeAt(e, pos) { e.style.left = pos[0] + "%"; e.style.top = pos[1] + "%"; }
 function runInv(n) {
   return new Promise((res, rej) => {
+    S.rej = rej;
     clearLayer(); hideTalk(); hidePortraits();
     const got = new Set(n.items.filter(it => S.hand.includes(it.card)).map(it => it.name));
     const info = h("div", "guide"); layer.appendChild(info);
@@ -399,6 +437,7 @@ function runSpot(n) {
 /* ---------- 場面：論破バトル ---------- */
 function runBattle(n) {
   return new Promise((res, rej) => {
+    S.rej = rej;
     let r = 0;
     const total = n.rounds.length;
     const draw = () => {
@@ -410,7 +449,8 @@ function runBattle(n) {
       layer.appendChild(h("div", "guide", `⚔️ ユガミの ウソを 見やぶれ！（${r + 1} / ${total}）`));
       const list = h("div", "claims");
       const claimEls = [];
-      S.onHint2 = () => { const k = n.rounds[r].findIndex(x => x.lie); if (claimEls[k]) claimEls[k].classList.add("suspect"); };
+      const lie = n.rounds[r].find(x => x.lie);
+      newRound({ correct: lie && lie.card, jump: () => { const k = n.rounds[r].findIndex(x => x.lie); if (claimEls[k]) claimEls[k].classList.add("suspect"); } });
       n.rounds[r].forEach((c, i) => {
         const e = h("button", "claim", `<span class="q">「</span>${fmt(c.text)}<span class="q">」</span>`);
         e.onclick = async () => {
@@ -446,8 +486,10 @@ function runBattle(n) {
 /* ---------- 場面：まとめ ---------- */
 function runSum(n) {
   return new Promise((res, rej) => {
+    S.rej = rej;
     clearLayer(); hideTalk(); hidePortraits();
     layer.appendChild(h("div", "guide", "📝 わかったことを まとめよう"));
+    newRound(null);
     const paper = h("div", "paper");
     const slots = [];
     n.lines.forEach(line => {
@@ -493,6 +535,7 @@ async function runRestore(n) {
 /* ---------- 場面：議論（証言に矛盾をつきつける） ---------- */
 function runTesti(n) {
   return new Promise((res, rej) => {
+    S.rej = rej;
     const who = n.who, c = charOf(who, S.ep);
     let r = 0, i = 0;
     const draw = (first) => {
@@ -507,26 +550,35 @@ function runTesti(n) {
       const sp = h("button", "speak", "🔊"); box.appendChild(sp);
       layer.appendChild(box);
       const nav = h("div", "tnav");
-      const prev = btn("◀ まえ", "sub", () => go(-1));
+      const prev = btn("◀ 前へ", "sub", () => go(-1));
       const pres = btn("つきつける！", "red", present);
-      const next = btn("つぎ ▶", "sub", () => go(1));
+      const next = btn("次へ ▶", "sub", () => go(1));
+      box.onclick = e => { if (!e.target.closest(".speak")) go(1); };
       nav.append(prev, pres, next); layer.appendChild(nav);
       const show = () => {
         const line = round.lines[i];
         box.querySelector(".ttext").innerHTML = fmt(line.text);
         box.querySelector(".tcount").textContent = `${i + 1} / ${round.lines.length}`;
         box.classList.toggle("suspect", suspect && i === lieIdx);
+        prev.disabled = i === 0;
         sp.onclick = () => speak(line.text);
         if (SAVE.opt.autoRead) speak(line.text);
         box.classList.remove("flip"); void box.offsetWidth; box.classList.add("flip");
       };
-      const go = d => {
+      const go = async d => {
         if (S.busy) return;
-        i = (i + d + round.lines.length) % round.lines.length; show();
+        if (d > 0 && i === round.lines.length - 1) {   // さいごの証言のあと：本じいが話して最初にもどる
+          S.busy = true;
+          try { await say("本じい", "ふつう", "証言は ここまでじゃ。矛盾は 見つかったかのう？ もう一度、最初から 聞いてみるのじゃ", S.ep); }
+          finally { hideTalk(); hidePortraits(); S.busy = false; }
+          i = 0; show(); return;
+        }
+        if (d < 0 && i === 0) return;
+        i += d; show();
       };
       const lieIdx = round.lines.findIndex(x => x.lie);
       let suspect = false;
-      S.onHint2 = () => { suspect = true; i = lieIdx; show(); };
+      newRound({ correct: round.lines[lieIdx] && round.lines[lieIdx].card, jump: () => { suspect = true; i = lieIdx; show(); } });
       async function present() {
         if (S.busy) return; S.busy = true;
         const line = round.lines[i];
@@ -572,7 +624,7 @@ function checkpoint() {
 }
 async function playEpisode(no, resume) {
   const ep = EPS[no];
-  S = { no, ep, idx: 0, hearts: 3, hand: [], aura: [], hint2: false, failed: false, narrow: false, hintLv: 0, node: null, busy: false };
+  S = { no, ep, idx: 0, hearts: MAX_HEARTS, hand: [], aura: [], hint2: false, failed: false, narrow: false, narrowSet: null, narrowCache: {}, hintCtx: null, hintLv: 0, node: null, busy: false };
   if (resume && SAVE.resume && SAVE.resume.no === no) Object.assign(S, SAVE.resume, { no, ep });
   // 再開時は直前の背景を復元
   let bg = EP_META[no][1];
@@ -580,7 +632,7 @@ async function playEpisode(no, resume) {
   setBg(bg); if (S.aura.length) bgEl.classList.add("warped"); clearLayer(); renderHud();
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
-    S.node = n; S.hintLv = 0; S.narrow = false; S.onHint2 = null; renderHud();
+    S.node = n; S.hintLv = 0; S.rej = null; newRound(null);
     const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
@@ -600,9 +652,10 @@ async function playEpisode(no, resume) {
       }
     } catch (e) {
       if (e === FAIL) {
-        closeModal();
-        await say("本じい", "おどろき", "しっかりするのじゃ！ この場面を もう一度 やりなおすぞ", ep);
-        S.hearts = 3; S.failed = true; S.hand = snap.hand; renderHud();
+        closeModal(); hideTalk(); S.busy = false;
+        bigText("ゲームオーバー", "bad"); await sleep(1500);
+        await say("本じい", "おどろき", "しっかりするのじゃ！ ♡3つで、この場面の 最初から やりなおすぞ", ep);
+        S.hearts = RETRY_HEARTS; S.failed = true; S.hand = snap.hand; renderHud();
         continue;
       }
       throw e;
@@ -616,10 +669,9 @@ function finishEpisode() {
   bgEl.classList.remove("warped");
   hideTalk(); hidePortraits(); clearLayer();
   const no = S.no;
-  let star = 1;
-  if (!S.failed && S.hearts >= 2) star = 2;
-  if (star === 2 && !S.hint2) star = 3;
-  if (no === 0) star = 3;
+  // ★＝クリア時の♡の数。1度でもゲームオーバーになったら★1
+  let star = S.failed ? 1 : Math.max(1, Math.min(MAX_HEARTS, S.hearts));
+  if (no === 0) star = MAX_HEARTS;
   SAVE.stars[no] = Math.max(SAVE.stars[no] || 0, star);
   S.ep.cards.forEach(c => SAVE.cards[c] = 1);
   S.hand.forEach(c => SAVE.cards[c] = 1);
@@ -656,7 +708,7 @@ function showSelect() {
     const open = no <= SAVE.unlocked, ready = !!EPS[no];
     const st = SAVE.stars[no] || 0;
     const t = h("button", "eptile" + (open ? "" : " locked") + (ready ? "" : " notready"),
-      `<div class="epno">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="eptt">${open ? esc(title) : "？？？"}</div><div class="epst">${open ? (ready ? "★".repeat(st) + "☆".repeat(3 - st) : "じゅんび中") : "🔒"}</div>`);
+      `<div class="epno">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="eptt">${open ? esc(title) : "？？？"}</div><div class="epst">${open ? (ready ? "★".repeat(st) + "☆".repeat(MAX_HEARTS - st) : "じゅんび中") : "🔒"}</div>`);
     t.onclick = async () => {
       if (!open) return alertBox("この おはなしは まだ ひらいていないよ。<br>先生から「かいほうの じゅもん」を 聞こう！");
       if (!ready) return alertBox("この おはなしは じゅんび中です。");
@@ -688,8 +740,8 @@ function showResult(no, ep, star) {
   setBg("夜"); clearLayer(); layer.className = "menu";
   const box = h("div", "result");
   box.appendChild(h("div", "res-title", no === 0 ? "プロローグ クリア！" : `第${no}話 クリア！`));
-  box.appendChild(h("div", "res-star", "★".repeat(star) + "<span class='off'>" + "☆".repeat(3 - star) + "</span>"));
-  box.appendChild(h("div", "res-note", star === 3 ? "パーフェクト！" : star === 2 ? "ヒントで しぼらずに クリアすると ★3！" : "ハートを 2つ以上 のこして クリアすると ★2！"));
+  box.appendChild(h("div", "res-star", "★".repeat(star) + "<span class='off'>" + "☆".repeat(MAX_HEARTS - star) + "</span>"));
+  box.appendChild(h("div", "res-note", star === MAX_HEARTS ? "パーフェクト！" : "クリアした ときの ♡の 数が ★に なるよ（ゲームオーバーに なると ★1）"));
   box.appendChild(h("div", "res-pass", `ふっかつの じゅもん<br><b>${makePassword()}</b>`));
   const row = h("div", "btnrow");
   row.appendChild(btn("カードずかん", "sub", showZukan));
@@ -754,33 +806,34 @@ async function enterSpell() {
 }
 
 /* ---------- ふっかつの じゅもん（開放＋★） ---------- */
-const PW_MASK = [19, 7, 28, 3, 22, 11, 30, 14, 5, 25];
+const PW_MASK = [19, 7, 28, 3, 22, 11, 30, 14, 5, 25, 9, 17, 2, 27, 12];
+const PW_LEN = 15;
 const PW_CH = "あいうえおかきくけこさしすせそたちつてとなにのはひふへほまみむも"; // 32文字（見まちがえやすい字はのぞく）
 function makePassword() {
   let v = BigInt(Math.min(SAVE.unlocked, 31));
-  for (let i = 0; i < EP_COUNT; i++) v |= BigInt(Math.min(SAVE.stars[i] || 0, 3)) << BigInt(5 + i * 2);
+  for (let i = 0; i < EP_COUNT; i++) v |= BigInt(Math.min(SAVE.stars[i] || 0, 7)) << BigInt(5 + i * 3);
   const digits = [];
-  for (let i = 0; i < 10; i++) { digits.push(Number(v & 31n)); v >>= 5n; }
+  for (let i = 0; i < PW_LEN; i++) { digits.push(Number(v & 31n)); v >>= 5n; }
   const sum = digits.reduce((a, d, i) => (a + d * (i + 3)) % 32, 7);
   const s = [...digits.map((d, i) => d ^ PW_MASK[i]), sum].map(d => PW_CH[d]).join("");
-  return s.slice(0, 4) + "・" + s.slice(4, 8) + "・" + s.slice(8);
+  return s.slice(0, 4) + "・" + s.slice(4, 8) + "・" + s.slice(8, 12) + "・" + s.slice(12);
 }
 function readPassword(str) {
   const s = normKana(str).replace(/[・･\-ー]/g, "");
-  if (s.length !== 11) return null;
+  if (s.length !== PW_LEN + 1) return null;
   const d = [...s].map(c => PW_CH.indexOf(c));
   if (d.some(x => x < 0)) return null;
-  for (let i = 0; i < 10; i++) d[i] ^= PW_MASK[i];
-  const sum = d.slice(0, 10).reduce((a, x, i) => (a + x * (i + 3)) % 32, 7);
-  if (sum !== d[10]) return null;
-  let v = 0n; for (let i = 9; i >= 0; i--) v = (v << 5n) | BigInt(d[i]);
+  for (let i = 0; i < PW_LEN; i++) d[i] ^= PW_MASK[i];
+  const sum = d.slice(0, PW_LEN).reduce((a, x, i) => (a + x * (i + 3)) % 32, 7);
+  if (sum !== d[PW_LEN]) return null;
+  let v = 0n; for (let i = PW_LEN - 1; i >= 0; i--) v = (v << 5n) | BigInt(d[i]);
   const unlocked = Number(v & 31n), stars = {};
-  for (let i = 0; i < EP_COUNT; i++) { const s2 = Number((v >> BigInt(5 + i * 2)) & 3n); if (s2) stars[i] = s2; }
+  for (let i = 0; i < EP_COUNT; i++) { const s2 = Number((v >> BigInt(5 + i * 3)) & 7n); if (s2 > MAX_HEARTS) return null; if (s2) stars[i] = s2; }
   if (unlocked >= EP_COUNT) return null;
   return { unlocked, stars };
 }
 async function restoreFromPassword() {
-  const v = await inputBox("ふっかつの じゅもんを 入れてね", "例：あいうえ・かきくけ・こさし");
+  const v = await inputBox("ふっかつの じゅもんを 入れてね", "例：あいうえ・かきくけ・こさしす・せそた");
   if (v == null) return;
   const r = readPassword(v);
   if (!r) return alertBox("じゅもんが ちがうようだ……<br>もう一度 たしかめてね。");

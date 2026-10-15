@@ -37,7 +37,7 @@ button{font-family:inherit;cursor:pointer}
 
 /* セリフ枠 */
 #catch{position:absolute;inset:0;z-index:30}
-#talk{position:absolute;left:40px;right:40px;bottom:30px;height:200px;z-index:31;background:rgba(255,250,240,.96);border:6px solid var(--ink);border-radius:24px;padding:34px 120px 20px 44px;cursor:pointer}
+#talk{position:absolute;left:40px;right:40px;bottom:30px;height:200px;z-index:31;background:#fffaf0;border:6px solid var(--ink);border-radius:24px;padding:34px 120px 20px 44px;cursor:pointer}
 #talk.dark{background:rgba(20,16,30,.92);border-color:#b9a7e6;color:#eee}
 .tname{position:absolute;top:-28px;left:36px;height:52px;line-height:44px;padding:0 24px;background:var(--ink);color:#fff;border-radius:14px;font-size:26px;font-weight:bold;border:4px solid #fff}
 .ttext{font-size:36px;line-height:1.7}
@@ -201,3 +201,9 @@ table.cl td.st{color:#e0a100}
 .tbox.suspect::before,.claim.suspect::before{content:"🔎 あやしい！";position:absolute;top:-30px;right:140px;height:52px;line-height:44px;padding:0 18px;background:#f59e0b;color:#fff;border:4px solid #fff;border-radius:14px;font-size:24px;font-weight:bold}
 .claim{position:relative}
 .claim.suspect::before{top:-24px;right:24px}
+
+.heart{font-size:30px;width:36px}
+.big.bad{color:#9ca3af;font-size:140px}
+.hand-row{max-height:430px;overflow-y:auto}
+.epst{font-size:22px;letter-spacing:-1px}
+.tbox{cursor:pointer}
