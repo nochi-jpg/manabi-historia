@@ -228,3 +228,67 @@ table.cl td.st{color:var(--gold)}
 .foe{top:170px}
 .claims{width:auto;right:560px}
 .topbar .btn.rt{left:180px;right:auto}
+
+/* ---------- 顔グラの画像／村人のシルエット ---------- */
+.pface,.w-face,.foe-face{overflow:hidden}
+.fimg{width:100%;height:100%;object-fit:contain;display:block;pointer-events:none}
+.femoji{line-height:1}
+.sil.silface{width:62%;height:82%;margin-top:12%;color:#05060a;filter:drop-shadow(0 0 1px rgba(255,255,255,.9)) drop-shadow(0 0 10px rgba(180,200,255,.35))}
+.sil.silface .eyes{opacity:1;fill:#fff}
+.prop .sil{color:rgba(255,255,255,.9)}
+
+/* ---------- 年表（話えらび） ---------- */
+.timeline .topttl{letter-spacing:.2em}
+.tl-head{position:absolute;left:0;right:0;top:104px;text-align:center}
+.tl-name{font-size:42px;font-weight:900;letter-spacing:.14em}
+.tl-sub{font-size:22px;opacity:.75;margin-top:2px}
+.tl-arrow{position:absolute;top:356px;width:84px;height:120px;background:var(--win);border:2px solid var(--line);border-radius:6px;font-size:40px;z-index:3}
+.tl-arrow:hover:not(:disabled){border-color:#fff;background:rgba(40,44,60,.85)}
+.tl-arrow:disabled{opacity:.2;cursor:default}
+.tl-arrow.l{left:var(--m)} .tl-arrow.r{right:var(--m)}
+.tl-line{position:absolute;left:150px;right:150px;top:414px;height:4px;background:rgba(255,255,255,.28);border-radius:2px}
+.tl-line.future{background:repeating-linear-gradient(90deg,rgba(199,155,255,.7) 0 18px,transparent 18px 30px)}
+.tl-lit{position:absolute;left:150px;top:413px;height:6px;background:var(--gold);border-radius:3px;box-shadow:0 0 14px rgba(255,209,102,.7)}
+.tl-node{position:absolute;top:300px;width:200px;height:300px;transform:translateX(-50%);background:none;border:0;padding:0;display:flex;flex-direction:column;align-items:center;z-index:2}
+.tl-era{height:40px;font-size:26px;font-weight:700;letter-spacing:.1em}
+.tl-year{height:34px;font-size:20px;opacity:.7;white-space:nowrap}
+.tl-dot{width:40px;height:40px;margin:22px 0 14px;border-radius:50%;background:#0b0d12;border:4px solid rgba(255,255,255,.7);transition:transform .15s}
+.tl-no{font-size:20px;opacity:.8}
+.tl-tt{margin-top:6px;width:190px;height:66px;font-size:22px;font-weight:700;line-height:1.4;text-align:center;overflow:hidden}
+.tl-st{font-size:20px;color:var(--gold);letter-spacing:.05em}
+.tl-st i,.tp-st i{font-style:normal;opacity:.35}
+.tl-node:hover .tl-dot{transform:scale(1.15);border-color:#fff}
+.tl-node.done .tl-dot{background:var(--gold);border-color:var(--gold);box-shadow:0 0 14px rgba(255,209,102,.7)}
+.tl-node.sel .tl-dot{transform:scale(1.3);border-color:#fff;box-shadow:0 0 0 6px rgba(255,255,255,.18),0 0 24px rgba(255,255,255,.6)}
+.tl-node.locked{opacity:.4}
+.tl-node.locked .tl-st{color:#fff}
+.tl-node.future .tl-dot{border-color:#c79bff;box-shadow:0 0 22px rgba(155,77,255,.8)}
+.tl-node.future .tl-era,.tl-node.future .tl-year{color:#d9c2ff}
+.tl-tokei{position:absolute;top:206px;width:92px;height:92px;transform:translateX(-50%);z-index:4;pointer-events:none;animation:tkbob 1.6s ease-in-out infinite;font-size:80px;text-align:center}
+.tl-tokei img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6))}
+@keyframes tkbob{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-10px)}}
+.tl-fog{position:absolute;right:0;top:280px;width:150px;height:330px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:rgba(220,200,255,.8);
+  background:linear-gradient(90deg,transparent,rgba(120,80,180,.35) 40%,rgba(120,80,180,.55));z-index:1;pointer-events:none;animation:fog 3s ease-in-out infinite}
+@keyframes fog{0%,100%{opacity:.7}50%{opacity:1}}
+.tl-fog.shake{animation:fogshake .12s linear infinite}
+@keyframes fogshake{0%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.tl-panel{position:absolute;left:var(--m);right:var(--m);bottom:36px;height:var(--box);background:var(--win);border:2px solid var(--line);border-radius:6px;display:flex;align-items:center;padding:0 40px 0 56px;z-index:5}
+.tp-l{flex:1;min-width:0}
+.tp-no{font-size:24px;opacity:.85}.tp-no span{opacity:.8}
+.tp-tt{font-size:44px;font-weight:900;letter-spacing:.05em;margin:6px 0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tp-key{font-size:24px;opacity:.85}
+.tp-r{display:flex;flex-direction:column;align-items:flex-end;gap:14px}
+.tp-st{font-size:34px;color:var(--gold);height:40px;letter-spacing:.08em}
+.tp-btns{display:flex;gap:16px}
+.tp-btns .btn{width:280px}
+/* さかのぼり演出 */
+.timeline.rewinding .tl-node,.timeline.rewinding .tl-line{animation:none}
+.tl-node.flick{animation:flick .25s steps(2) infinite}
+@keyframes flick{0%{opacity:1}50%{opacity:.35}}
+.rewind-year{position:absolute;left:0;right:0;bottom:90px;text-align:center;font-size:110px;font-weight:900;letter-spacing:.08em;color:#fff;
+  text-shadow:0 0 30px rgba(140,200,255,.8),0 0 4px #000;z-index:6;pointer-events:none}
+.timeline.rewinding::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:7;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 2px,transparent 2px 6px);animation:scan .4s linear infinite}
+@keyframes scan{to{background-position:0 12px}}
+.timeline.future-in{animation:futin 1.6s ease-out}
+@keyframes futin{0%{filter:brightness(3) hue-rotate(60deg)}100%{filter:none}}

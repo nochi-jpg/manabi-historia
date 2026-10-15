@@ -38,6 +38,12 @@ for no, src in scen.items():
             if width(seg) > 72:
                 warn += 1; print(f"⚠ 2行こえ ep{no:02d} {ln}行目（{width(seg):.0f}字ぶん）: {seg[:30]}…")
 data = "window.SCENARIO_SRC=" + json.dumps(scen, ensure_ascii=False) + ";\nwindow.UNLOCK_HASHES=" + json.dumps(hashes) + ";"
+# 顔グラ：art/名前_表情.webp を window.ART に埋めこむ
+art = {}
+for f in sorted((R/"art").glob("*.webp")):
+    nm, ex = f.stem.rsplit("_", 1)
+    art.setdefault(nm, {})[ex] = "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode()
+data += "\nwindow.ART=" + json.dumps(art) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
 import base64, subprocess, tempfile
