@@ -210,9 +210,23 @@ table.cl td.st{color:#e0a100}
 
 .heart{font-size:30px;width:36px}
 .big.bad{color:#9ca3af;font-size:140px}
-.hand-row{max-height:430px;overflow-y:auto}
 .epst{font-size:22px;letter-spacing:-1px}
 .tbox{cursor:pointer}
+
+/* ページ送り（スクロールバーなし） */
+.pager{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:12px}
+.pg-row{display:flex;align-items:stretch;gap:14px}
+.pg-grid{display:grid;gap:14px}
+.pg-arrow{width:72px;align-self:stretch;border-radius:16px;border:4px solid var(--ink);background:var(--gold);font-size:34px;font-weight:bold;box-shadow:0 6px 0 var(--ink)}
+.pg-arrow:disabled{opacity:.3;cursor:default}
+.card.blank{background:rgba(255,255,255,.08);border:4px dashed rgba(255,255,255,.25);box-shadow:none}
+.inbox .card.blank{background:#eee;border-color:#ccc}
+.pg-dots{height:18px;display:flex;gap:10px}
+.dot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid var(--ink)}
+.dot.on{background:var(--gold)}
+.inbox .dot{background:#ddd}.inbox .dot.on{background:var(--gold)}
+.inbox.wide{width:1560px;max-width:1560px;padding:28px 24px;overflow:hidden}
+.hand-detail{width:1400px}
 </style>
 </head>
 <body>
@@ -571,6 +585,35 @@ function showCardGet(name) {
     openModal(box);
   });
 }
+/* カードをページ送りで並べる（逆転裁判の法廷記録ふう。スクロールバーは使わない） */
+function pager(names, opts) {
+  const per = opts.perPage || 8, cols = opts.cols || 8;
+  const wrap = h("div", "pager");
+  const prev = h("button", "pg-arrow", "◀"), next = h("button", "pg-arrow", "▶");
+  const grid = h("div", "pg-grid"); grid.style.gridTemplateColumns = `repeat(${cols}, var(--card-w))`;
+  const dots = h("div", "pg-dots");
+  const pages = Math.max(1, Math.ceil(names.length / per));
+  let page = 0, selName = null;
+  const draw = () => {
+    grid.innerHTML = "";
+    names.slice(page * per, page * per + per).forEach(n => {
+      const e = cardEl(n, { unknown: opts.unknown && opts.unknown(n) });
+      if (n === selName) e.classList.add("sel");
+      e.onclick = () => { selName = n; grid.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel"); opts.onTap && opts.onTap(n); };
+      grid.appendChild(e);
+    });
+    for (let k = grid.children.length; k < per; k++) grid.appendChild(h("div", "card blank"));   // 空きわくで大きさを固定
+    prev.disabled = page === 0; next.disabled = page >= pages - 1;
+    dots.innerHTML = pages > 1 ? Array.from({ length: pages }, (_, k) => `<span class="dot${k === page ? " on" : ""}"></span>`).join("") : "";
+  };
+  prev.onclick = () => { if (page > 0) { page--; draw(); } };
+  next.onclick = () => { if (page < pages - 1) { page++; draw(); } };
+  const row = h("div", "pg-row"); row.append(prev, grid, next);
+  wrap.append(row, dots);
+  draw();
+  return wrap;
+}
+
 /* 手札からカードを選ぶ。キャンセルで null */
 function chooseCard(title, correct, quote) {
   return new Promise(res => {
@@ -583,24 +626,18 @@ function chooseCard(title, correct, quote) {
     const box = h("div", "hand");
     if (quote) box.appendChild(h("div", "hand-quote", `<b>${esc(quote.who)}</b>「${fmt(quote.text)}」`));
     box.appendChild(h("div", "hand-title", fmt(title)));
-    const row = h("div", "hand-row");
     const detail = h("div", "hand-detail", "カードを えらぶと、説明が 出るよ");
     const btns = h("div", "btnrow");
     const ok = btn("つきつける！", "red", () => { if (sel) { closeModal(); res(sel); } });
     ok.disabled = true;
     let sel = null;
-    list.forEach(n => {
-      const e = cardEl(n);
-      e.onclick = () => {   // 1回目のタップで説明を読む → 「つきつける！」で決定
-        sel = n; ok.disabled = false;
-        row.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel");
-        const c = CARDS[n] || { name: n, desc: "", kw: n };
-        detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}`;
-        if (SAVE.opt.autoRead) speak(c.name + "。" + c.desc);
-      };
-      row.appendChild(e);
-    });
-    box.appendChild(row); box.appendChild(detail);
+    const pg = pager(list, { perPage: 8, cols: 8, onTap: n => {   // 1回目のタップで説明を読む → 「つきつける！」で決定
+      sel = n; ok.disabled = false;
+      const c = CARDS[n] || { name: n, desc: "", kw: n };
+      detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}`;
+      if (SAVE.opt.autoRead) speak(c.name + "。" + c.desc);
+    } });
+    box.appendChild(pg); box.appendChild(detail);
     btns.appendChild(btn("もどる", "sub", () => { stopSpeak(); closeModal(); res(null); }));
     btns.appendChild(ok);
     box.appendChild(btns);
@@ -643,14 +680,9 @@ function showHandViewer() {
   const box = h("div", "inbox wide");
   box.appendChild(h("div", "in-title", `もっている カード（${S.hand.length}まい）`));
   const detail = h("div", "hv-detail", S.hand.length ? "カードを タップすると 説明が 見られるよ" : "まだ カードを もっていないよ");
-  const row = h("div", "hand-row");
-  S.hand.forEach(n => {
-    const e = cardEl(n);
-    e.onclick = () => { row.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel");
-      const c = CARDS[n]; detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`; };
-    row.appendChild(e);
-  });
-  box.appendChild(row); box.appendChild(detail);
+  const pg = pager(S.hand, { perPage: 8, cols: 8, onTap: n => {
+    const c = CARDS[n]; detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`; } });
+  box.appendChild(pg); box.appendChild(detail);
   box.appendChild(btn("とじる", "sub", closeModal));
   openModal(box);
 }
@@ -1119,18 +1151,11 @@ function showZukan() {
   top.appendChild(h("div", "topttl", `カードずかん　${have} / ${names.length}`));
   top.appendChild(h("div", "spacer"));
   layer.appendChild(top);
-  const grid = h("div", "zgrid");
-  names.forEach(n => {
-    const got = !!SAVE.cards[n];
-    const e = cardEl(n, { unknown: !got });
-    e.onclick = () => {
-      if (!got) return;
-      const c = CARDS[n];
-      alertBox(`<div class="zk-icon">${c.icon}</div><div class="zk-name">${esc(c.name)}</div><div class="zk-desc">${fmt(c.desc)}</div><div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`);
-    };
-    grid.appendChild(e);
-  });
-  layer.appendChild(grid);
+  layer.appendChild(pager(names, { perPage: 16, cols: 8, unknown: n => !SAVE.cards[n], onTap: n => {
+    if (!SAVE.cards[n]) return;
+    const c = CARDS[n];
+    alertBox(`<div class="zk-icon">${c.icon}</div><div class="zk-name">${esc(c.name)}</div><div class="zk-desc">${fmt(c.desc)}</div><div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`);
+  } }));
 }
 
 /* ---------- 画面：せってい ---------- */

@@ -204,6 +204,20 @@ table.cl td.st{color:#e0a100}
 
 .heart{font-size:30px;width:36px}
 .big.bad{color:#9ca3af;font-size:140px}
-.hand-row{max-height:430px;overflow-y:auto}
 .epst{font-size:22px;letter-spacing:-1px}
 .tbox{cursor:pointer}
+
+/* ページ送り（スクロールバーなし） */
+.pager{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:12px}
+.pg-row{display:flex;align-items:stretch;gap:14px}
+.pg-grid{display:grid;gap:14px}
+.pg-arrow{width:72px;align-self:stretch;border-radius:16px;border:4px solid var(--ink);background:var(--gold);font-size:34px;font-weight:bold;box-shadow:0 6px 0 var(--ink)}
+.pg-arrow:disabled{opacity:.3;cursor:default}
+.card.blank{background:rgba(255,255,255,.08);border:4px dashed rgba(255,255,255,.25);box-shadow:none}
+.inbox .card.blank{background:#eee;border-color:#ccc}
+.pg-dots{height:18px;display:flex;gap:10px}
+.dot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.35);border:2px solid var(--ink)}
+.dot.on{background:var(--gold)}
+.inbox .dot{background:#ddd}.inbox .dot.on{background:var(--gold)}
+.inbox.wide{width:1560px;max-width:1560px;padding:28px 24px;overflow:hidden}
+.hand-detail{width:1400px}
