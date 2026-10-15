@@ -189,7 +189,7 @@ function hideTalk() { talk.hidden = true; }
 /* 効果 */
 function bigText(text, cls) { const e = h("div", "big " + (cls || ""), text); fx.appendChild(e); setTimeout(() => e.remove(), 1400); }
 function shake() { stage.classList.remove("shake"); void stage.offsetWidth; stage.classList.add("shake"); }
-function banner(text) { const e = h("div", "banner", fmt(text)); fx.appendChild(e); setTimeout(() => e.remove(), 1800); }
+function banner(text, html) { const e = h("div", "banner" + (html ? " tall" : ""), html || fmt(text)); fx.appendChild(e); setTimeout(() => e.remove(), 1800); }
 
 /* モーダル */
 function openModal(content, cls) { modal.innerHTML = ""; modal.className = "modal " + (cls || ""); modal.appendChild(content); modal.hidden = false; }
@@ -225,9 +225,26 @@ function chooseCard(title, correct, quote) {
     if (quote) box.appendChild(h("div", "hand-quote", `<b>${esc(quote.who)}</b>「${fmt(quote.text)}」`));
     box.appendChild(h("div", "hand-title", fmt(title)));
     const row = h("div", "hand-row");
-    list.forEach(n => { const e = cardEl(n); e.onclick = () => { closeModal(); res(n); }; row.appendChild(e); });
-    box.appendChild(row);
-    box.appendChild(btn("もどる", "sub", () => { closeModal(); res(null); }));
+    const detail = h("div", "hand-detail", "カードを えらぶと、説明が 出るよ");
+    const btns = h("div", "btnrow");
+    const ok = btn("つきつける！", "red", () => { if (sel) { closeModal(); res(sel); } });
+    ok.disabled = true;
+    let sel = null;
+    list.forEach(n => {
+      const e = cardEl(n);
+      e.onclick = () => {   // 1回目のタップで説明を読む → 「つきつける！」で決定
+        sel = n; ok.disabled = false;
+        row.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel");
+        const c = CARDS[n] || { name: n, desc: "", kw: n };
+        detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}`;
+        if (SAVE.opt.autoRead) speak(c.name + "。" + c.desc);
+      };
+      row.appendChild(e);
+    });
+    box.appendChild(row); box.appendChild(detail);
+    btns.appendChild(btn("もどる", "sub", () => { stopSpeak(); closeModal(); res(null); }));
+    btns.appendChild(ok);
+    box.appendChild(btns);
     openModal(box, "bottom");
   });
 }
@@ -522,7 +539,7 @@ function runTesti(n) {
         S.busy = false;
       }
       show();
-      if (first) banner(`〜 証言 〜<br>${esc(round.title || "")}`);
+      if (first) banner("", `〜 証言 〜<br>${esc(round.title || "")}`);
     };
     draw(true);
   });

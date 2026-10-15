@@ -83,7 +83,7 @@ ruby rt{font-size:.45em}
 .cg-kw{font-size:24px;color:#555;margin-bottom:8px}
 .hand{width:100%;background:rgba(43,35,64,.96);border-top:6px solid var(--gold);padding:24px 32px 28px;text-align:center}
 .hand-title{color:#fff;font-size:30px;font-weight:bold;margin-bottom:18px}
-.hand-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:18px}
+.hand-row{display:flex;gap:16px;justify-content:flex-start;flex-wrap:wrap;margin:0 auto 18px;width:1500px}
 .hand .btn{height:64px;font-size:26px}
 
 /* 論破バトル */
@@ -187,3 +187,11 @@ table.cl td.st{color:#e0a100}
 .tnav{position:absolute;right:40px;bottom:256px;display:flex;gap:16px;z-index:6}
 .tnav .btn{width:240px;height:76px}
 .btn.red{background:#ff4d6d;color:#fff}
+
+.hand{padding-top:18px}
+.hand-detail{width:1500px;margin:0 auto;min-height:96px;text-align:left;background:#fffaf0;border:4px solid var(--gold);border-radius:16px;padding:14px 24px;font-size:28px;line-height:1.5;color:var(--ink)}
+.hand .btnrow{margin-top:16px}
+.hand .btnrow .btn{width:300px;height:72px}
+.btn:disabled{opacity:.45;cursor:default}
+.banner.tall{height:auto;line-height:1.4;padding:24px 0}
+.zgrid{justify-content:start}
