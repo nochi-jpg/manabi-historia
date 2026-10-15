@@ -36,6 +36,18 @@ for no, src in scen.items():
             warn += 1; print(f"⚠ 2行こえ ep{no:02d} {ln}行目（{width(text):.0f}字ぶん）: {text[:30]}…")
 data = "window.SCENARIO_SRC=" + json.dumps(scen, ensure_ascii=False) + ";\nwindow.UNLOCK_HASHES=" + json.dumps(hashes) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
+# フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
+import base64, subprocess, tempfile
+chars = set()
+for f in [R/"src/engine.js", R/"src/template.html", R/"src/bg.js", R/"build.py"]: chars |= set(f.read_text(encoding="utf-8"))
+for v in scen.values(): chars |= set(v)
+chars |= {chr(c) for c in range(0x20, 0x7f)} | {chr(c) for c in range(0x3041, 0x3097)} | {chr(c) for c in range(0x30a1, 0x30fb)} | set("ー・「」『』、。！？（）…―〜★☆♡◀▶▼")
+fcss = ""
+for fam, ttf in [("Mincho", "fonts/ShipporiMinchoB1-ExtraBold.ttf"), ("Gothic", "fonts/ZenKakuGothicNew-Bold.ttf")]:
+    with tempfile.NamedTemporaryFile(suffix=".woff") as tmp:
+        subprocess.run(["pyftsubset", str(R/ttf), "--text=" + "".join(sorted(chars)), "--flavor=woff", "--output-file=" + tmp.name], check=True, capture_output=True)
+        fcss += "@font-face{font-family:'%s';src:url(data:font/woff;base64,%s) format('woff')}\n" % (fam, base64.b64encode(open(tmp.name, "rb").read()).decode())
+html = html.replace("/*FONTS*/", fcss)
 html = html.replace("/*CSS*/", (R/"src/style.css").read_text(encoding="utf-8"))
 html = html.replace("/*DATA*/", data.replace("</", "<\\/"))
 html = html.replace("/*JS*/", (R/"src/bg.js").read_text(encoding="utf-8") + "\n" + (R/"src/engine.js").read_text(encoding="utf-8"))

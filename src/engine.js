@@ -207,7 +207,7 @@ function showCardGet(name) {
     box.innerHTML = `<div class="cg-title">カードを 手に入れた！</div>`;
     const ce = cardEl(name); ce.classList.add("large"); box.appendChild(ce);
     box.appendChild(h("div", "cg-desc", fmt(c ? c.desc : "")));
-    box.appendChild(h("div", "cg-kw", `🔍 調べる キーワード：<b>${esc(c ? c.kw : name)}</b>`));
+    box.appendChild(h("div", "cg-kw", `調べる キーワード：<b>${esc(c ? c.kw : name)}</b>`));
     box.appendChild(btn("OK", "", () => { closeModal(); res(); }));
     openModal(box);
   });
@@ -308,7 +308,7 @@ function showHandViewer() {
   box.appendChild(h("div", "in-title", `もっている カード（${S.hand.length}まい）`));
   const detail = h("div", "hv-detail", S.hand.length ? "カードを タップすると 説明が 見られるよ" : "まだ カードを もっていないよ");
   const pg = pager(S.hand, { perPage: 8, cols: 8, onTap: n => {
-    const c = CARDS[n]; detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`; } });
+    const c = CARDS[n]; detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">調べる キーワード：<b>${esc(c.kw)}</b></div>`; } });
   box.appendChild(pg); box.appendChild(detail);
   box.appendChild(btn("とじる", "sub", closeModal));
   openModal(box);
@@ -320,7 +320,8 @@ const MAX_HEARTS = 5, RETRY_HEARTS = 3;
 function renderHud() {
   hud.hidden = !S;
   if (!S) return;
-  $("#hearts").innerHTML = Array.from({ length: MAX_HEARTS }, (_, i) => `<span class="heart${i < S.hearts ? "" : " lost"}">${i < S.hearts ? "❤️" : "🤍"}</span>`).join("");
+  const hv = on => `<svg class="heart" viewBox="0 0 24 22"><path d="M12 21C-6 9 4-4 12 4C20-4 30 9 12 21Z" fill="${on ? "#d8392f" : "#3a322c"}" stroke="${on ? "#f4ead2" : "#6b5a45"}" stroke-width="1.6"/></svg>`;
+  $("#hearts").innerHTML = Array.from({ length: MAX_HEARTS }, (_, i) => hv(i < S.hearts)).join("");
   $("#eptitle").textContent = S.no === 0 ? S.ep.title : `第${S.no}話　${S.ep.title.replace(/^第\d+話\s*/, "")}`;
   const hb = $("#hintBtn"), n = S.node;
   const interactive = n && ["inv", "spot", "testi", "battle", "sum"].includes(n.t);
@@ -383,7 +384,7 @@ function runInv(n) {
     clearLayer(); hideTalk(); hidePortraits();
     const got = new Set(n.items.filter(it => S.hand.includes(it.card)).map(it => it.name));
     const info = h("div", "guide"); layer.appendChild(info);
-    const upd = () => { info.innerHTML = `🔍 むらを 調べよう（のこり ${n.items.length - got.size}）`; };
+    const upd = () => { info.innerHTML = `むらを 調べよう（のこり ${n.items.length - got.size}）`; };
     upd();
     n.items.forEach(it => {
       const e = h("button", "prop", `${iconHTML(it.icon)}<div class="plabel">${esc(it.name)}</div>`);
@@ -417,7 +418,7 @@ function runSpot(n) {
     const fixed = new Set();
     const bads = n.items.filter(i => i.bad).length;
     const info = h("div", "guide"); layer.appendChild(info);
-    const upd = () => { info.innerHTML = `⚠️ ゆがんだ 証言を 見やぶれ！（のこり ${bads - fixed.size}）`; };
+    const upd = () => { info.innerHTML = `ゆがんだ 証言を 見やぶれ（のこり ${bads - fixed.size}）`; };
     upd();
     n.items.forEach((it, i) => {
       const e = h("button", "prop warped", `${iconHTML(it.icon)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${esc(it.name)}</div>`);
@@ -464,7 +465,7 @@ function runBattle(n) {
       const foe = h("div", "foe", `<div class="foe-face">${charOf("ユガミ").icon}</div><div class="foe-name">ユガミ</div>`);
       const gauge = h("div", "gauge", Array.from({ length: total }, (_, i) => `<span class="seg${i < total - r ? "" : " off"}"></span>`).join(""));
       foe.prepend(gauge); layer.appendChild(foe);
-      layer.appendChild(h("div", "guide", `⚔️ ユガミの ウソを 見やぶれ！（${r + 1} / ${total}）`));
+      layer.appendChild(h("div", "guide", `ユガミの ウソを 見やぶれ（${r + 1} / ${total}）`));
       const list = h("div", "claims");
       const claimEls = [];
       const lie = n.rounds[r].find(x => x.lie);
@@ -506,7 +507,7 @@ function runSum(n) {
   return new Promise((res, rej) => {
     S.rej = rej;
     clearLayer(); hideTalk(); hidePortraits();
-    layer.appendChild(h("div", "guide", "📝 わかったことを まとめよう"));
+    layer.appendChild(h("div", "guide", "わかったことを まとめよう"));
     newRound(null);
     const paper = h("div", "paper");
     const slots = [];
@@ -562,7 +563,7 @@ function runTesti(n) {
       const aura = S.aura.includes(who);
       layer.appendChild(h("div", "witness" + (aura ? " aura" : ""), `<div class="w-face" style="--c:${c.col}">${c.icon}</div><div class="w-name">${esc(who)}</div>`));
       const round = n.rounds[r];
-      layer.appendChild(h("div", "guide", `🗣️ 証言「${esc(round.title || "")}」（${r + 1} / ${n.rounds.length}）`));
+      layer.appendChild(h("div", "guide", `証言「${esc(round.title || "")}」（${r + 1} / ${n.rounds.length}）`));
       const box = h("div", "tbox");
       box.innerHTML = `<div class="tname">${esc(who)}</div><div class="ttext"></div><div class="tcount"></div>`;
       const sp = h("button", "speak", "🔊"); box.appendChild(sp);
@@ -743,6 +744,7 @@ function showSelect() {
     };
     grid.appendChild(t);
   });
+  for (let k = EP_META.length; k % 6; k++) grid.appendChild(h("div", "eptile locked"));   // 最後の段の空きをうめる
   layer.appendChild(grid);
 }
 
@@ -778,11 +780,14 @@ function showZukan() {
   top.appendChild(h("div", "topttl", `カードずかん　${have} / ${names.length}`));
   top.appendChild(h("div", "spacer"));
   layer.appendChild(top);
-  layer.appendChild(pager(names, { perPage: 16, cols: 8, unknown: n => !SAVE.cards[n], onTap: n => {
-    if (!SAVE.cards[n]) return;
+  const zb = h("div", "zbody"); layer.appendChild(zb);
+  const zd = h("div", "zdetail", "カードを タップすると、説明が 出るよ");
+  zb.appendChild(pager(names, { perPage: 16, cols: 8, unknown: n => !SAVE.cards[n], onTap: n => {
+    if (!SAVE.cards[n]) { zd.innerHTML = "まだ 手に入れて いない カードだよ"; return; }
     const c = CARDS[n];
-    alertBox(`<div class="zk-icon">${c.icon}</div><div class="zk-name">${esc(c.name)}</div><div class="zk-desc">${fmt(c.desc)}</div><div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`);
+    zd.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">調べる キーワード：<b>${esc(c.kw)}</b></div>`;
   } }));
+  layer.appendChild(zd);
 }
 
 /* ---------- 画面：せってい ---------- */
@@ -793,7 +798,7 @@ function showSettings() {
   top.appendChild(h("div", "topttl", "せってい"));
   top.appendChild(h("div", "spacer"));
   layer.appendChild(top);
-  const col = h("div", "menu-col");
+  const col = h("div", "settings");
   const tog = (label, key) => btn(`${label}：${SAVE.opt[key] ? "ON" : "OFF"}`, "", () => { SAVE.opt[key] = !SAVE.opt[key]; persist(); showSettings(); });
   col.appendChild(tog("ふりがな", "ruby"));
   col.appendChild(tog("自動で 読み上げ", "autoRead"));
