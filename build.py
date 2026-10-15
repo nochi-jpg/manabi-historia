@@ -32,8 +32,11 @@ for no, src in scen.items():
         elif l.startswith("- ") and ("|" in l):
             parts = [x.strip() for x in l[2:].split("|")]
             if parts[0] in ("ふつう", "矛盾", "ホント", "ウソ"): text = parts[1]
-        if text and width(text) > 72:
-            warn += 1; print(f"⚠ 2行こえ ep{no:02d} {ln}行目（{width(text):.0f}字ぶん）: {text[:30]}…")
+            elif len(parts) == 5: text = parts[3]   # 調査：「／」区切りのセリフ
+        for seg in (re.split(r"\s*／\s*", text) if text else []):
+            seg = re.sub(r"^(.+?)[：:]", "", seg) if re.match(r"^[^＊*]{1,6}[：:]", seg) else seg.lstrip("＊*")
+            if width(seg) > 72:
+                warn += 1; print(f"⚠ 2行こえ ep{no:02d} {ln}行目（{width(seg):.0f}字ぶん）: {seg[:30]}…")
 data = "window.SCENARIO_SRC=" + json.dumps(scen, ensure_ascii=False) + ";\nwindow.UNLOCK_HASHES=" + json.dumps(hashes) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
@@ -43,10 +46,10 @@ for f in [R/"src/engine.js", R/"src/template.html", R/"src/bg.js", R/"build.py"]
 for v in scen.values(): chars |= set(v)
 chars |= {chr(c) for c in range(0x20, 0x7f)} | {chr(c) for c in range(0x3041, 0x3097)} | {chr(c) for c in range(0x30a1, 0x30fb)} | set("ー・「」『』、。！？（）…―〜★☆♡◀▶▼")
 fcss = ""
-for fam, ttf in [("Mincho", "fonts/ShipporiMinchoB1-ExtraBold.ttf"), ("Gothic", "fonts/ZenKakuGothicNew-Bold.ttf")]:
+for fam, ttf in [("G500", "fonts/ZenKakuGothicNew-Medium.ttf"), ("G700", "fonts/ZenKakuGothicNew-Bold.ttf"), ("G900", "fonts/ZenKakuGothicNew-Black.ttf")]:
     with tempfile.NamedTemporaryFile(suffix=".woff") as tmp:
         subprocess.run(["pyftsubset", str(R/ttf), "--text=" + "".join(sorted(chars)), "--flavor=woff", "--output-file=" + tmp.name], check=True, capture_output=True)
-        fcss += "@font-face{font-family:'%s';src:url(data:font/woff;base64,%s) format('woff')}\n" % (fam, base64.b64encode(open(tmp.name, "rb").read()).decode())
+        fcss += "@font-face{font-family:'Gothic';font-weight:%s;src:url(data:font/woff;base64,%s) format('woff')}\n" % (fam[1:], base64.b64encode(open(tmp.name, "rb").read()).decode())
 html = html.replace("/*FONTS*/", fcss)
 html = html.replace("/*CSS*/", (R/"src/style.css").read_text(encoding="utf-8"))
 html = html.replace("/*DATA*/", data.replace("</", "<\\/"))

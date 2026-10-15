@@ -19,7 +19,8 @@ const EP_COUNT = EP_META.length;
 /* ---------- 保存 ---------- */
 const SKEY = "manabi-historia-v1";
 function loadSave() { try { return JSON.parse(localStorage.getItem(SKEY)) || null; } catch (e) { return null; } }
-let SAVE = Object.assign({ unlocked: 0, stars: {}, cards: {}, resume: null, opt: { ruby: true, autoRead: false } }, loadSave() || {});
+let SAVE = Object.assign({ unlocked: 0, stars: {}, cards: {}, resume: null, opt: { ruby: true, autoRead: false, speed: "normal", blip: true } }, loadSave() || {});
+SAVE.opt = Object.assign({ ruby: true, autoRead: false, speed: "normal", blip: true }, SAVE.opt);
 function persist() { try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } catch (e) { } }
 
 /* ---------- 文字の整形（ルビ・キーワード） ---------- */
@@ -162,12 +163,55 @@ function showPortrait(name, expr, ep) {
 function hidePortraits() { $("#portL").hidden = true; $("#portR").hidden = true; ports.L = ports.R = null; }
 
 /* セリフ */
-function waitAdvance() {
+/* ---------- 文字送り（ぽぽぽ…） ---------- */
+const SPEEDS = { fast: 15, normal: 35, slow: 70 };   // 1文字の間隔（ミリ秒）
+let actx = null;
+function blip() {
+  if (!SAVE.opt.blip) return;
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = "square"; o.frequency.value = 760 + Math.random() * 60;
+    g.gain.setValueAtTime(0.035, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.045);
+    o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.05);
+  } catch (e) { }
+}
+/* el の中身（ルビ入りのHTML）を1文字ずつ表示する。{ done, finish() } を返す */
+function typeIn(el, html, onEnd) {
+  el.innerHTML = html;
+  const units = [];
+  (function walk(node) {
+    for (const ch of [...node.childNodes]) {
+      if (ch.nodeType === 3) {
+        const frag = document.createDocumentFragment();
+        for (const c of ch.textContent) { const sp = document.createElement("span"); sp.textContent = c; sp.className = "tw-h"; frag.appendChild(sp); units.push(sp); }
+        node.replaceChild(frag, ch);
+      } else if (ch.nodeName === "RUBY") { ch.classList.add("tw-h"); units.push(ch); }
+      else walk(ch);
+    }
+  })(el);
+  const t = { done: false };
+  let i = 0, n = 0, timer = null;
+  const end = () => { if (t.done) return; t.done = true; clearInterval(timer); units.forEach(u => u.classList.remove("tw-h")); onEnd && onEnd(); };
+  t.finish = end;
+  const step = () => {
+    if (i >= units.length) return end();
+    const u = units[i++]; u.classList.remove("tw-h");
+    if (!/[\s、。！？…「」]/.test(u.textContent) && (n++ % 2 === 0)) blip();
+  };
+  timer = setInterval(step, SPEEDS[SAVE.opt.speed] || SPEEDS.normal);
+  if (!units.length) end();
+  return t;
+}
+function waitAdvance(typer) {
   return new Promise(res => {
     catcher.hidden = false;
-    const done = () => { catcher.hidden = true; catcher.onclick = null; talk.onclick = null; document.removeEventListener("keydown", key); res(); };
-    const key = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); done(); } };
-    catcher.onclick = done; talk.onclick = e => { if (!e.target.closest(".speak")) done(); };
+    const go = () => {
+      if (typer && !typer.done) { typer.finish(); return; }   // 表示中ならまず全部出す
+      catcher.hidden = true; catcher.onclick = null; talk.onclick = null; document.removeEventListener("keydown", key); res();
+    };
+    const key = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
+    catcher.onclick = go; talk.onclick = e => { if (!e.target.closest(".speak")) go(); };
     document.addEventListener("keydown", key);
   });
 }
@@ -176,12 +220,14 @@ async function say(who, expr, text, ep, opt = {}) {
   talk.hidden = false; talk.classList.toggle("dark", !!opt.dark);
   talk.querySelector(".tname").textContent = who && who !== "" ? who : "";
   talk.querySelector(".tname").hidden = !who;
-  talk.querySelector(".ttext").innerHTML = fmt(text);
-  talk.querySelector(".ttext").classList.toggle("narr", !who);
+  const tt = talk.querySelector(".ttext");
+  tt.classList.toggle("narr", !who);
   talk.querySelector(".speak").onclick = e => { e.stopPropagation(); speak(text); };
   if (!opt.dark && !opt.noPort) showPortrait(who, expr, ep);
   if (SAVE.opt.autoRead) speak(text);
-  await waitAdvance();
+  talk.classList.add("typing");
+  const typer = typeIn(tt, fmt(text), () => talk.classList.remove("typing"));
+  await waitAdvance(typer);
   stopSpeak();
 }
 function hideTalk() { talk.hidden = true; }
@@ -258,7 +304,7 @@ function chooseCard(title, correct, quote) {
     const ok = btn("つきつける！", "red", () => { if (sel) { closeModal(); res(sel); } });
     ok.disabled = true;
     let sel = null;
-    const pg = pager(list, { perPage: 8, cols: 8, onTap: n => {   // 1回目のタップで説明を読む → 「つきつける！」で決定
+    const pg = pager(list, { perPage: 8, cols: 4, onTap: n => {   // 1回目のタップで説明を読む → 「つきつける！」で決定
       sel = n; ok.disabled = false;
       const c = CARDS[n] || { name: n, desc: "", kw: n };
       detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}`;
@@ -307,7 +353,7 @@ function showHandViewer() {
   const box = h("div", "inbox wide");
   box.appendChild(h("div", "in-title", `もっている カード（${S.hand.length}まい）`));
   const detail = h("div", "hv-detail", S.hand.length ? "カードを タップすると 説明が 見られるよ" : "まだ カードを もっていないよ");
-  const pg = pager(S.hand, { perPage: 8, cols: 8, onTap: n => {
+  const pg = pager(S.hand, { perPage: 8, cols: 4, onTap: n => {
     const c = CARDS[n]; detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">調べる キーワード：<b>${esc(c.kw)}</b></div>`; } });
   box.appendChild(pg); box.appendChild(detail);
   box.appendChild(btn("とじる", "sub", closeModal));
@@ -322,7 +368,8 @@ function renderHud() {
   if (!S) return;
   const hv = on => `<svg class="heart" viewBox="0 0 24 22"><path d="M12 21C-6 9 4-4 12 4C20-4 30 9 12 21Z" fill="${on ? "#d8392f" : "#3a322c"}" stroke="${on ? "#f4ead2" : "#6b5a45"}" stroke-width="1.6"/></svg>`;
   $("#hearts").innerHTML = Array.from({ length: MAX_HEARTS }, (_, i) => hv(i < S.hearts)).join("");
-  $("#eptitle").textContent = S.no === 0 ? S.ep.title : `第${S.no}話　${S.ep.title.replace(/^第\d+話\s*/, "")}`;
+  $("#tagNo").textContent = S.no === 0 ? "プロローグ" : `第${S.no}話`;
+  $("#tagTitle").textContent = S.ep.title.replace(/^(第\d+話|プロローグ)\s*/, "");
   const hb = $("#hintBtn"), n = S.node;
   const interactive = n && ["inv", "spot", "testi", "battle", "sum"].includes(n.t);
   hb.hidden = !interactive;
@@ -392,12 +439,16 @@ function runInv(n) {
       e.onclick = async () => {
         if (S.busy) return; S.busy = true;
         try {
-          let who = it.name, text = it.line;
-          const m = text.match(/^(.+?)[：:](.*)$/);
-          if (/^[＊*]/.test(text)) { who = ""; text = text.replace(/^[＊*]\s*/, ""); }
-          else if (m && (CHARS[m[1]] || S.ep.chars[m[1]])) { who = m[1]; text = m[2]; }
-          else if (!S.ep.chars[who] && !CHARS[who]) who = "";
-          await say(who, "ふつう", text, S.ep); hideTalk(); hidePortraits();
+          // 「／」で区切って何行でも話せる。「名前：」で話す人を変える（＊はナレーション）
+          const base = (S.ep.chars[it.name] || CHARS[it.name]) ? it.name : "";
+          for (const seg of it.line.split(/\s*／\s*/)) {
+            let who = base, text = seg;
+            const m = seg.match(/^(.+?)[：:](.*)$/);
+            if (/^[＊*]/.test(seg)) { who = ""; text = seg.replace(/^[＊*]\s*/, ""); }
+            else if (m && (CHARS[m[1]] || S.ep.chars[m[1]])) { who = m[1]; text = m[2]; }
+            await say(who, "ふつう", text, S.ep);
+          }
+          hideTalk(); hidePortraits();
           if (it.card && !S.hand.includes(it.card)) { S.hand.push(it.card); renderHud(); await showCardGet(it.card); }
           got.add(it.name); e.classList.add("done"); upd();
         } catch (er) { S.busy = false; return rej(er); }
@@ -572,11 +623,13 @@ function runTesti(n) {
       const prev = btn("◀ 前へ", "sub", () => go(-1));
       const pres = btn("つきつける！", "red", present);
       const next = btn("次へ ▶", "sub", () => go(1));
-      box.onclick = e => { if (!e.target.closest(".speak")) go(1); };
+      box.onclick = e => { if (e.target.closest(".speak")) return; if (typer && !typer.done) typer.finish(); else go(1); };
       nav.append(prev, pres, next); layer.appendChild(nav);
+      let typer = null;
       const show = () => {
         const line = round.lines[i];
-        box.querySelector(".ttext").innerHTML = fmt(line.text);
+        if (typer) typer.finish();
+        typer = typeIn(box.querySelector(".ttext"), fmt(line.text));
         box.querySelector(".tcount").textContent = `${i + 1} / ${round.lines.length}`;
         box.classList.toggle("suspect", suspect && i === lieIdx);
         prev.disabled = i === 0;
@@ -619,7 +672,7 @@ function runTesti(n) {
         S.busy = false;
       }
       show();
-      if (first) banner("", `〜 証言 〜<br>${esc(round.title || "")}`);
+      banner("", `〜 証言 〜<br>${esc(round.title || "")}`);   // どの証言でも、はじめにタイトルを出す
     };
     draw(true);
   });
@@ -720,7 +773,7 @@ function showSelect() {
   const top = h("div", "topbar");
   top.appendChild(btn("もどる", "sub", showTitle));
   top.appendChild(h("div", "topttl", "おはなしを えらぶ"));
-  top.appendChild(btn(`★ ${total}`, "sub", showClearList));
+  top.appendChild(btn(`★ ${total}`, "rt", showClearList));
   layer.appendChild(top);
   const grid = h("div", "epgrid");
   EP_META.forEach(([title], no) => {
@@ -744,7 +797,7 @@ function showSelect() {
     };
     grid.appendChild(t);
   });
-  for (let k = EP_META.length; k % 6; k++) grid.appendChild(h("div", "eptile locked"));   // 最後の段の空きをうめる
+  for (let k = EP_META.length; k % 6; k++) grid.appendChild(h("div", "eptile filler"));   // 最後の段の空きをうめる
   layer.appendChild(grid);
 }
 
@@ -802,6 +855,9 @@ function showSettings() {
   const tog = (label, key) => btn(`${label}：${SAVE.opt[key] ? "ON" : "OFF"}`, "", () => { SAVE.opt[key] = !SAVE.opt[key]; persist(); showSettings(); });
   col.appendChild(tog("ふりがな", "ruby"));
   col.appendChild(tog("自動で 読み上げ", "autoRead"));
+  const SPN = { fast: "はやい", normal: "ふつう", slow: "ゆっくり" }, order = ["fast", "normal", "slow"];
+  col.appendChild(btn(`文字の 速さ：${SPN[SAVE.opt.speed] || "ふつう"}`, "", () => { SAVE.opt.speed = order[(order.indexOf(SAVE.opt.speed) + 1) % 3]; persist(); showSettings(); }));
+  col.appendChild(tog("文字の 音（ぽぽぽ）", "blip"));
   col.appendChild(btn("ふっかつの じゅもんを 見る", "", () => alertBox(`いまの ふっかつの じゅもん<br><b class="pw">${makePassword()}</b><br><small>セーブが 消えたときに 使うよ。メモしておこう！</small>`)));
   col.appendChild(btn("ふっかつの じゅもんを 入れる", "", restoreFromPassword));
   layer.appendChild(col);
