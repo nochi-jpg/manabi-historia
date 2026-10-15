@@ -93,7 +93,7 @@ ruby rt{font-size:.45em}
 .hand .btn{height:64px;font-size:26px}
 
 /* 論破バトル */
-.foe{position:absolute;right:80px;top:150px;width:360px;text-align:center}
+.foe{position:absolute;right:80px;top:170px;width:360px;text-align:center}
 .foe-face{width:300px;height:300px;margin:0 auto;border-radius:50%;background:radial-gradient(#7b5ea7,#2a1a44);border:6px solid #d8c8ff;display:flex;align-items:center;justify-content:center;font-size:170px;box-shadow:0 0 60px #9b6fd1}
 .foe-name{color:#fff;font-size:32px;font-weight:bold;margin-top:10px;text-shadow:0 2px 6px #000}
 .gauge{display:flex;gap:8px;justify-content:center;margin-bottom:16px}
@@ -160,6 +160,39 @@ table.cl{margin:16px auto;border-collapse:collapse;font-size:28px}
 table.cl td{padding:6px 18px;border-bottom:2px solid #ddd;text-align:left}
 table.cl td.st{color:#e0a100}
 .cl-total{font-size:40px;font-weight:bold;color:#c2410c}
+
+/* 影絵の村人 */
+.sil{width:96px;height:112px;color:#2a1610;fill:currentColor}
+.sil .eyes{fill:#ffe9b0;opacity:0}
+.prop.warped{background:rgba(120,60,200,.28);outline-color:#c79bff;animation:wobble 2.6s ease-in-out infinite}
+.prop.warped .sil{filter:drop-shadow(0 0 10px #b26bff) drop-shadow(0 0 4px #e0c2ff)}
+.prop.warped .sil .eyes{opacity:1;fill:#f0d0ff}
+@keyframes wobble{0%,100%{transform:translate(-50%,-50%) rotate(0)}50%{transform:translate(-50%,-50%) rotate(-2deg)}}
+.pitem{position:absolute;top:-14px;right:-18px;width:64px;height:64px;border-radius:50%;background:#fff;border:4px solid var(--ink);font-size:38px;line-height:56px;text-align:center}
+.prop.fixed .pitem{border-color:#10b981}
+#bg.warped svg{filter:hue-rotate(230deg) saturate(1.3) brightness(.8)}
+.warpfx{position:absolute;inset:0;background:radial-gradient(circle,rgba(200,140,255,.0) 0,rgba(140,60,220,.75) 70%);animation:warpin 2.2s forwards}
+@keyframes warpin{0%{opacity:0}25%{opacity:1}100%{opacity:0}}
+.hand-quote{display:inline-block;max-width:1300px;margin-bottom:14px;padding:12px 28px;background:#fff;border:4px solid #c79bff;border-radius:16px;font-size:30px;line-height:1.5;color:var(--ink)}
+.hand-quote b{color:#7b5ea7;margin-right:8px}
+.inbox.wide{width:1400px;max-width:1400px}
+.hv-detail{min-height:120px;font-size:28px;text-align:left;background:#fff;border:3px solid #ddd;border-radius:14px;padding:16px 24px;margin:8px 0 16px}
+.card.sel{outline:6px solid var(--accent)}
+
+/* 紫のオーラ（ゆがめられたキーマン） */
+.port.aura .pface,.witness.aura .w-face{box-shadow:0 0 0 6px #c79bff,0 0 40px 14px #9b4dff;filter:saturate(.7) brightness(.85) hue-rotate(-20deg);animation:auraw 2.4s ease-in-out infinite}
+@keyframes auraw{0%,100%{transform:rotate(0) translateY(0)}50%{transform:rotate(-2deg) translateY(-6px)}}
+/* 議論パート */
+.witness{position:absolute;right:120px;top:170px;width:360px;text-align:center}
+.w-face{width:320px;height:320px;margin:0 auto;border-radius:48px;background:var(--c);border:6px solid var(--ink);display:flex;align-items:center;justify-content:center;font-size:200px}
+.w-name{margin-top:12px;color:#fff;font-size:32px;font-weight:bold;text-shadow:0 2px 6px #000}
+.tbox{position:absolute;left:40px;right:40px;bottom:30px;height:200px;background:rgba(255,250,240,.97);border:6px solid #7b5ea7;border-radius:24px;padding:34px 120px 20px 44px;z-index:6}
+.tbox .tname{background:#7b5ea7}
+.tbox .tcount{position:absolute;right:44px;bottom:16px;font-size:24px;font-weight:bold;color:#7b5ea7}
+.tbox.flip .ttext{animation:fade .35s}
+.tnav{position:absolute;right:40px;bottom:256px;display:flex;gap:16px;z-index:6}
+.tnav .btn{width:240px;height:76px}
+.btn.red{background:#ff4d6d;color:#fff}
 </style>
 </head>
 <body>
@@ -171,6 +204,7 @@ table.cl td.st{color:#e0a100}
   <div id="hud" hidden>
     <div id="hearts"></div>
     <div id="eptitle"></div>
+    <button class="hudbtn" id="cardBtn" hidden>カード</button>
     <button class="hudbtn" id="hintBtn" hidden>ヒント</button>
     <button class="hudbtn" id="menuBtn">ちゅうだん</button>
   </div>
@@ -184,7 +218,7 @@ table.cl td.st{color:#e0a100}
   <div id="modal" class="modal" hidden></div>
   <div id="fx"></div>
 </div>
-<script>window.SCENARIO_SRC={"0": "#プロローグ 時をこえて\n// ＊ではじまる行はナレーション。名前(表情)「セリフ」。表情は ふつう／おどろき／笑顔／怒り\n// 漢字《よみ》でふりがな、【言葉】で強調\n@人物 先生 🧑‍🏫 R\n@背景 現代\n＊2023年　春。\n先生「はい、社会の テストを かえします。……ユウキ、もう少し がんばろうな」\nユウキ(おどろき)「うわっ……30点……」\nユウキ「歴史《れきし》なんて、ぜんぶ 昔の ことでしょ？ 覚えて 何に なるんだよ……」\n@背景 夜\n＊その夜。ユウキは 家の 物置《ものおき》で、古い 懐中時計《かいちゅうどけい》を 見つけた。\nユウキ「なんだろ、この時計。……止まってる？」\n＊カチッ。時計の 針《はり》が、うしろ向きに 回りはじめた。\n本じい(おどろき)「むむっ！ 時が ゆがんでおる！」\nユウキ(おどろき)「わっ！ 教科書《きょうかしょ》が しゃべった！？」\n本じい「わしは 本じい。おまえの 社会の 教科書じゃ。……それより 大変じゃ。だれかが 歴史を 書きかえようと しておる」\n？？？「……歴史なんて、消えて しまえばいい」\nユガミ(怒り)「オレが、ぜんぶ 書きかえてやる」\nユウキ(おどろき)「だ、だれ！？」\n本じい(怒り)「ユウキ、時計に つかまるのじゃ！ ゆがんだ 歴史を 元に もどしに いくぞ！」\n@背景 時空\nユウキ(おどろき)「ええええ！？ ボク、歴史 にがて なんだけど！？」\n＊……ユウキと 本じいは、時の かなたへ 吸いこまれて いった。\n@クリア\n", "1": "#第1話 縄文のむら\n// 【仮台本】教科書PDFを受け取ったら内容を合わせて直す\n@人物 おばあさん 👵 R\n@人物 かりの名人 🧔 R\n@人物 女の子 👧 R\n\n@カード\n- 縄文土器 | 🏺 | なわを ころがして つけた もようが ある 土器。食べ物を にたり、たくわえたり した。 | 縄文土器\n- 土偶 | 🗿 | 土で つくった 人形。めぐみや しあわせを いのって つくられたと 考えられている。 | 土偶\n- 貝塚 | 🐚 | 食べおわった 貝がらや 骨などが すてられて つもった あと。当時の くらしが わかる。 | 貝塚\n- たて穴住居 | 🛖 | 地面を ほり下げて 柱を 立て、屋根を かけた 家。 | たて穴住居\n- 狩り・漁・採集 | 🏹 | 動物を とり、魚や 貝を とり、木の実を 集めて くらしていた。 | 縄文時代の くらし\n- 石器 | 🪨 | 石を 打ちかいたり みがいたり して つくった 道具。 | 石器\n- 丸木舟 | 🛶 | 大きな 木を くりぬいて つくった 舟。海や 川で 漁を した。 | 丸木舟\n- 三内丸山遺跡 | 🏘️ | 青森県に ある、縄文時代の 大きな むらの あと。長い あいだ 人々が くらしていた。 | 三内丸山遺跡\n\n@背景 縄文\n＊――今から 1万年 以上 前。\nユウキ(おどろき)「ここ……どこ？ 森と、とんがった 家が ある……」\n本じい「ここは 縄文《じょうもん》時代の むらじゃ」\nユウキ「じょうもん……？ 聞いたこと あるような、ないような……」\n本じい(笑顔)「まずは むらを 調べて、【キーワードカード】を 集めるのじゃ。人や 物を タップしてみい」\n\n@調査\nヒント：人や 物を タップして 話を 聞くのじゃ。ぜんぶ 調べたら 先へ 進めるぞ\n- 👵 | おばあさん | 18,46 | この 土器で 木の実や 貝を にて 食べるんだよ。もようは なわを ころがして つけるのさ | 縄文土器\n- 🧔 | かりの名人 | 36,34 | 弓矢で シカや イノシシを とるんだ。海では 魚や 貝も とるし、秋は 木の実を 集めるぞ | 狩り・漁・採集\n- 🐚 | 貝がらの山 | 86,58 | ＊食べおわった 貝がらや 動物の 骨が、山のように すてられている…… | 貝塚\n- 🛖 | 家 | 54,52 | 本じい：地面を ほり下げて 柱を 立て、屋根を かけた 家じゃ。中は 意外と あたたかいぞ | たて穴住居\n- 🪨 | 石の道具 | 10,72 | ＊石を 打ちかいたり、みがいたり して つくった 道具だ。 | 石器\n- 👧 | 女の子 | 68,40 | これは 土で つくった 人形だよ。みんなが 元気で いられるように いのるんだって | 土偶\n- 🛶 | 舟 | 72,72 | ＊大きな 木を くりぬいて つくった 舟だ。これで 海へ 漁に 出るらしい。 | 丸木舟\n- 🏘️ | 大きなむら | 88,28 | 本じい：青森県では、何百年も 人が 住みつづけた 大きな むらの あとが 見つかっておる | 三内丸山遺跡\n\nユウキ(笑顔)「カードが そろってきた！」\nユガミ(笑顔)「ふん……楽しそうだな。だが この むらは、もう ゆがめておいた」\nユウキ(おどろき)「えっ！？」\nレキシクイ(怒り)「ギュルルル……」\n本じい(おどろき)「むむっ、むらに この時代には ない物が まぎれこんでおる！ 見つけて、正しい カードを つきつけるのじゃ！」\n\n@まちがい探し\nヒント：教科書で「縄文時代の くらし」の 絵を さがして、見くらべて みるのじゃ\n- ✕ | 🌾 | 田んぼ | 28,60 | 狩り・漁・採集 | 🌰 | 米づくりが 広まるのは、次の 弥生時代じゃ。縄文の 人は 狩りや 漁、木の実あつめで くらして おった\n- ✕ | 🗡️ | 鉄の剣 | 58,44 | 石器 | 🪨 | 鉄の 道具は まだ ない。縄文の 道具は 石や 骨で つくったのじゃ\n- ✕ | 🏯 | お城 | 82,36 | たて穴住居 | 🛖 | お城が できるのは ずっと あとの 時代。縄文の 人は たて穴住居に 住んで おった\n- ○ | 🏺 | 土器 | 44,66\n- ○ | 🐚 | 貝がら | 12,48\n- ○ | 🛶 | 丸木舟 | 72,70\n\nユガミ(怒り)「……チッ。なら、これなら どうだ」\n本じい「ユガミが ウソの 歴史を 言ってくるぞ！ ウソを 見つけて、カードを つきつけるのじゃ！ ほんとうの ことを 言っている ところを えらぶと、ハートが へるから 気をつけい」\n\n@論破バトル\nヒント：ユガミの 言葉を よく 読むのじゃ。集めた カードの 説明と ちがう ところは どこかのう？\n- ホント | 縄文時代は、今から 1万年 以上も 前に はじまった。\n- ウソ | 縄文の 人々は、田んぼで 米を 作って くらしていた。 | 狩り・漁・採集 | ちがう！ 縄文の 人は、狩りや 漁、木の実あつめで 食べ物を 手に入れて いたんだ！\n- ホント | 人々は 土器で 食べ物を にていた。\n---\n- ホント | 人々は 地面を ほり下げた 家に 住んでいた。\n- ウソ | 縄文の 人々は すぐに うつり住むので、大きな むらなんて なかった。 | 三内丸山遺跡 | 青森の 三内丸山遺跡には、長い あいだ 人が 住んだ 大きな むらの あとが あるんだ！\n- ホント | 道具は 石や 骨で つくっていた。\n---\n- ホント | 木を くりぬいた 舟で 海に 出ていた。\n- ウソ | 食べた あとの 貝がらは 海に すてたので、何も のこっていない。 | 貝塚 | 貝塚が のこってる！ そこから 当時の 食べ物や くらしが わかるんだ！\n- ホント | 土偶は、めぐみや しあわせを いのって つくられたと 考えられている。\n\nユガミ(おどろき)「く……っ！ おぼえていろ！」\n＊ゆがみが 消え、むらは 元の すがたに もどった。\n本じい(笑顔)「やったのう、ユウキ！ さいごに、わかったことを まとめるのじゃ」\n\n@まとめ\nヒント：これまで 集めた カードの 説明を 思い出すのじゃ\n文：縄文時代の 人々は、［狩り・漁・採集］で 食べ物を 手に入れ、\n文：［たて穴住居］に 住み、［縄文土器］で にたきを していた。\n\nユウキ(笑顔)「歴史って……ちょっと おもしろい かも」\n本じい(笑顔)「ふぉっふぉっ。その 調子じゃ」\n\n@記憶のかけら 小さな手と大きな手\n＊夕やけの 帰り道。\n＊小さな 手が、大きな 手を ぎゅっと にぎっている。\n男の子「ねえ 母さん、また 昔の 話 して」\n？？？「いいよ。今日は、1万年 前の むらの お話ね」\n＊――ユガミは、だれも いない 森で、ひとり 夕やけを 見ていた。\n\n@クリア\n"};
+<script>window.SCENARIO_SRC={"0": "#プロローグ 時をこえて\n// ＊ではじまる行はナレーション。名前(表情)「セリフ」。表情は ふつう／おどろき／笑顔／怒り\n// 漢字《よみ》でふりがな、【言葉】で強調\n@人物 先生 🧑‍🏫 R\n@背景 現代\n＊2023年　春。\n先生「はい、社会の テストを かえします。……ユウキ、もう少し がんばろうな」\nユウキ(おどろき)「うわっ……30点……」\nユウキ「歴史《れきし》なんて、ぜんぶ 昔の ことでしょ？ 覚えて 何に なるんだよ……」\n@背景 夜\n＊その夜。ユウキは 家の 物置《ものおき》で、古い 懐中時計《かいちゅうどけい》を 見つけた。\nユウキ「なんだろ、この時計。……止まってる？」\n＊カチッ。時計の 針《はり》が、うしろ向きに 回りはじめた。\n本じい(おどろき)「むむっ！ 時が ゆがんでおる！」\nユウキ(おどろき)「わっ！ 教科書《きょうかしょ》が しゃべった！？」\n本じい「わしは 本じい。おまえの 社会の 教科書じゃ。……それより 大変じゃ。だれかが 歴史を 書きかえようと しておる」\n？？？「……歴史なんて、消えて しまえばいい」\nユガミ(怒り)「オレが、ぜんぶ 書きかえてやる」\nユウキ(おどろき)「だ、だれ！？」\n本じい(怒り)「ユウキ、時計に つかまるのじゃ！ ゆがんだ 歴史を 元に もどしに いくぞ！」\n@背景 時空\nユウキ(おどろき)「ええええ！？ ボク、歴史 にがて なんだけど！？」\n＊……ユウキと 本じいは、時の かなたへ 吸いこまれて いった。\n@クリア\n", "1": "#第1話 縄文のむら\n// 【仮台本】教科書PDFを受け取ったら内容を合わせて直す\n// 流れ：オープニング → キーマンがゆがめられる → 調査 → 議論 → ユガミと論破バトル → まとめ → エンディング → 記憶のかけら\n@人物 ミナ 👧 R\n@人物 おばあさん 👵 R\n@人物 木こり 🧔 R\n@人物 かりびと 👨 R\n@人物 女の人 👩 R\n@人物 漁師 👴 R\n\n// 決め手になる一文は、カードの説明に入れておく\n@カード\n- 縄文土器 | 🏺 | 縄文の 人々が つくった、なわの もようの 土器。食べ物を にたり、たくわえたり した。 | 縄文土器\n- 土偶 | 🗿 | 土で つくった 人形。めぐみや しあわせを いのって つくられたと 考えられている。 | 土偶\n- 貝塚 | 🐚 | 食べた あとの 貝がらや 骨が すてられて つもった あと。今も のこっていて、当時の くらしが わかる。 | 貝塚\n- たて穴住居 | 🛖 | 縄文の 人々は、地面を ほり下げて 柱を 立てた たて穴住居に 住んでいた。 | たて穴住居\n- 狩り・漁・採集 | 🏹 | 食べ物は、狩りや 漁、木の実あつめで 自分たちで 手に入れていた。お金で 買う ことは なかった。 | 縄文時代の くらし\n- 石器 | 🪨 | 石を 打ちかいたり みがいたり して つくった 道具。金属の 道具は、まだ なかった。 | 石器\n- 丸木舟 | 🛶 | 大きな 木を くりぬいて つくった 舟。海や 川で 漁を した。 | 丸木舟\n- 三内丸山遺跡 | 🏘️ | 青森県に ある 縄文時代の 大きな むらの あと。長い あいだ、多くの 人々が くらしていた。 | 三内丸山遺跡\n\n// ===== オープニング =====\n@背景 縄文\n＊――今から 1万年 以上 前。\nユウキ(おどろき)「ここ……どこ？ 森と、とんがった 家が ある……」\n本じい「ここは 縄文《じょうもん》時代の むらじゃ。トケイが レキシクイの 気配を たどって 来たようじゃな」\nミナ(おどろき)「だ、だれ！？ 見たことない かっこう……！」\n本じい(笑顔)「おどろかせて すまんのう。わしらは 旅の ものじゃ。この子は ユウキ。そなたの 名は？」\nミナ(おどろき)「本が しゃべった……！ わたしは ミナ。この むらに 住んでるの」\nミナ(笑顔)「旅の 人なら、むらを 案内して あげる！ 今夜は 木の実の スープよ」\nユウキ(笑顔)「やった！ ありがとう、ミナ！」\nユガミ(笑顔)「……ずいぶん 楽しそうだな」\nユウキ(おどろき)「あっ、おまえは……ユガミ！」\nユガミ(怒り)「この むらの 歴史も、オレが 書きかえる。まずは そこの 娘からだ」\nレキシクイ(怒り)「ギュルルル……！」\n\n@ゆがめる ミナ\n\nミナ「……むら？ こんな むら、もう いらないわ。すてて しまいましょう」\nユウキ(おどろき)「ミナ！？ どうしちゃったの！？」\n本じい(おどろき)「レキシクイに 記憶を 食われて、まちがった 歴史を 信じこまされて おるのじゃ！」\n本じい「このままでは、むらの 歴史が 変わって しまう。むらの 人に 話を 聞いて、正しい 歴史の【キーワードカード】を 集めるのじゃ！」\n\n// ===== 調査パート =====\n@調査\nヒント：人や 物を タップして 話を 聞くのじゃ。ぜんぶ 調べたら 先へ 進めるぞ\n- 👵 | おばあさん | 16,48 | この 土器で 木の実や 貝を にるんだよ。もようは なわを ころがして つけるのさ | 縄文土器\n- 🧔 | 木こり | 32,40 | 石を みがいて つくった おので、木を 切るんだ | 石器\n- 👨 | かりびと | 46,30 | 弓矢で シカや イノシシを とるんだ。秋は みんなで 木の実を 集めるぞ | 狩り・漁・採集\n- 👩 | 女の人 | 62,44 | 食べた あとの 貝がらは、むらの はしに すてるの。もう 山みたいよ | 貝塚\n- 👴 | 漁師 | 76,66 | 大きな 木を くりぬいた 舟で、海へ 魚を とりに 行くんじゃ | 丸木舟\n- 🗿 | 土の人形 | 90,50 | ＊ミナの 家の 前に、土で つくった 人形が かざってある。しあわせを いのる ものらしい。 | 土偶\n- 🛖 | 家 | 52,64 | 本じい：地面を ほり下げて 柱を 立て、屋根を かけた 家じゃ。中は 意外と あたたかいぞ | たて穴住居\n- 🏘️ | 大きなむら | 88,26 | 本じい：青森県では、長い あいだ 人が 住みつづけた 大きな むらの あとが 見つかっておる | 三内丸山遺跡\n\nユウキ(笑顔)「カードが そろった！ ミナの ところへ 行こう！」\n本じい「よいか、ユウキ。ミナの 話を よく 聞くのじゃ。カードの 説明と 食いちがう ところに、カードを つきつけるのじゃ」\n本じい「【つぎ】【まえ】で 話を 何度でも 聞けるぞ。まちがった カードを 出すと、ハートが へるから 気をつけい」\n\n// ===== 議論パート =====\n@議論 ミナ\nヒント：【カード】ボタンで 説明を 見直すのじゃ。証言と 食いちがう 一文が かくれておるぞ\n証言：むらの くらし\n- ふつう | わたしたちの むらは、海と 森の 近くに あるの。\n- 矛盾 | 食べ物は、となりの むらから お金を はらって 買うのよ。 | 狩り・漁・採集 | 待って！ 食べ物は、狩りや 漁、木の実あつめで 自分たちで 手に入れてたんだ！ | えっ……お金……？ そんなもの、見たことも ないわ……\n- ふつう | みんなで 力を 合わせて くらして いるわ。\n---\n証言：むらの 道具\n- ふつう | 土器で 木の実や 貝を にて 食べるの。\n- 矛盾 | 木を 切るときは、鉄の おのを 使うわ。 | 石器 | 鉄の おの？ この時代の 道具は 石器だよ！ 金属の 道具は、まだ ないんだ！ | そうだ……おじさんの おのは、石を みがいた ものだった……\n- ふつう | 舟で 海に 出て、魚を とるの。\n---\n証言：むらの これから\n- ふつう | 家は、地面を ほり下げて つくるのよ。\n- 矛盾 | でも、むらは すぐに すてるの。大きな むらなんて、どこにも ないわ。 | 三内丸山遺跡 | 青森には、長い あいだ 多くの 人が くらした 大きな むらの あとが あるんだ！ | ……そうだ。わたし、この むらが 大好きなの……！\n- ふつう | 土偶に、みんなの しあわせを いのるの。\n\n@もどす ミナ\nミナ(笑顔)「ユウキ……わたし、どうして あんな ことを……。思い出させて くれて、ありがとう！」\nユガミ(怒り)「……チッ。なら、オレが 直接 相手を してやる！」\n本じい「ユガミが ウソの 歴史を 言ってくるぞ！ ウソだと 思ったら、矛盾する カードを つきつけるのじゃ！」\n\n// ===== ユガミと論破バトル =====\n@論破バトル\nヒント：ユガミの 言葉と、カードの 説明を 見くらべるのじゃ\n- ホント | 縄文時代は、今から 1万年 以上も 前に はじまった。\n- ウソ | 縄文の 人々は 土器を 知らず、食べ物は いつも 生で 食べていた。 | 縄文土器 | 縄文土器で 食べ物を にていたんだ！ 生で 食べてばかり じゃない！\n- ホント | 人々は 弓矢で 動物を とっていた。\n---\n- ホント | 人々は 木を くりぬいた 舟で 海に 出ていた。\n- ウソ | 縄文の 人々は、木の 上に 家を つくって 住んでいた。 | たて穴住居 | ちがう！ 地面を ほり下げて 柱を 立てた、たて穴住居に 住んでいたんだ！\n- ホント | 道具は、石を 打ちかいたり みがいたり して つくった。\n---\n- ホント | 土偶は、めぐみや しあわせを いのって つくられたと 考えられている。\n- ホント | 人々は 秋に 木の実を 集めていた。\n- ウソ | 食べた あとの 貝がらは、すぐ 消えて なくなった。何も のこっていない。 | 貝塚 | 貝塚が 今も のこってる！ そこから 当時の くらしが わかるんだ！\n\nユガミ(おどろき)「く……っ！ おぼえていろ！」\n＊ユガミと レキシクイは、ゆがみの 中へ 消えて いった。\n本じい(笑顔)「やったのう、ユウキ！ さいごに、わかったことを まとめるのじゃ」\n\n@まとめ\nヒント：これまで 集めた カードの 説明を 思い出すのじゃ\n文：縄文時代の 人々は、［狩り・漁・採集］で 食べ物を 手に入れ、\n文：［たて穴住居］に 住み、［縄文土器］で にたきを していた。\n\n// ===== エンディング =====\nミナ(笑顔)「ユウキ、本じい、木の実の スープ、できたよ！ いっしょに 食べよう！」\nユウキ(笑顔)「おいしい！ 歴史って……ちょっと おもしろい かも」\n本じい(笑顔)「ふぉっふぉっ。その 調子じゃ」\n＊そのとき、ユウキの トケイが かすかに 光りはじめた。\n本じい「むっ、トケイが 次の 気配を 感じとったようじゃ」\nミナ(笑顔)「行っちゃうの？ ……また いつか、会えると いいな」\nユウキ(笑顔)「うん。ミナ、元気でね！」\n\n@記憶のかけら 小さな手と大きな手\n＊夕やけの 帰り道。\n＊小さな 手が、大きな 手を ぎゅっと にぎっている。\n男の子「ねえ 母さん、また 昔の 話 して」\n？？？「いいよ。今日は、1万年 前の むらの お話ね」\n＊――ユガミは、だれも いない 森で、ひとり 夕やけを 見ていた。\n\n@クリア\n"};
 window.UNLOCK_HASHES=["", "guk5ha", "1bkbimw", "1hvz4dp", "10md6pu", "1n5ssq8", "qcs91m", "fn6ikj", "1yk1b7w", "1qgo0mv", "15xtvy9", "60fivj", "ej0gnr", "gytpk5", "fc8bof", "jf3yf7", "fnlhkd", "1xobrck", "116olay", "1w4k0ql", "17snag4", "1lnx7l4"];</script>
 <script>/* 影絵背景（すべてコードで描く） */
 const BG = (() => {
@@ -392,6 +426,10 @@ function parseScript(no, src) {
         case "まとめ": add({ t: "sum", lines: [], hint: "" }); break;
         case "記憶のかけら": add({ t: "frag", title: arg, lines: [] }); break;
         case "クリア": ep.nodes.push({ t: "clear" }); break;
+        case "ゆがみ": ep.nodes.push({ t: "warp", text: arg || "歴史が ゆがんだ！" }); break;
+        case "ゆがめる": ep.nodes.push({ t: "warp", text: "歴史が ゆがんだ！", who: arg }); break;
+        case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
+        case "議論": add({ t: "testi", who: arg, rounds: [{ title: "", lines: [] }], hint: "" }); break;
         default: console.warn("不明な命令", cmd);
       }
       continue;
@@ -400,12 +438,15 @@ function parseScript(no, src) {
       if (block.t === "frag") { block.lines.push(parseDialog(l) || { who: "", expr: "", text: l.replace(/^-\s*/, "") }); continue; }
       if (/^ヒント[：:]/.test(l)) { block.hint = l.replace(/^ヒント[：:]\s*/, ""); continue; }
       if (block.t === "battle" && /^-{3,}$/.test(l)) { block.rounds.push([]); continue; }
+      if (block.t === "testi" && /^-{3,}$/.test(l)) { block.rounds.push({ title: "", lines: [] }); continue; }
+      if (block.t === "testi" && /^証言[：:]/.test(l)) { block.rounds[block.rounds.length - 1].title = l.replace(/^証言[：:]\s*/, ""); continue; }
       if (block.t === "sum" && /^文[：:]/.test(l)) { block.lines.push(l.replace(/^文[：:]\s*/, "")); continue; }
       if (/^[-・]\s/.test(l)) {
         const p = split(l.replace(/^[-・]\s*/, ""));
         if (block.t === "cards") { const [name, icon, desc, kw] = p; CARDS[name] = { name, icon, desc, kw: kw || name, ep: no }; ep.cards.push(name); }
         else if (block.t === "inv") { const [icon, name, pos, line, card] = p; block.items.push({ icon, name, pos: pos.split(",").map(Number), line, card }); }
-        else if (block.t === "spot") { const [kind, icon, name, pos, card, fixIcon, explain] = p; block.items.push({ bad: /[✕×xX]/.test(kind), icon, name, pos: pos.split(",").map(Number), card, fixIcon, explain }); }
+        else if (block.t === "spot") { const [kind, icon, name, pos, item, quote, card, fixItem, explain] = p; block.items.push({ bad: /[✕×xX]/.test(kind), icon, name, pos: pos.split(",").map(Number), item, quote, card, fixItem, explain }); }
+        else if (block.t === "testi") { const [kind, text, card, retort, reaction] = p; block.rounds[block.rounds.length - 1].lines.push({ lie: /矛盾|ウソ/.test(kind), text, card, retort, reaction }); }
         else if (block.t === "battle") { const [kind, text, card, reply] = p; block.rounds[block.rounds.length - 1].push({ lie: /ウソ/.test(kind), text, card, reply }); }
         continue;
       }
@@ -418,13 +459,28 @@ function parseScript(no, src) {
 }
 function charOf(name, ep) { return (ep && ep.chars[name]) || CHARS[name] || { icon: "🙂", side: "R", col: "#6c8ead" }; }
 
+/* ---------- 村人のシルエット（影絵） ---------- */
+const SIL = {
+  "おとこ": '<circle cx="50" cy="26" r="14"/><path d="M28 46 Q50 38 72 46 L76 98 L63 98 L61 136 L53 136 L50 106 L47 136 L39 136 L37 98 L24 98Z"/>',
+  "おんな": '<circle cx="50" cy="12" r="8"/><circle cx="50" cy="28" r="13"/><path d="M34 46 Q50 40 66 46 L80 134 L20 134Z"/>',
+  "としより": '<circle cx="42" cy="38" r="13"/><path d="M30 54 Q46 46 62 56 L70 132 L28 132 Q24 90 30 54Z"/><path d="M74 70 L82 134" stroke="currentColor" stroke-width="5"/><path d="M60 64 L76 72" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>',
+  "こども": '<circle cx="50" cy="56" r="13"/><path d="M34 74 Q50 68 66 74 L70 112 L60 112 L58 136 L52 136 L50 118 L48 136 L42 136 L40 112 L30 112Z"/>',
+};
+const SIL_EYES = { "おとこ": [44, 56, 25], "おんな": [44, 56, 27], "としより": [37, 47, 37], "こども": [45, 55, 55] };
+function iconHTML(icon) {
+  const m = /^人[:：](.+)$/.exec(icon || "");
+  if (!m) return `<div class="picon">${icon}</div>`;
+  const t = SIL[m[1]] ? m[1] : "おとこ", [x1, x2, y] = SIL_EYES[t];
+  return `<svg class="sil" viewBox="0 0 100 140">${SIL[t]}<g class="eyes"><circle cx="${x1}" cy="${y}" r="3.2"/><circle cx="${x2}" cy="${y}" r="3.2"/></g></svg>`;
+}
+
 /* ---------- 画面の基本部品 ---------- */
 let stage, layer, bgEl, talk, catcher, modal, fx, hud;
 function fit() {
   const s = Math.min(innerWidth / 1600, innerHeight / 900);
   stage.style.transform = `translate(-50%,-50%) scale(${s})`;
 }
-function setBg(key) { bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key)); }
+function setBg(key) { bgEl.classList.remove("warped"); bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key)); }
 function clearLayer() { layer.innerHTML = ""; layer.className = ""; }
 const btn = (label, cls, on) => { const b = h("button", "btn " + (cls || ""), label); b.onclick = on; return b; };
 
@@ -435,7 +491,10 @@ function showPortrait(name, expr, ep) {
   if (!name) { pl.classList.add("dim"); pr.classList.add("dim"); return; }
   const c = charOf(name, ep), side = c.side;
   const el = side === "L" ? pl : pr, other = side === "L" ? pr : pl;
+  const aura = !!(S && S.aura && S.aura.includes(name));
+  if (aura) expr = "ふつう";   // ゆがめられている間は「ふつう」＋紫のオーラ
   el.innerHTML = `<div class="pface" style="--c:${c.col}">${c.icon}</div><div class="pname">${esc(name)}</div>` + (EXPR[expr] ? `<div class="pexpr">${EXPR[expr]}</div>` : "");
+  el.classList.toggle("aura", aura);
   el.hidden = false; el.classList.remove("dim"); other.classList.add("dim");
   ports[side] = name;
 }
@@ -459,7 +518,7 @@ async function say(who, expr, text, ep, opt = {}) {
   talk.querySelector(".ttext").innerHTML = fmt(text);
   talk.querySelector(".ttext").classList.toggle("narr", !who);
   talk.querySelector(".speak").onclick = e => { e.stopPropagation(); speak(text); };
-  if (!opt.dark) showPortrait(who, expr, ep);
+  if (!opt.dark && !opt.noPort) showPortrait(who, expr, ep);
   if (SAVE.opt.autoRead) speak(text);
   await waitAdvance();
   stopSpeak();
@@ -493,7 +552,7 @@ function showCardGet(name) {
   });
 }
 /* 手札からカードを選ぶ。キャンセルで null */
-function chooseCard(title, correct) {
+function chooseCard(title, correct, quote) {
   return new Promise(res => {
     let list = S.hand.slice();
     if (S.narrow && correct) {
@@ -502,11 +561,12 @@ function chooseCard(title, correct) {
       S.narrow = false; renderHud();
     }
     const box = h("div", "hand");
+    if (quote) box.appendChild(h("div", "hand-quote", `<b>${esc(quote.who)}</b>「${fmt(quote.text)}」`));
     box.appendChild(h("div", "hand-title", fmt(title)));
     const row = h("div", "hand-row");
     list.forEach(n => { const e = cardEl(n); e.onclick = () => { closeModal(); res(n); }; row.appendChild(e); });
     box.appendChild(row);
-    box.appendChild(btn("やめる", "sub", () => { closeModal(); res(null); }));
+    box.appendChild(btn("もどる", "sub", () => { closeModal(); res(null); }));
     openModal(box, "bottom");
   });
 }
@@ -527,6 +587,24 @@ function alertBox(html) {
   return new Promise(res => { const box = h("div", "inbox"); box.appendChild(h("div", "in-msg", html)); box.appendChild(btn("OK", "", () => { closeModal(); res(); })); openModal(box); });
 }
 
+/* 手札をいつでも見る（法廷記録） */
+function showHandViewer() {
+  if (!S || S.busy || !modal.hidden || !talk.hidden) return;
+  const box = h("div", "inbox wide");
+  box.appendChild(h("div", "in-title", `もっている カード（${S.hand.length}まい）`));
+  const detail = h("div", "hv-detail", S.hand.length ? "カードを タップすると 説明が 見られるよ" : "まだ カードを もっていないよ");
+  const row = h("div", "hand-row");
+  S.hand.forEach(n => {
+    const e = cardEl(n);
+    e.onclick = () => { row.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel");
+      const c = CARDS[n]; detail.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">🔍 調べる キーワード：<b>${esc(c.kw)}</b></div>`; };
+    row.appendChild(e);
+  });
+  box.appendChild(row); box.appendChild(detail);
+  box.appendChild(btn("とじる", "sub", closeModal));
+  openModal(box);
+}
+
 /* ---------- プレイ中の状態 ---------- */
 let S = null;   // { no, ep, idx, hearts, hand, hint2, failed, narrow, hintLv, node }
 function renderHud() {
@@ -535,10 +613,11 @@ function renderHud() {
   $("#hearts").innerHTML = [0, 1, 2].map(i => `<span class="heart${i < S.hearts ? "" : " lost"}">${i < S.hearts ? "❤️" : "🤍"}</span>`).join("");
   $("#eptitle").textContent = S.no === 0 ? S.ep.title : `第${S.no}話　${S.ep.title.replace(/^第\d+話\s*/, "")}`;
   const hb = $("#hintBtn"), n = S.node;
-  const interactive = n && ["inv", "spot", "battle", "sum"].includes(n.t);
+  const interactive = n && ["inv", "spot", "testi", "battle", "sum"].includes(n.t);
   hb.hidden = !interactive;
   hb.textContent = S.narrow ? "しぼりこみ中" : (S.hintLv === 0 ? "ヒント" : (n && n.t !== "inv" ? "しぼる ★−1" : "ヒント"));
   hb.disabled = S.narrow;
+  $("#cardBtn").hidden = !S.hand.length;
 }
 async function loseHeart(who, expr, msg) {
   S.hearts = Math.max(0, S.hearts - 1); shake(); renderHud();
@@ -570,7 +649,7 @@ function runInv(n) {
     const upd = () => { info.innerHTML = `🔍 むらを 調べよう（のこり ${n.items.length - got.size}）`; };
     upd();
     n.items.forEach(it => {
-      const e = h("button", "prop", `<div class="picon">${it.icon}</div><div class="plabel">${esc(it.name)}</div>`);
+      const e = h("button", "prop", `${iconHTML(it.icon)}<div class="plabel">${esc(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       e.onclick = async () => {
         if (S.busy) return; S.busy = true;
@@ -581,7 +660,7 @@ function runInv(n) {
           else if (m && (CHARS[m[1]] || S.ep.chars[m[1]])) { who = m[1]; text = m[2]; }
           else if (!S.ep.chars[who] && !CHARS[who]) who = "";
           await say(who, "ふつう", text, S.ep); hideTalk(); hidePortraits();
-          if (it.card && !S.hand.includes(it.card)) { S.hand.push(it.card); await showCardGet(it.card); }
+          if (it.card && !S.hand.includes(it.card)) { S.hand.push(it.card); renderHud(); await showCardGet(it.card); }
           got.add(it.name); e.classList.add("done"); upd();
         } catch (er) { S.busy = false; return rej(er); }
         S.busy = false;
@@ -593,43 +672,43 @@ function runInv(n) {
   });
 }
 
-/* ---------- 場面：まちがい探し ---------- */
+/* ---------- 場面：まちがい探し（証言につきつける） ---------- */
 function runSpot(n) {
   return new Promise((res, rej) => {
     clearLayer(); hideTalk(); hidePortraits();
-    banner("ゆがみを さがせ！");
-    const fixed = new Set(), ok = new Set();
+    bgEl.classList.add("warped");
+    const fixed = new Set();
     const bads = n.items.filter(i => i.bad).length;
     const info = h("div", "guide"); layer.appendChild(info);
-    const upd = () => { info.innerHTML = `⚠️ この時代に ない物を 見つけて、カードを つきつけよう（のこり ${bads - fixed.size}）`; };
+    const upd = () => { info.innerHTML = `⚠️ ゆがんだ 証言を 見やぶれ！（のこり ${bads - fixed.size}）`; };
     upd();
     n.items.forEach((it, i) => {
-      const e = h("button", "prop" + (it.bad ? " warp" : ""), `<div class="picon">${it.icon}</div><div class="plabel">${esc(it.name)}</div>`);
+      const e = h("button", "prop warped", `${iconHTML(it.icon)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${esc(it.name)}</div>`);
       placeAt(e, it.pos);
       e.onclick = async () => {
-        if (S.busy || fixed.has(i) || ok.has(i)) return; S.busy = true;
+        if (S.busy || fixed.has(i)) return; S.busy = true;
         try {
-          if (!it.bad) {
-            ok.add(i); e.classList.add("checked");
-            await loseHeart("本じい", "おどろき", `「${it.name}」は この時代に あっても おかしくないのじゃ`);
-          } else {
-            const pick = await chooseCard(`「${it.name}」は この時代に ない物だ！ 正しいのは どれ？`, it.card);
-            if (pick === it.card) {
-              fixed.add(i); bigText("ただしい歴史に もどった！", "good");
-              e.classList.remove("warp"); e.classList.add("fixed");
-              e.querySelector(".picon").textContent = it.fixIcon || "✨";
-              e.querySelector(".plabel").textContent = it.card;
-              await sleep(500);
-              if (it.explain) await say("本じい", "笑顔", it.explain, S.ep);
-              upd();
-            } else if (pick) {
-              await loseHeart("ユガミ", "笑顔", "ハハハ、そのカードでは ゆがみは 直らないぞ");
-            }
+          const pick = await chooseCard("この 証言と 矛盾する カードを つきつけろ！", it.bad ? it.card : null, { who: it.name, text: it.quote });
+          if (pick && it.bad && pick === it.card) {
+            fixed.add(i); bigText("矛盾 はっけん！", "ronpa"); shake(); await sleep(900);
+            e.classList.remove("warped"); e.classList.add("fixed");
+            const pi = e.querySelector(".pitem"); if (pi && it.fixItem) pi.textContent = it.fixItem;
+            if (it.explain) await say("本じい", "笑顔", it.explain, S.ep);
+            upd();
+          } else if (pick && it.bad) {
+            await loseHeart("ユガミ", "笑顔", "ハハハ、そのカードでは 矛盾して いないぞ！");
+          } else if (pick) {
+            await loseHeart("本じい", "おどろき", "むむ……その 証言は、この時代と 矛盾して いないようじゃ");
           }
           hideTalk(); hidePortraits();
         } catch (er) { S.busy = false; return rej(er); }
         S.busy = false;
-        if (fixed.size >= bads) { await sleep(400); res(); }
+        if (fixed.size >= bads) {
+          await sleep(300);
+          layer.querySelectorAll(".prop.warped").forEach(p => p.classList.remove("warped"));
+          bgEl.classList.remove("warped"); bigText("ただしい 歴史に もどった！", "good"); await sleep(1300);
+          res();
+        }
       };
       layer.appendChild(e);
     });
@@ -649,17 +728,15 @@ function runBattle(n) {
       foe.prepend(gauge); layer.appendChild(foe);
       layer.appendChild(h("div", "guide", `⚔️ ユガミの ウソを 見やぶれ！（${r + 1} / ${total}）`));
       const list = h("div", "claims");
-      const checked = new Set();
       n.rounds[r].forEach((c, i) => {
         const e = h("button", "claim", `<span class="q">「</span>${fmt(c.text)}<span class="q">」</span>`);
         e.onclick = async () => {
-          if (S.busy || checked.has(i)) return; S.busy = true;
+          if (S.busy) return; S.busy = true;
           try {
-            if (!c.lie) {
-              checked.add(i); e.classList.add("checked");
+            const pick = await chooseCard("ウソだと 思ったら、矛盾する カードを つきつけろ！", c.lie ? c.card : null, { who: "ユガミ", text: c.text });
+            if (pick && !c.lie) {
               await loseHeart("ユガミ", "笑顔", "フフ……それは ほんとうの ことだ。");
-            } else {
-              const pick = await chooseCard("この ウソに つきつける カードは？", c.card);
+            } else if (pick) {
               if (pick === c.card) {
                 bigText("論破！", "ronpa"); shake(); await sleep(900);
                 if (c.reply) await say("ユウキ", "怒り", c.reply, S.ep);
@@ -667,7 +744,7 @@ function runBattle(n) {
                 if (r >= total) { S.busy = false; hideTalk(); return res(); }
                 await say("ユガミ", "怒り", "くっ……まだだ！", S.ep);
                 S.busy = false; return draw();
-              } else if (pick) {
+              } else {
                 await loseHeart("ユガミ", "笑顔", "ハハハ！ そんな カードで オレの 歴史は くずせないぞ！");
               }
             }
@@ -715,6 +792,81 @@ function runSum(n) {
   });
 }
 
+/* ---------- 演出：歴史がゆがむ ---------- */
+async function runWarp(n) {
+  hideTalk();
+  if (n.who && !S.aura.includes(n.who)) S.aura.push(n.who);
+  const f = h("div", "warpfx"); fx.appendChild(f);
+  shake(); await sleep(400); bgEl.classList.add("warped"); shake();
+  banner(n.text); await sleep(1900); f.remove();
+}
+
+async function runRestore(n) {
+  S.aura = S.aura.filter(x => x !== n.who);
+  bgEl.classList.remove("warped");
+  bigText("ただしい 歴史に もどった！", "good"); await sleep(1200);
+}
+
+/* ---------- 場面：議論（証言に矛盾をつきつける） ---------- */
+function runTesti(n) {
+  return new Promise((res, rej) => {
+    const who = n.who, c = charOf(who, S.ep);
+    let r = 0, i = 0;
+    const draw = (first) => {
+      clearLayer(); hideTalk(); hidePortraits();
+      layer.className = "testi";
+      const aura = S.aura.includes(who);
+      layer.appendChild(h("div", "witness" + (aura ? " aura" : ""), `<div class="w-face" style="--c:${c.col}">${c.icon}</div><div class="w-name">${esc(who)}</div>`));
+      const round = n.rounds[r];
+      layer.appendChild(h("div", "guide", `🗣️ 証言「${esc(round.title || "")}」（${r + 1} / ${n.rounds.length}）`));
+      const box = h("div", "tbox");
+      box.innerHTML = `<div class="tname">${esc(who)}</div><div class="ttext"></div><div class="tcount"></div>`;
+      const sp = h("button", "speak", "🔊"); box.appendChild(sp);
+      layer.appendChild(box);
+      const nav = h("div", "tnav");
+      const prev = btn("◀ まえ", "sub", () => go(-1));
+      const pres = btn("つきつける！", "red", present);
+      const next = btn("つぎ ▶", "sub", () => go(1));
+      nav.append(prev, pres, next); layer.appendChild(nav);
+      const show = () => {
+        const line = round.lines[i];
+        box.querySelector(".ttext").innerHTML = fmt(line.text);
+        box.querySelector(".tcount").textContent = `${i + 1} / ${round.lines.length}`;
+        sp.onclick = () => speak(line.text);
+        if (SAVE.opt.autoRead) speak(line.text);
+        box.classList.remove("flip"); void box.offsetWidth; box.classList.add("flip");
+      };
+      const go = d => {
+        if (S.busy) return;
+        i = (i + d + round.lines.length) % round.lines.length; show();
+      };
+      async function present() {
+        if (S.busy) return; S.busy = true;
+        const line = round.lines[i];
+        try {
+          const pick = await chooseCard("この 証言と 矛盾する カードを つきつけろ！", line.lie ? line.card : null, { who, text: line.text });
+          if (pick && line.lie && pick === line.card) {
+            stopSpeak(); bigText("矛盾 はっけん！", "ronpa"); shake(); await sleep(1000);
+            if (line.retort) await say("ユウキ", "怒り", line.retort, S.ep);
+            if (line.reaction) await say(who, "おどろき", line.reaction, S.ep, { noPort: true });
+            r++; i = 0;
+            S.busy = false;
+            if (r >= n.rounds.length) { hideTalk(); return res(); }
+            return draw();
+          } else if (pick) {
+            await loseHeart("本じい", "おどろき", line.lie ? "むむ……その カードでは、矛盾を 説明 できんようじゃ" : "むむ……その 証言には、おかしな ところは ないようじゃ");
+            hideTalk(); hidePortraits();
+          }
+        } catch (er) { S.busy = false; return rej(er); }
+        S.busy = false;
+      }
+      show();
+      if (first) banner(`〜 証言 〜<br>${esc(round.title || "")}`);
+    };
+    draw(true);
+  });
+}
+
 /* ---------- 場面：記憶のかけら ---------- */
 async function runFrag(n) {
   clearLayer(); hideTalk(); hidePortraits(); hud.hidden = true;
@@ -728,21 +880,21 @@ async function runFrag(n) {
 
 /* ---------- 話の進行 ---------- */
 function checkpoint() {
-  SAVE.resume = { no: S.no, idx: S.idx, hearts: S.hearts, hand: S.hand.slice(), hint2: S.hint2, failed: S.failed };
+  SAVE.resume = { no: S.no, idx: S.idx, hearts: S.hearts, hand: S.hand.slice(), aura: S.aura.slice(), hint2: S.hint2, failed: S.failed };
   persist();
 }
 async function playEpisode(no, resume) {
   const ep = EPS[no];
-  S = { no, ep, idx: 0, hearts: 3, hand: [], hint2: false, failed: false, narrow: false, hintLv: 0, node: null, busy: false };
+  S = { no, ep, idx: 0, hearts: 3, hand: [], aura: [], hint2: false, failed: false, narrow: false, hintLv: 0, node: null, busy: false };
   if (resume && SAVE.resume && SAVE.resume.no === no) Object.assign(S, SAVE.resume, { no, ep });
   // 再開時は直前の背景を復元
   let bg = EP_META[no][1];
   for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg") bg = ep.nodes[i].bg;
-  setBg(bg); clearLayer(); renderHud();
+  setBg(bg); if (S.aura.length) bgEl.classList.add("warped"); clearLayer(); renderHud();
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
     S.node = n; S.hintLv = 0; S.narrow = false; renderHud();
-    const interactive = ["inv", "spot", "battle", "sum", "frag"].includes(n.t);
+    const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
     try {
@@ -754,6 +906,9 @@ async function playEpisode(no, resume) {
         case "battle": await runBattle(n); break;
         case "sum": await runSum(n); break;
         case "frag": await runFrag(n); break;
+        case "warp": await runWarp(n); break;
+        case "restore": await runRestore(n); break;
+        case "testi": await runTesti(n); break;
         case "clear": return finishEpisode();
       }
     } catch (e) {
@@ -771,6 +926,7 @@ async function playEpisode(no, resume) {
   return finishEpisode();
 }
 function finishEpisode() {
+  bgEl.classList.remove("warped");
   hideTalk(); hidePortraits(); clearLayer();
   const no = S.no;
   let star = 1;
@@ -956,6 +1112,7 @@ function boot() {
   stage = $("#stage"); layer = $("#layer"); bgEl = $("#bg"); talk = $("#talk"); catcher = $("#catch"); modal = $("#modal"); fx = $("#fx"); hud = $("#hud");
   for (const k in (window.SCENARIO_SRC || {})) EPS[k] = parseScript(Number(k), window.SCENARIO_SRC[k]);
   $("#hintBtn").onclick = onHint;
+  $("#cardBtn").onclick = showHandViewer;
   $("#menuBtn").onclick = async () => {
     if (!S || S.busy) return;
     const box = h("div", "inbox"); box.appendChild(h("div", "in-msg", "おはなしを ちゅうだんしますか？<br><small>場面の はじめから 再開できます</small>"));
