@@ -312,9 +312,12 @@ async function onHint() {
       S.hintLv = 1;
     } else {
       S.narrow = true; S.hint2 = true;
-      await say("本じい", "ふつう", "よし、次に カードを えらぶとき、3まいに しぼってやろう。（★が 1つ へるぞ）", S.ep);
+      if (S.onHint2) {   // 議論・論破：あやしい ところを 教えてから しぼる
+        await say("本じい", "ふつう", "しかたないのう。あやしい ところに しるしを つけて、カードも 3まいに しぼってやろう。（★が 1つ へるぞ）", S.ep);
+        S.onHint2();
+      } else await say("本じい", "ふつう", "よし、次に カードを えらぶとき、3まいに しぼってやろう。（★が 1つ へるぞ）", S.ep);
     }
-  } finally { S.busy = false; hideTalk(); renderHud(); }
+  } finally { S.busy = false; hideTalk(); hidePortraits(); renderHud(); }
 }
 
 /* ---------- 場面：調査 ---------- */
@@ -406,6 +409,8 @@ function runBattle(n) {
       foe.prepend(gauge); layer.appendChild(foe);
       layer.appendChild(h("div", "guide", `⚔️ ユガミの ウソを 見やぶれ！（${r + 1} / ${total}）`));
       const list = h("div", "claims");
+      const claimEls = [];
+      S.onHint2 = () => { const k = n.rounds[r].findIndex(x => x.lie); if (claimEls[k]) claimEls[k].classList.add("suspect"); };
       n.rounds[r].forEach((c, i) => {
         const e = h("button", "claim", `<span class="q">「</span>${fmt(c.text)}<span class="q">」</span>`);
         e.onclick = async () => {
@@ -430,7 +435,7 @@ function runBattle(n) {
           } catch (er) { S.busy = false; return rej(er); }
           S.busy = false;
         };
-        list.appendChild(e);
+        claimEls.push(e); list.appendChild(e);
       });
       layer.appendChild(list);
     };
@@ -510,6 +515,7 @@ function runTesti(n) {
         const line = round.lines[i];
         box.querySelector(".ttext").innerHTML = fmt(line.text);
         box.querySelector(".tcount").textContent = `${i + 1} / ${round.lines.length}`;
+        box.classList.toggle("suspect", suspect && i === lieIdx);
         sp.onclick = () => speak(line.text);
         if (SAVE.opt.autoRead) speak(line.text);
         box.classList.remove("flip"); void box.offsetWidth; box.classList.add("flip");
@@ -518,6 +524,9 @@ function runTesti(n) {
         if (S.busy) return;
         i = (i + d + round.lines.length) % round.lines.length; show();
       };
+      const lieIdx = round.lines.findIndex(x => x.lie);
+      let suspect = false;
+      S.onHint2 = () => { suspect = true; i = lieIdx; show(); };
       async function present() {
         if (S.busy) return; S.busy = true;
         const line = round.lines[i];
@@ -571,7 +580,7 @@ async function playEpisode(no, resume) {
   setBg(bg); if (S.aura.length) bgEl.classList.add("warped"); clearLayer(); renderHud();
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
-    S.node = n; S.hintLv = 0; S.narrow = false; renderHud();
+    S.node = n; S.hintLv = 0; S.narrow = false; S.onHint2 = null; renderHud();
     const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
