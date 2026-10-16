@@ -22,7 +22,7 @@ const EP_INFO = {
   8: ["平安", "1167年", "平清盛"], 9: ["鎌倉", "1192年", "源頼朝"], 10: ["鎌倉", "1274年", "北条時宗"], 11: ["室町", "1400年ごろ", "足利義政"],
   12: ["戦国", "1575年", "織田信長"], 13: ["安土桃山", "1600年", "豊臣秀吉"], 14: ["江戸", "1635年", "徳川家光"], 15: ["江戸", "1774年", "杉田玄白"],
   16: ["明治", "1868年", "西郷隆盛"], 17: ["明治", "1889年", "福沢諭吉"], 18: ["明治", "1911年", "小村寿太郎"], 19: ["昭和", "1945年", "？"],
-  20: ["昭和", "1964年", "？"], 21: ["未来", "2052年", "ユガミ"],
+  20: ["昭和", "1964年", "？"], 21: ["未来", "20XX年", "ユガミ"],
 };
 const PAGES = [
   { name: "むかし", sub: "縄文・弥生・古墳", eps: [1, 2, 3] },
@@ -886,7 +886,7 @@ async function playRewind() {
   SEL = { page: 0, no: 1 };
   drawTimeline(0, 1);
 }
-/* 15話のあと：2023年の先の霧が晴れて、2052年があらわれる */
+/* 15話のあと：2023年の先の霧が晴れて、20XX年（ユガミの時代）があらわれる */
 async function playFuture() {
   drawTimeline(PAGES.length - 2, 0, { noPanel: true });
   const fog = layer.querySelector(".tl-fog"); if (fog) fog.classList.add("shake");
@@ -896,7 +896,7 @@ async function playFuture() {
   SAVE.flags = Object.assign({}, SAVE.flags, { future: true }); persist();
   drawTimeline(PAGES.length - 1, 21, { noPanel: true });
   layer.classList.add("future-in");
-  bigText("2052年", "ronpa");
+  bigText("20XX年", "ronpa");
   await sleep(1600);
   banner("ユガミが 来た 時代");
   await sleep(1900);
