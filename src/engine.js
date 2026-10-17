@@ -188,7 +188,11 @@ function parseScript(no, src) {
         if (block.t === "cards") { const [name, icon, desc, kw] = p; CARDS[name] = { name, icon, desc, kw: kw || name, ep: no }; ep.cards.push(name); }
         else if (block.t === "inv") { const [icon, name, pos, line, card] = p; block.items.push({ icon, name, pos: pos.split(",").map(Number), line, card }); }
         else if (block.t === "spot") { const [kind, icon, name, pos, item, quote, card, fixItem, explain] = p; block.items.push({ bad: /[✕×xX]/.test(kind), icon, name, pos: pos.split(",").map(Number), item, quote, card, fixItem, explain }); }
-        else if (block.t === "testi") { const [kind, text, card, retort, reaction] = p; block.rounds[block.rounds.length - 1].lines.push({ lie: /矛盾|ウソ/.test(kind), text, card, retort, reaction }); }
+        else if (block.t === "testi") {
+          const [kind, text, card, retort, reaction, nearS] = p;   // 6つめ：おしいカード「カード名＝本じいのセリフ」（♡はへらない）
+          const near = {}; (nearS || "").split(/\s*；\s*/).forEach(x => { const m = x.match(/^(.+?)[＝=](.+)$/); if (m) near[m[1].trim()] = m[2].trim(); });
+          block.rounds[block.rounds.length - 1].lines.push({ lie: /矛盾|ウソ/.test(kind), text, card, retort, reaction, near });
+        }
         else if (block.t === "battle") { const [kind, text, card, reply, foeLine] = p; block.rounds[block.rounds.length - 1].push({ lie: /ウソ/.test(kind), text, card, reply, foeLine }); }
         continue;
       }
@@ -1070,6 +1074,9 @@ function runTesti(n) {
             S.busy = false;
             if (r >= n.rounds.length) { hideTalk(); return res(); }
             return draw();
+          } else if (pick && line.near && line.near[pick]) {   // おしい：♡はへらさず、本じいがヒントを出して証言にもどる
+            await say("本じい", "ふつう", line.near[pick], S.ep);
+            hideTalk(); hidePortraits();
           } else if (pick) {
             await loseHeart("本じい", "おどろき", line.lie ? "むむ……その カードでは、矛盾を 説明 できんようじゃ" : "むむ……その 証言には、おかしな ところは ないようじゃ");
             hideTalk(); hidePortraits();
