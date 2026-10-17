@@ -286,7 +286,7 @@ function closeModal() { modal.hidden = true; modal.innerHTML = ""; }
 
 function cardEl(name, opts = {}) {
   const c = CARDS[name] || { name, icon: "？" };
-  const e = h("button", "card" + (opts.unknown ? " unknown" : ""), opts.unknown ? `<div class="cicon">？</div><div class="cname">？？？</div>` : `<div class="cicon">${c.icon}</div><div class="cname">${esc(c.name)}</div>`);
+  const e = h("button", "card" + (opts.unknown ? " unknown" : ""), opts.unknown ? `<div class="cicon">？</div><div class="cname">？？？</div>` : `<div class="cicon">${c.icon}</div><div class="cname${[...c.name].length > 6 ? " long" : ""}">${esc(c.name)}</div>`);
   return e;
 }
 function showCardGet(name) {
