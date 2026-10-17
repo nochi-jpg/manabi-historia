@@ -687,6 +687,9 @@ rt{line-height:1}
 .hand-quote,.hand-detail,.zdetail,.cg-desc,.hv-detail{word-break:auto-phrase}   /* 文のとちゅうで変に折り返さない（Edge・Chrome） */
 .card.shine::after{animation:shine 1.1s .35s ease-out both}
 @keyframes shine{0%{transform:translateX(-80%);opacity:1}99%{transform:translateX(80%);opacity:1}100%{transform:translateX(80%);opacity:0}}   /* 一度光ったら消える */
+.btn.danger{border-color:#d8392f;color:#ff8a8a}.btn.danger:hover{background:rgba(216,57,47,.18)}
+.del-list{text-align:left;font-size:24px;line-height:1.7;margin:14px auto 10px;display:inline-block}
+.del-box{display:block;text-align:center}.del-title{font-size:34px;font-weight:900;color:#ff8a8a;margin-bottom:6px}.del-list{display:block;width:max-content;margin:12px auto}.del-note{font-size:22px;color:#c7cad6}
 </style>
 </head>
 <body>
@@ -1101,7 +1104,8 @@ const SKEY = "manabi-historia-v1";
 function loadSave() { try { return JSON.parse(localStorage.getItem(SKEY)) || null; } catch (e) { return null; } }
 let SAVE = Object.assign({ unlocked: 0, stars: {}, cards: {}, resume: null, opt: { ruby: true, autoRead: false, speed: "normal", blip: true, se: true, bgm: true } }, loadSave() || {});
 SAVE.opt = Object.assign({ ruby: true, autoRead: false, speed: "normal", blip: true, se: true, bgm: true }, SAVE.opt);
-function persist() { try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } catch (e) { } }
+let SAVE_LOCK = false;   // データを けしたあとは保存しない
+function persist() { if (SAVE_LOCK) return; try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } catch (e) { } }
 
 /* ---------- 文字の整形（ルビ・キーワード） ---------- */
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -2468,6 +2472,7 @@ function showSettings() {
   col.appendChild(tog("BGM", "bgm"));
   col.appendChild(btn("あいことばを 入れる（★5を もどす）", "", enterAikotoba));
   col.appendChild(btn("スタッフロール", "", async () => { await runStaffRoll(); showSettings(); }));
+  col.appendChild(btn("データを けす", "danger", deleteData));
   layer.appendChild(col);
 }
 
@@ -2505,6 +2510,26 @@ function runStaffRoll(key) {
     function done() { if (fin) return; fin = true; el.classList.add("out"); setTimeout(() => { el.remove(); res(); }, 600); }
     el.onclick = done;
   });
+}
+
+/* ---------- データを けす（はじめから やりなおす） ---------- */
+async function deleteData() {
+  const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
+  const cards = Object.keys(SAVE.cards).length;
+  const ok1 = await confirmBox(`<div class="del-box"><div class="del-title">本当に データを けしますか？</div><div class="del-list">
+    つぎの ものが すべて なくなります。<br>
+    ・クリアした おはなしと ★（いまの ★ ${total}こ）<br>
+    ・集めた カード（${cards}まい）<br>
+    ・とちゅうの セーブ、ひらいた おはなし<br>
+    ・せってい（文字の 速さ、BGM など）</div>
+    <div class="del-note">★5の あいことばを メモして いれば、あとで ★5を もどせます</div></div>`, "けす", "やめる");
+  if (!ok1) return;
+  const ok2 = await confirmBox(`<div class="del-box"><div class="del-title">さいごの かくにんです。</div>けした データは、もとに もどせません。<br>ほんとうに けしますか？</div>`, "けす", "やめる");
+  if (!ok2) return;
+  try { localStorage.removeItem(SKEY); } catch (e) { }
+  SAVE_LOCK = true;   // このあと保存されないように
+  await alertBox("データを けしました。<br>タイトルに もどります。");
+  location.reload();
 }
 
 /* ---------- かいほうの じゅもん ---------- */

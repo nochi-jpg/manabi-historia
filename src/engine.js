@@ -43,7 +43,8 @@ const SKEY = "manabi-historia-v1";
 function loadSave() { try { return JSON.parse(localStorage.getItem(SKEY)) || null; } catch (e) { return null; } }
 let SAVE = Object.assign({ unlocked: 0, stars: {}, cards: {}, resume: null, opt: { ruby: true, autoRead: false, speed: "normal", blip: true, se: true, bgm: true } }, loadSave() || {});
 SAVE.opt = Object.assign({ ruby: true, autoRead: false, speed: "normal", blip: true, se: true, bgm: true }, SAVE.opt);
-function persist() { try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } catch (e) { } }
+let SAVE_LOCK = false;   // データを けしたあとは保存しない
+function persist() { if (SAVE_LOCK) return; try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } catch (e) { } }
 
 /* ---------- 文字の整形（ルビ・キーワード） ---------- */
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -1410,6 +1411,7 @@ function showSettings() {
   col.appendChild(tog("BGM", "bgm"));
   col.appendChild(btn("あいことばを 入れる（★5を もどす）", "", enterAikotoba));
   col.appendChild(btn("スタッフロール", "", async () => { await runStaffRoll(); showSettings(); }));
+  col.appendChild(btn("データを けす", "danger", deleteData));
   layer.appendChild(col);
 }
 
@@ -1447,6 +1449,26 @@ function runStaffRoll(key) {
     function done() { if (fin) return; fin = true; el.classList.add("out"); setTimeout(() => { el.remove(); res(); }, 600); }
     el.onclick = done;
   });
+}
+
+/* ---------- データを けす（はじめから やりなおす） ---------- */
+async function deleteData() {
+  const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
+  const cards = Object.keys(SAVE.cards).length;
+  const ok1 = await confirmBox(`<div class="del-box"><div class="del-title">本当に データを けしますか？</div><div class="del-list">
+    つぎの ものが すべて なくなります。<br>
+    ・クリアした おはなしと ★（いまの ★ ${total}こ）<br>
+    ・集めた カード（${cards}まい）<br>
+    ・とちゅうの セーブ、ひらいた おはなし<br>
+    ・せってい（文字の 速さ、BGM など）</div>
+    <div class="del-note">★5の あいことばを メモして いれば、あとで ★5を もどせます</div></div>`, "けす", "やめる");
+  if (!ok1) return;
+  const ok2 = await confirmBox(`<div class="del-box"><div class="del-title">さいごの かくにんです。</div>けした データは、もとに もどせません。<br>ほんとうに けしますか？</div>`, "けす", "やめる");
+  if (!ok2) return;
+  try { localStorage.removeItem(SKEY); } catch (e) { }
+  SAVE_LOCK = true;   // このあと保存されないように
+  await alertBox("データを けしました。<br>タイトルに もどります。");
+  location.reload();
 }
 
 /* ---------- かいほうの じゅもん ---------- */
