@@ -486,11 +486,14 @@ async function throwCard(name, target, ok) {
   await sleep(ok ? 250 : 450);
 }
 /* 矛盾発見！：タメ → ユウキのカットイン → フラッシュ・揺れ・集中線 */
+function yuukiCutin() {   // ユウキの顔が入った赤い帯（矛盾発見・論破）
+  const img = window.ART && window.ART.yuuki ? `<img src="${window.ART.yuuki.angry || window.ART.yuuki.normal}" alt="">` : "";
+  FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1700); SE.play("whoosh");
+}
 async function objection(text) {
   stopSpeak(); SE.play("tame");
   FX.add("dimmer", "", 1500); await sleep(450);
-  const img = window.ART && window.ART.yuuki ? `<img src="${window.ART.yuuki.angry || window.ART.yuuki.normal}" alt="">` : "";
-  FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1700); SE.play("whoosh");
+  yuukiCutin();
   await sleep(450);
   FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("objection");
   FX.add("big ronpa obj", text, 1500);
@@ -614,13 +617,13 @@ function renderHud() {
   const interactive = n && ["inv", "spot", "testi", "battle", "sum"].includes(n.t);
   hb.hidden = !interactive;
   const canJump = !!(S.hintCtx && S.hintCtx.jump);
-  let label = "ヒント", dis = false;
+  let label = "ヒント", cost = "", dis = false;
   if (n && n.t !== "inv") {
-    if (S.hintLv === 1) label = "しぼる ♡−1";
-    else if (S.hintLv === 2 && canJump) label = "さらにしぼる ♡−1";
+    if (S.hintLv === 1) { label = "しぼる"; cost = "♡−1"; }
+    else if (S.hintLv === 2 && canJump) { label = "さらにしぼる"; cost = "♡−1"; }
     else if (S.hintLv >= 2) { label = "しぼりこみ中"; dis = true; }
   }
-  hb.textContent = label; hb.disabled = dis;
+  hb.innerHTML = `<span class="hb-main${[...label].length > 4 ? " s" : ""}">${label}</span>${cost ? `<span class="hb-cost">${cost}</span>` : ""}`; hb.disabled = dis;
   $("#cardBtn").hidden = !S.hand.length;
   stage.classList.toggle("danger", S.hearts === 1);
 }
@@ -843,13 +846,15 @@ function runBattle(n) {
                 await throwCard(pick, e, true);
                 shatter(e); e.style.visibility = "hidden";
                 const last = r + 1 >= total;
-                if (last) {   // さいごの1本：スロー → 無音 → ドン
-                  FX.add("dimmer slow", "", 1600); await sleep(800);
+                if (last) {   // さいごの1本：スロー → ユウキのカットイン → ドン
+                  FX.add("dimmer slow", "", 1600); await sleep(500);
+                  yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 300); FX.shake("l"); FX.lines(1500); if (SE.has("objection")) { SE.play("objection"); SE.play("shatter"); } else SE.play("ronpaBig");
                   FX.add("big ronpa obj huge", "論破！", 1700);
                   battleBg(100, { win: true }); SE.play("shatter");
                   face.classList.add("recoil"); await sleep(1500);
                 } else {
+                  yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 220); FX.shake("l"); FX.lines(1000); SE.play("objection");
                   FX.add("big ronpa obj", "論破！", 1400);
                   face.classList.remove("recoil"); void face.offsetWidth; face.classList.add("recoil");

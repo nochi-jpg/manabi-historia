@@ -654,3 +654,24 @@ rt{line-height:1}
 .bg-old{position:absolute;inset:0;z-index:0;pointer-events:none;animation:bgfade .55s ease forwards}.bg-old svg{position:absolute;inset:0;width:100%;height:100%}@keyframes bgfade{to{opacity:0}}
 .tname{height:54px}   /* ふちを消したぶん、下のまどとすき間ができないように */
 #talk:has(.tname:not(:empty):not([hidden])){border-top-left-radius:0}
+
+/* ===== カード選択（つきつける）：長い証言・長い説明でもボタンがはみ出さないように ===== */
+.hand{top:36px;bottom:24px;padding:22px 48px 30px}
+.hand .card{--card-w:140px;--card-h:150px;gap:4px;padding:6px}
+.hand .cicon.ph{width:126px;height:76px}
+.hand .cname{height:44px}
+.hand .pg-arrow{height:150px}
+.hand .pg-grid{gap:12px}
+.hand-quote{font-size:26px;line-height:1.95;padding:10px 20px;margin-bottom:8px}
+.hand-title{margin-bottom:4px}
+.hand-detail{font-size:24px;line-height:1.95;min-height:96px;padding:10px 20px}
+.hand .btnrow{padding-top:12px}
+/* ページの点：大きく、上下にすき間 */
+.pg-dots{height:26px;align-items:center;gap:16px}
+.dot{width:12px;height:12px}
+.dot.on{box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+/* ヒントボタン：2行（「さらにしぼる」＋小さく「♡−1」） */
+.hudbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.hudbtn .hb-cost{font-size:15px;color:#ff9aa5;margin-top:3px}
+.hudbtn .hb-main.s{font-size:19px}
+.hand-quote,.hand-detail,.zdetail,.cg-desc,.hv-detail{word-break:auto-phrase}   /* 文のとちゅうで変に折り返さない（Edge・Chrome） */
