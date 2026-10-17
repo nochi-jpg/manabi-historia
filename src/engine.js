@@ -218,6 +218,8 @@ function silPick(type, key) {
   return S2[list[hsh % list.length]];
 }
 function iconHTML(icon, key, cls = "") {
+  const g = /^画[:：](.+)$/.exec(icon || "");   // 「画:iconflag」＝ art の絵（白いシルエット）
+  if (g && window.ART && window.ART[g[1]]) return `<img class="sil silimg picon-img ${cls}" src="${window.ART[g[1]].normal}" alt="">`;
   const m = /^人[:：](.+)$/.exec(icon || "");
   if (!m) return `<div class="picon">${icon}</div>`;
   const src = silPick(m[1], key);
@@ -684,9 +686,9 @@ function runInv(n) {
       // 人でない調べものは、手に入るカードの写真を出す（写真がなければ絵文字）
       // 「写真:カード名」でほかのカードの写真、「絵:🏯」で絵文字のまま
       const CI = window.CARDIMG || {}, ic = it.icon || "";
-      let photo = /^写真[:：]/.test(ic) ? CI[ic.replace(/^写真[:：]/, "")] : (!/^(人|絵)[:：]/.test(ic) && it.card && CI[it.card]);
+      let photo = /^写真[:：]/.test(ic) ? CI[ic.replace(/^写真[:：]/, "")] : (!/^(人|絵|画)[:：]/.test(ic) && it.card && CI[it.card]);
       if (/^絵[:：]/.test(ic)) it.icon = ic.replace(/^絵[:：]/, "");
-      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : iconHTML(it.icon, it.name)}<div class="plabel">${phr(it.name)}</div>`);
+      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : iconHTML(it.icon, it.name)}<div class="plabel${[...it.name].length > 6 ? " long" : ""}">${esc(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       els.push(e);
       e.onclick = async () => {
@@ -741,7 +743,7 @@ function runSpot(n) {
     const upd = () => { info.innerHTML = `ゆがんだ 証言を 見やぶれ（のこり ${bads - fixed.size}）`; };
     upd();
     n.items.forEach((it, i) => {
-      const e = h("button", "prop warped", `${iconHTML(it.icon, it.name)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${phr(it.name)}</div>`);
+      const e = h("button", "prop warped", `${iconHTML(it.icon, it.name)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel${[...it.name].length > 6 ? " long" : ""}">${esc(it.name)}</div>`);
       placeAt(e, it.pos);
       e.onclick = async () => {
         if (S.busy || fixed.has(i)) return; S.busy = true;
@@ -1176,7 +1178,7 @@ async function titleCard(no) {
   tc.classList.add("out"); await sleep(500); tc.remove();
 }
 function finishEpisode() {
-  setSkip(false);
+  setSkip(false); showPic("");
   bgEl.classList.remove("warped");
   hideTalk(); hidePortraits(); clearLayer();
   const no = S.no;
@@ -1223,7 +1225,7 @@ function showSelect(opt = {}) {
 }
 let TL_LAST = null;
 function drawTimeline(pi, sel, fx2 = {}) {
-  S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu timeline";
+  S = null; renderHud(); showPic(""); setBg("夜"); clearLayer(); layer.className = "menu timeline";
   BGM.play("図書館");
   const page = PAGES[pi];
   const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
@@ -1251,7 +1253,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
     const [era, year] = EP_INFO[no];
     const open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
     const nd = h("button", "tl-node" + (no === sel ? " sel" : "") + (open ? "" : " locked") + (st ? " done" : "") + (page.future ? " future" : "") + (fx2.flick && fx2.flick.includes(no) ? " flick" : ""),
-      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open ? phr(EP_META[no][0]) : "？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
+      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open && ready ? phr(EP_META[no][0]) : "？？？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
     nd.style.left = xs[i] + "px";
     nd.onclick = () => { SEL = { page: pi, no }; SEL_TOUCHED = true; drawTimeline(pi, no); };
     layer.appendChild(nd);
@@ -1269,7 +1271,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const no = sel, [era, year, key] = EP_INFO[no], open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
   const panel = h("div", "tl-panel");
   panel.innerHTML = `<div class="tp-l"><div class="tp-no">${no === 0 ? "プロローグ" : "第" + no + "話"}　<span>${esc(era)}・${esc(year)}</span></div>
-    <div class="tp-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
+    <div class="tp-tt">${open && ready ? esc(EP_META[no][0]) : "？？？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
     <div class="tp-r"><div class="tp-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : ""}</div></div>`;
   const br = h("div", "tp-btns");
   if (!open) br.appendChild(btn("じゅもんを 入れる", "", enterSpell));

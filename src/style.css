@@ -641,3 +641,4 @@ rt{line-height:1}
 .log-bar .btn{width:260px;margin-left:30px}
 .frag-pic.has{top:196px}.frag-pic.has img{height:380px}
 .big.obj{left:68%;font-size:132px}   /* カットインのユウキの顔（左）に文字がかからないよう右へ */
+.plabel{white-space:nowrap}.plabel.long{font-size:16px;letter-spacing:-.03em}
