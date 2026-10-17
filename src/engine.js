@@ -66,6 +66,9 @@ function autoRuby(s) {
   }
   return out;
 }
+/* fmt：セリフ・証言・カードの説明など、ふりがなを入れてよい所に使う
+   fmtUI：帯・見出し・ボタンなど高さの決まった所に使う（ふりがなを入れない） */
+function fmtUI(t) { return esc(t).replace(new RegExp(`(${KANJI})《[^》]+》`, "g"), "$1").replace(/【([^】]+)】/g, '<span class="kw">$1</span>'); }
 function fmt(t) {
   let s = esc(t);
   if (SAVE.opt.ruby) s = autoRuby(s);
@@ -360,7 +363,7 @@ function logPush(who, text) {
 }
 function showLog() {
   if (!modal.hidden) return;
-  const per = 8, pages = Math.max(1, Math.ceil(LOG.length / per));
+  const per = 7, pages = Math.max(1, Math.ceil(LOG.length / per));
   let page = pages - 1;
   const box = h("div", "inbox wide logbox");
   box.appendChild(h("div", "in-title", "これまでの おはなし"));
@@ -379,7 +382,7 @@ function showLog() {
 /* 効果 */
 function bigText(text, cls) { const e = h("div", "big " + (cls || ""), text); fx.appendChild(e); setTimeout(() => e.remove(), 1400); }
 function shake(l) { FX.shake(l); }
-function banner(text, html) { const e = h("div", "banner" + (html ? " tall" : ""), html || fmt(text)); fx.appendChild(e); setTimeout(() => e.remove(), 1800); }
+function banner(text, html) { const e = h("div", "banner" + (html ? " tall" : ""), html || fmtUI(text)); fx.appendChild(e); setTimeout(() => e.remove(), 1800); }
 
 /* モーダル */
 function openModal(content, cls) { modal.innerHTML = ""; modal.className = "modal " + (cls || ""); modal.appendChild(content); modal.hidden = false; stage.classList.add("modal-on"); }
@@ -480,7 +483,7 @@ function chooseCard(title, correct, quote) {
     }
     const box = h("div", "hand");
     if (quote) box.appendChild(h("div", "hand-quote", `<b>${esc(quote.who)}</b>「${fmt(quote.text)}」`));
-    box.appendChild(h("div", "hand-title", fmt(title)));
+    box.appendChild(h("div", "hand-title", fmtUI(title)));
     const detail = h("div", "hand-detail", "カードを えらぶと、説明が 出るよ");
     const btns = h("div", "btnrow");
     const ok = btn("つきつける！", "red", () => { if (sel) { closeModal(); res(sel); } });
@@ -1107,6 +1110,7 @@ function finishEpisode() {
   let star = S.failed ? 1 : Math.max(1, Math.min(MAX_HEARTS, S.hearts));
   if (no === 0) star = MAX_HEARTS;
   SAVE.stars[no] = Math.max(SAVE.stars[no] || 0, star);
+  SAVE.last = no; SEL_TOUCHED = false;   // 次に年表をひらいたとき、この話にカーソルを合わせる
   S.ep.cards.forEach(c => SAVE.cards[c] = 1);
   S.hand.forEach(c => SAVE.cards[c] = 1);
   SAVE.resume = null; persist();
@@ -1134,10 +1138,11 @@ function showTitle() {
 
 /* ---------- 画面：話をえらぶ（年表） ---------- */
 const futureOpen = () => !!(SAVE.flags && SAVE.flags.future);
-let SEL = { page: 4, no: 0 };
+let SEL = { page: 4, no: 0 }, SEL_TOUCHED = false;
 function showSelect(opt = {}) {
   if (opt.no != null) SEL = { page: pageOf(opt.no), no: opt.no };
   else if (!SAVE.stars[0]) SEL = { page: 4, no: 0 };
+  else if (!SEL_TOUCHED && SAVE.last != null && pageOf(SAVE.last) >= 0) SEL = { page: pageOf(SAVE.last), no: SAVE.last };   // 起動したては、直前にクリアした話から
   if (SAVE.stars[FUTURE_AFTER] && !futureOpen() && !opt.noFuture) return playFuture();
   drawTimeline(SEL.page, SEL.no);
 }
@@ -1153,7 +1158,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   layer.appendChild(top);
   layer.appendChild(h("div", "tl-head", `<div class="tl-name">${esc(page.name)}</div><div class="tl-sub">${esc(page.sub)}</div>`));
   const maxPage = futureOpen() ? PAGES.length - 1 : PAGES.length - 2;
-  const go = d => { const np = pi + d; if (np < 0 || np > maxPage) return; SEL = { page: np, no: PAGES[np].eps[d > 0 ? 0 : PAGES[np].eps.length - 1] }; drawTimeline(SEL.page, SEL.no); };
+  const go = d => { const np = pi + d; if (np < 0 || np > maxPage) return; SEL = { page: np, no: PAGES[np].eps[d > 0 ? 0 : PAGES[np].eps.length - 1] }; SEL_TOUCHED = true; drawTimeline(SEL.page, SEL.no); };
   const L = h("button", "tl-arrow l", "◀"), R = h("button", "tl-arrow r", "▶");
   L.disabled = pi === 0; R.disabled = pi >= maxPage;
   L.onclick = () => go(-1); R.onclick = () => go(1);
@@ -1172,7 +1177,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
     const nd = h("button", "tl-node" + (no === sel ? " sel" : "") + (open ? "" : " locked") + (st ? " done" : "") + (page.future ? " future" : "") + (fx2.flick && fx2.flick.includes(no) ? " flick" : ""),
       `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
     nd.style.left = xs[i] + "px";
-    nd.onclick = () => { SEL = { page: pi, no }; drawTimeline(pi, no); };
+    nd.onclick = () => { SEL = { page: pi, no }; SEL_TOUCHED = true; drawTimeline(pi, no); };
     layer.appendChild(nd);
     if (no === sel) {
       const tk = h("div", "tl-tokei", window.ART && window.ART.tokei ? `<img src="${window.ART.tokei.normal}" alt="">` : "⏱️");
