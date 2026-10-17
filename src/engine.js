@@ -144,7 +144,7 @@ function parseScript(no, src) {
         else if (block.t === "inv") { const [icon, name, pos, line, card] = p; block.items.push({ icon, name, pos: pos.split(",").map(Number), line, card }); }
         else if (block.t === "spot") { const [kind, icon, name, pos, item, quote, card, fixItem, explain] = p; block.items.push({ bad: /[✕×xX]/.test(kind), icon, name, pos: pos.split(",").map(Number), item, quote, card, fixItem, explain }); }
         else if (block.t === "testi") { const [kind, text, card, retort, reaction] = p; block.rounds[block.rounds.length - 1].lines.push({ lie: /矛盾|ウソ/.test(kind), text, card, retort, reaction }); }
-        else if (block.t === "battle") { const [kind, text, card, reply] = p; block.rounds[block.rounds.length - 1].push({ lie: /ウソ/.test(kind), text, card, reply }); }
+        else if (block.t === "battle") { const [kind, text, card, reply, foeLine] = p; block.rounds[block.rounds.length - 1].push({ lie: /ウソ/.test(kind), text, card, reply, foeLine }); }
         continue;
       }
     }
@@ -311,6 +311,7 @@ async function say(who, expr, text, ep, opt = {}) {
   tt.classList.toggle("inner", /^（[\s\S]*）$/.test(text.trim()));   // （ ）は心の声
   logPush(who, text);
   stage.classList.add("talking");
+  if (opt.noPort) { $("#portL").classList.add("dim"); $("#portR").classList.add("dim"); }
   if (!opt.dark && !opt.noPort) {
     if (who === "ユガミ" && ports.R !== "ユガミ") { FX.add("vignette", "", 1800); SE.play("drum"); FX.shake("m"); }   // ユガミ登場
     if (who === "レキシクイ") { SE.play("growl"); FX.shake("l"); FX.flash("rgba(150,60,255,.55)", 320); }
@@ -554,9 +555,9 @@ function newRound(ctx) {
   if (S.hintLv > 1) S.hintLv = 1;
   renderHud();
 }
-async function loseHeart(who, expr, msg) {
+async function loseHeart(who, expr, msg, opt) {
   spendHeart();
-  await say(who, expr, msg, S.ep);
+  await say(who, expr, msg, S.ep, opt);
   if (S.hearts <= 0) throw FAIL;
 }
 async function onHint() {
@@ -708,6 +709,10 @@ function battleBg(split, opt = {}) {
   b.style.setProperty("--split", split + "%");
   if (opt.win) b.classList.add("win");
 }
+// ユガミのセリフ（台本の5つ目の欄で、話ごとに変えられる）
+const FOE_HIT = ["……ほう。少しは やるようだな。だが、次は どうだ！", "くっ……！ まだだ、まだ 終わらない！", "ちっ……生意気な やつめ……！"];
+const FOE_TAUNT = ["ハハハ！ そんな カードで オレの 歴史は くずせないぞ！", "見当ちがいだな。よく 考えて みろ。", "フン、それが 証拠の つもりか？"];
+let tauntN = 0;
 function runBattle(n) {
   return new Promise((res, rej) => {
     S.rej = rej;
@@ -722,6 +727,12 @@ function runBattle(n) {
       const gauge = h("div", "gauge", Array.from({ length: total }, (_, i) => `<span class="seg${i < total - r ? "" : " off"}"></span>`).join(""));
       foe.prepend(gauge); layer.appendChild(foe);
       const face = foe.querySelector(".foe-face");
+      const foeSay = async (expr, text) => {   // 左に顔を出さず、右のユガミの表情だけかえて話す
+        face.innerHTML = faceHTML(charOf("ユガミ"), expr);
+        await say("ユガミ", expr, text, S.ep, { noPort: true });
+        face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
+      };
+      const taunt = () => FOE_TAUNT[(tauntN++) % FOE_TAUNT.length];
       layer.appendChild(h("div", "guide", `ユガミの ウソを 見やぶれ（${r + 1} / ${total}）`));
       const list = h("div", "claims");
       const claimEls = [];
@@ -737,7 +748,8 @@ function runBattle(n) {
             const pick = await chooseCard("ウソだと 思ったら、矛盾する カードを つきつけろ！", c.lie ? c.card : null, { who: "ユガミ", text: c.text });
             if (pick && !c.lie) {
               await throwCard(pick, e, false);
-              await loseHeart("ユガミ", "笑顔", "フフ……それは ほんとうの ことだ。");
+              face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
+              await loseHeart("ユガミ", "笑顔", "フフ……それは ほんとうの ことだ。", { noPort: true });
             } else if (pick) {
               if (pick === c.card) {
                 await throwCard(pick, e, true);
@@ -758,11 +770,12 @@ function runBattle(n) {
                 if (c.reply) await say("ユウキ", "怒り", c.reply, S.ep);
                 r++;
                 if (r >= total) { S.busy = false; hideTalk(); const bb = bgEl.querySelector(".bbg"); if (bb) bb.remove(); return res(); }
-                await say("ユガミ", "怒り", "くっ……まだだ！", S.ep);
+                await foeSay(r === 1 ? "おどろき" : "怒り", c.foeLine || FOE_HIT[(r - 1) % FOE_HIT.length]);
                 S.busy = false; return draw();
               } else {
                 await throwCard(pick, e, false);
-                await loseHeart("ユガミ", "笑顔", "ハハハ！ そんな カードで オレの 歴史は くずせないぞ！");
+                face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
+                await loseHeart("ユガミ", "笑顔", taunt(), { noPort: true });
               }
             }
             hideTalk(); hidePortraits();
@@ -1107,7 +1120,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const X0 = 150, X1 = 1450, n = page.eps.length, step = (X1 - X0) / n;
   const xs = page.eps.map((_, i) => X0 + step * (i + .5));
   const line = h("div", "tl-line" + (page.future ? " future" : "")); layer.appendChild(line);
-  const cleared = page.eps.map(no => !!SAVE.stars[no]);
+  const cleared = page.eps.map(no => no !== 0 && !!SAVE.stars[no]);   // プロローグはつながない（線は第1話から）
   let litTo = -1; cleared.forEach((c, i) => { if (c) litTo = i; });
   if (PAGES.slice(pi + 1).some(p => p.eps.some(no => no !== 0 && SAVE.stars[no]))) litTo = n - 1;
   if (litTo >= 0) { const lit = h("div", "tl-lit"); lit.style.width = (xs[litTo] - X0 + 2) + "px"; layer.appendChild(lit); }
