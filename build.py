@@ -44,6 +44,16 @@ for f in sorted((R/"art").glob("*.webp")):
     nm, ex = f.stem.rsplit("_", 1)
     art.setdefault(nm, {})[ex] = "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode()
 data += "\nwindow.ART=" + json.dumps(art) + ";"
+# カードの写真：cardimg/カード名.webp（一覧と出典は data/cardimg.txt）
+cimg, ccred = {}, []
+for line in (R/"data/cardimg.txt").read_text(encoding="utf-8").splitlines():
+    if not line.strip() or line.startswith("#"): continue
+    p = [x.strip() for x in line.split("|")]
+    f = R/"cardimg"/(p[0] + ".webp")
+    if f.exists():
+        cimg[p[0]] = ["data:image/webp;base64," + base64.b64encode(f.read_bytes()).decode(), "cover"]
+        ccred.append([p[0], p[4], p[3]])
+data += "\nwindow.CARDIMG=" + json.dumps(cimg, ensure_ascii=False) + ";\nwindow.CARDIMG_CREDITS=" + json.dumps(ccred, ensure_ascii=False) + ";"
 # ふりがな辞書（data/yomi.txt）：[ことば, 漢字部分の長さ, よみ]
 KJ = re.compile(r"[\u4E00-\u9FFF\u3005\u30F6]")
 yomi = []
@@ -99,7 +109,7 @@ html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
 import base64, subprocess, tempfile
 chars = set()
-for f in [R/"src/engine.js", R/"src/fx.js", R/"src/template.html", R/"src/bg.js", R/"build.py", R/"data/bgm.txt"]: chars |= set(f.read_text(encoding="utf-8"))
+for f in [R/"src/engine.js", R/"src/fx.js", R/"src/template.html", R/"src/bg.js", R/"build.py", R/"data/bgm.txt", R/"data/cardimg.txt"]: chars |= set(f.read_text(encoding="utf-8"))
 for v in scen.values(): chars |= set(v)
 chars |= {chr(c) for c in range(0x20, 0x7f)} | {chr(c) for c in range(0x3041, 0x3097)} | {chr(c) for c in range(0x30a1, 0x30fb)} | set("ー・「」『』、。！？（）…―〜★☆♡◀▶▼")
 fcss = ""

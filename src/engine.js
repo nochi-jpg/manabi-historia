@@ -392,9 +392,14 @@ function banner(text, html) { const e = h("div", "banner" + (html ? " tall" : ""
 function openModal(content, cls) { modal.innerHTML = ""; modal.className = "modal " + (cls || ""); modal.appendChild(content); modal.hidden = false; stage.classList.add("modal-on"); }
 function closeModal() { modal.hidden = true; modal.innerHTML = ""; stage.classList.remove("modal-on"); }
 
+/* カードの絵：写真（window.CARDIMG）があれば写真、なければ絵文字 */
+function cardIcon(c) {
+  const im = window.CARDIMG && window.CARDIMG[c.name];
+  return im ? `<div class="cicon ph"><img src="${im[0]}" alt="" style="object-fit:${im[1] || "cover"}"></div>` : `<div class="cicon">${c.icon}</div>`;
+}
 function cardEl(name, opts = {}) {
   const c = CARDS[name] || { name, icon: "？" };
-  const e = h("button", "card" + (opts.unknown ? " unknown" : ""), opts.unknown ? `<div class="cicon">？</div><div class="cname">？？？</div>` : `<div class="cicon">${c.icon}</div><div class="cname${[...c.name].length > 6 ? " long" : ""}">${esc(c.name)}</div>`);
+  const e = h("button", "card" + (opts.unknown ? " unknown" : ""), opts.unknown ? `<div class="cicon">？</div><div class="cname">？？？</div>` : `${cardIcon(c)}<div class="cname${[...c.name].length > 6 ? " long" : ""}">${esc(c.name)}</div>`);
   return e;
 }
 function showCardGet(name) {
@@ -421,7 +426,7 @@ function stagePos(el) {
 }
 async function throwCard(name, target, ok) {
   const c = CARDS[name] || { icon: "？", name };
-  const fc = FX.add("flycard", `<div class="cicon">${c.icon}</div><div class="cname">${esc(c.name)}</div>`);
+  const fc = FX.add("flycard", `${cardIcon(c)}<div class="cname">${esc(c.name)}</div>`);
   const to = target ? stagePos(target) : { x: 1200, y: 360 };
   fc.style.left = "300px"; fc.style.top = "700px";
   SE.play("swish");
@@ -675,7 +680,7 @@ async function cardsComplete(names) {
   const k = names.length, mid = (k - 1) / 2;
   names.forEach((nm, i) => {
     const c = CARDS[nm] || { icon: "？", name: nm };
-    const e = h("div", "fan-card", `<div class="cicon">${c.icon}</div><div class="cname">${esc(c.name)}</div>`);
+    const e = h("div", "fan-card", `${cardIcon(c)}<div class="cname">${esc(c.name)}</div>`);
     e.style.setProperty("--r", ((i - mid) * 9) + "deg"); e.style.setProperty("--x", ((i - mid) * 120) + "px"); e.style.setProperty("--y", (Math.abs(i - mid) * 14) + "px");
     e.style.animationDelay = (i * 60) + "ms"; box.appendChild(e);
   });
@@ -1357,6 +1362,9 @@ const STAFF = [
   ["", "https://youfulca.com/music_assets/?scene=dungeon_stage", "url"],
   ["シルエット素材", "イラスト緑花　https://illust-ryokka.jp/"],
   ["", "イラストカット　https://illustcut.com/"],
+  ["カードの写真", "ColBase（国立文化財機構）　https://colbase.nich.go.jp/"],
+  ["", "ウィキメディア・コモンズ　ほか"],
+  ["", "__CARDS__"],
   ["フォント", "Zen Kaku Gothic New（SIL Open Font License 1.1）"],
   ["", "あそんで くれて ありがとう！", "big"],
 ];
@@ -1364,7 +1372,8 @@ function runStaffRoll(key) {
   return new Promise(res => {
     if (key) BGM.play(key);
     const songs = (window.BGM_TITLES || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("");
-    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` :
+    const cards = (window.CARDIMG_CREDITS || []).map(([n, by, lic]) => `<div class="sr-song small">${esc(n)}：${esc(by)}（${esc(lic)}）</div>`).join("");
+    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` : name === "__CARDS__" ? `<div class="sr-songs">${cards}</div>` :
       `<div class="sr-item ${cls || ""}">${role ? `<div class="sr-role">${esc(role)}</div>` : ""}<div class="sr-name">${esc(name)}</div></div>`).join("");
     const el = h("div", "staffroll", `<div class="sr-inner">${inner}</div><div class="sr-skip">タップで とばす</div>`);
     stage.appendChild(el);
