@@ -1653,7 +1653,8 @@ function alertBox(html) {
 
 /* 手札をいつでも見る（法廷記録） */
 function showHandViewer() {
-  if (!S || S.busy || !modal.hidden || !talk.hidden) return;
+  if (!S || !modal.hidden) return;
+  if (S.busy && talk.hidden) return;   // 演出のとちゅうは開かない（セリフの待ちなら開ける）
   SE.play("hand");
   const box = h("div", "inbox wide");
   box.appendChild(h("div", "in-title", `もっている カード（${S.hand.length}まい）`));
