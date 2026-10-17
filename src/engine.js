@@ -1463,12 +1463,23 @@ async function deleteData() {
     ・せってい（文字の 速さ、BGM など）</div>
     <div class="del-note">★5の あいことばを メモして いれば、あとで ★5を もどせます</div></div>`, "けす", "やめる");
   if (!ok1) return;
-  const ok2 = await confirmBox(`<div class="del-box"><div class="del-title">さいごの かくにんです。</div>けした データは、もとに もどせません。<br>ほんとうに けしますか？</div>`, "けす", "やめる");
+  const p2 = confirmBox(`<div class="del-box"><div class="del-title"><span class="dbg">さ</span>いごの かくにんです。</div>けした データは、もとに もどせません。<br>ほんとうに けしますか？</div>`, "けす", "やめる");
+  // デバッグ用：「さ」を20回おすと、全話★5・全部既読・全カードで タイトルへ
+  let taps = 0; const dbg = modal.querySelector(".dbg");
+  if (dbg) dbg.onclick = e => { e.stopPropagation(); if (++taps >= 20) { closeModal(); debugAllClear(); } };
+  const ok2 = await p2;
   if (!ok2) return;
   try { localStorage.removeItem(SKEY); } catch (e) { }
   SAVE_LOCK = true;   // このあと保存されないように
   await alertBox("データを けしました。<br>タイトルに もどります。");
   location.reload();
+}
+
+function debugAllClear() {
+  Object.keys(EPS).forEach(k => SAVE.stars[k] = MAX_HEARTS);   // ★5（クリア済み＝既読スキップもできる）
+  Object.keys(CARDS).forEach(n => SAVE.cards[n] = 1);
+  SAVE.unlocked = EP_COUNT - 1; SAVE.resume = null; persist();
+  showTitle(); banner("デバッグ：全話★5・全カード");
 }
 
 /* ---------- かいほうの じゅもん ---------- */
