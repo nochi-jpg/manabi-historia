@@ -653,6 +653,14 @@ rt{line-height:1}
 .big.obj{left:68%;font-size:132px}   /* カットインのユウキの顔（左）に文字がかからないよう右へ */
 .plabel{white-space:nowrap}.plabel.long{font-size:16px;letter-spacing:-.03em}
 .skipbtn{top:8px;right:12px;height:28px;padding:0 10px;font-size:14px;border-width:1px;border-radius:4px;letter-spacing:.05em;opacity:.85}   /* 小さく、すみに寄せる */
+/* ななめのふちを まっすぐな ふちと同じ太さに見えるよう、少し太めに */
+.tag::after,.topttl::after{clip-path:polygon(evenodd,24px 0,100% 0,100% 100%,24px 100%,0 50%, 26.2px 2px,100% 2px,100% calc(100% - 2px),26.2px calc(100% - 2px),4px 50%)}
+.guide::after{clip-path:polygon(evenodd,0 0,100% 0,calc(100% - 22px) 100%,0 100%, 0 2px,calc(100% - 4px) 2px,calc(100% - 24.4px) calc(100% - 2px),0 calc(100% - 2px))}
+.tname::after{clip-path:polygon(evenodd,0 0,calc(100% - 22px) 0,100% 100%,0 100%, 2px 2px,calc(100% - 24.4px) 2px,calc(100% - 3.3px) 100%,2px 100%)}
+/* evenodd の外側と内側を「同じ角」からつなぐ（つなぎ目の線で塗りが欠けないように） */
+.tag::after,.topttl::after{clip-path:polygon(evenodd,0 50%,24px 0,100% 0,100% 100%,24px 100%,0 50%, 4px 50%,26.2px calc(100% - 2px),100% calc(100% - 2px),100% 2px,26.2px 2px,4px 50%)}
+.guide::after{clip-path:polygon(evenodd,0 0,100% 0,calc(100% - 22px) 100%,0 100%,0 0, 0 2px,0 calc(100% - 2px),calc(100% - 24.4px) calc(100% - 2px),calc(100% - 4px) 2px,0 2px)}
+.tname::after{clip-path:polygon(evenodd,0 100%,0 0,calc(100% - 22px) 0,100% 100%,0 100%, 2px 100%,calc(100% - 3.3px) 100%,calc(100% - 24.4px) 2px,2px 2px,2px 100%)}
 </style>
 </head>
 <body>
