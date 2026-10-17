@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """src/ と scenarios/ をまとめて、1ファイルの index.html を作る（Canva・GitHub Pages 用）"""
-import json, pathlib, re
+import json, base64, pathlib, re
 R = pathlib.Path(__file__).parent
 
 def fnv(s):
@@ -44,11 +44,17 @@ for f in sorted((R/"art").glob("*.webp")):
     nm, ex = f.stem.rsplit("_", 1)
     art.setdefault(nm, {})[ex] = "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode()
 data += "\nwindow.ART=" + json.dumps(art) + ";"
+# あいことば（★5のときだけ表示）：teacher/aikotoba.md の表から。そのままは読めないように 逆順＋base64 にする
+ak = {}
+for line in (R/"teacher/aikotoba.md").read_text(encoding="utf-8").splitlines():
+    m = re.match(r"\|\s*(\d+)\s*\|[^|]*\|[^|]*\|\s*([ぁ-ゖー]+)\s*\|", line)
+    if m and int(m.group(1)) > 0: ak[int(m.group(1))] = m.group(2)
+data += "\nwindow.AIKOTOBA=" + json.dumps([base64.b64encode(ak.get(i, "")[::-1].encode()).decode() for i in range(1, max(ak) + 1)]) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
 import base64, subprocess, tempfile
 chars = set()
-for f in [R/"src/engine.js", R/"src/template.html", R/"src/bg.js", R/"build.py"]: chars |= set(f.read_text(encoding="utf-8"))
+for f in [R/"src/engine.js", R/"src/fx.js", R/"src/template.html", R/"src/bg.js", R/"build.py"]: chars |= set(f.read_text(encoding="utf-8"))
 for v in scen.values(): chars |= set(v)
 chars |= {chr(c) for c in range(0x20, 0x7f)} | {chr(c) for c in range(0x3041, 0x3097)} | {chr(c) for c in range(0x30a1, 0x30fb)} | set("ー・「」『』、。！？（）…―〜★☆♡◀▶▼")
 fcss = ""
@@ -59,6 +65,6 @@ for fam, ttf in [("G500", "fonts/ZenKakuGothicNew-Medium.ttf"), ("G700", "fonts/
 html = html.replace("/*FONTS*/", fcss)
 html = html.replace("/*CSS*/", (R/"src/style.css").read_text(encoding="utf-8"))
 html = html.replace("/*DATA*/", data.replace("</", "<\\/"))
-html = html.replace("/*JS*/", (R/"src/bg.js").read_text(encoding="utf-8") + "\n" + (R/"src/engine.js").read_text(encoding="utf-8"))
+html = html.replace("/*JS*/", (R/"src/bg.js").read_text(encoding="utf-8") + "\n" + (R/"src/fx.js").read_text(encoding="utf-8") + "\n" + (R/"src/engine.js").read_text(encoding="utf-8"))
 (R/"index.html").write_text(html, encoding="utf-8")
 print("index.html", round(len(html.encode())/1024), "KB /", len(scen), "話")
