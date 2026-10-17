@@ -496,7 +496,7 @@ async function objection(text) {
   FX.add("dimmer", "", 1500); await sleep(450);
   yuukiCutin();
   await sleep(450);
-  FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("objection");
+  FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("shatter");   // 矛盾発見：ガラスが割れる音（論破バトルと同じ）
   FX.add("big ronpa obj", text, 1500);
   await sleep(1350);
 }
