@@ -89,6 +89,22 @@ const BG = (() => {
       [1180, 1290, 1400, 1500].forEach((x, i) => { person(n, x, 745, .9, "#1d2410", false); el("path", { d: `M${x - 30} ${640} q30 -20 60 0 l-8 30 h-44z` }, n); });   // 土を運ぶ人々
       person(n, 120, 760, 1, "#1d2410", true);
     } },
+    飛鳥: { ground: "#1f1a14", draw(svg) {
+      const d = sky(svg, "skyA", [[0, "#8fb4d8"], [.6, "#e8dcc4"], [1, "#f6e3b4"]]);
+      glow(d, "sunA", "#fff6dc");
+      el("circle", { cx: 360, cy: 360, r: 220, fill: "url(#sunA)" }, svg);
+      el("path", { d: "M0 540 Q300 440 640 500 T1240 470 T1600 510 V900 H0Z", fill: "#9fb08a", opacity: .7 }, svg);
+      const n = el("g", { fill: "#1f1a14" }, svg);
+      el("path", { d: "M0 740 Q400 715 800 730 T1600 720 V900 H0Z" }, n);
+      const roof = (cx, y, w) => el("path", { d: `M${cx - w / 2 - 30} ${y} Q${cx - w / 2} ${y - 6} ${cx - w / 2 + 10} ${y - 30} L${cx + w / 2 - 10} ${y - 30} Q${cx + w / 2} ${y - 6} ${cx + w / 2 + 30} ${y}Z` }, n);
+      const pag = (cx, base) => { let y = base, w = 170;   // 五重塔
+        for (let i = 0; i < 5; i++) { el("rect", { x: cx - w / 2 + 18, y: y - 52, width: w - 36, height: 52 }, n); roof(cx, y - 52, w); y -= 82; w -= 22; }
+        el("rect", { x: cx - 4, y: y - 90, width: 8, height: 100 }, n); };
+      pag(1120, 735);
+      el("rect", { x: 560, y: 600, width: 330, height: 135 }, n); roof(725, 600, 330); roof(725, 530, 250); el("rect", { x: 640, y: 530, width: 170, height: 70 }, n);   // 金堂
+      el("rect", { x: 0, y: 700, width: 1600, height: 14 }, n); for (let x = 0; x < 1600; x += 160) el("rect", { x, y: 680, width: 12, height: 50 }, n);   // 回廊
+      person(n, 260, 760, 1, "#1f1a14", false);
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");
