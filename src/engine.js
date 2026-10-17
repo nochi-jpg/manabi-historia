@@ -235,7 +235,13 @@ function fit() {
   stage.style.transform = `translate(-50%,-50%) scale(${s})`;
 }
 let CUR_BG = "夜";
-function setBg(key) { CUR_BG = key; bgEl.classList.remove("warped", "restoring"); bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key)); }
+function setBg(key, fade) {
+  if (fade && CUR_BG !== key && bgEl.firstChild) {   // 場面の中の背景がわり：前の背景を上に重ねて、ふわっと消す
+    const old = bgEl.cloneNode(true); old.removeAttribute("id"); old.classList.add("bg-old");
+    bgEl.parentNode.insertBefore(old, bgEl.nextSibling); setTimeout(() => old.remove(), 600);
+  }
+  CUR_BG = key; bgEl.classList.remove("warped", "restoring"); bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key));
+}
 /* ゆがみの度合い（0〜1）。背景がくもり、ひびが広がる */
 const CRACKS = ["M0 120 L140 170 L210 140 L330 230", "M1600 80 L1460 150 L1380 120 L1250 260", "M0 420 L120 380 L170 430 L280 360",
   "M1600 430 L1480 400 L1430 450 L1320 380", "M620 0 L680 90 L640 140 L720 230", "M1100 0 L1060 80 L1110 130 L1040 210"];   // セリフのまどに重ならない位置
@@ -274,7 +280,7 @@ function showPortrait(name, expr, ep) {
   const entering = el.hidden || el.classList.contains("leave") || ports[side] !== name;
   el.innerHTML = (aura ? AURA_HTML : "") + `<div class="pface">${faceHTML(c, expr, name)}</div>` + (!hasArt && EXPR[expr] ? `<div class="pexpr">${EXPR[expr]}</div>` : "");
   el.classList.toggle("aura", aura);
-  el.classList.remove("leave", "jump", "tremble", "vanish", "glitch");
+  el.classList.remove("leave", "jump", "tremble", "vanish", "glitch", "lexi");   // lexi（レキシクイの紫）は毎回はずす
   el.hidden = false; el.classList.remove("dim"); other.classList.add("dim");
   if (entering) { el.classList.remove("enter"); void el.offsetWidth; el.classList.add("enter"); }
   else if (expr === "おどろき" || expr === "怒り") { void el.offsetWidth; el.classList.add(expr === "おどろき" ? "jump" : "tremble"); }   // 表情に合わせて動く
@@ -286,7 +292,7 @@ function hidePortraits(fade) {
   if (fade) {
     ps.forEach(e => { if (!e.hidden) e.classList.add("leave"); });
     setTimeout(() => ps.forEach(e => { if (e.classList.contains("leave")) { e.hidden = true; e.classList.remove("leave"); } }), 320);
-  } else ps.forEach(e => { e.hidden = true; e.classList.remove("leave"); });
+  } else ps.forEach(e => { e.hidden = true; e.classList.remove("leave", "lexi"); });
   ports.L = ports.R = null;
 }
 
@@ -1102,6 +1108,9 @@ async function playEpisode(no, resume) {
   // 再開時は直前の背景を復元
   let bg = EP_META[no][1];
   for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg") bg = ep.nodes[i].bg;
+  if (!resume) {   // はじめから：最初のセリフより前に @背景 があれば、それを最初から出す（別の背景が一瞬見えないように）
+    for (const n of ep.nodes) { if (n.t === "bg") { bg = n.bg; break; } if (!["bgm", "se", "pic", "disguise"].includes(n.t)) break; }
+  }
   S.disguise = {}; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "disguise") S.disguise[ep.nodes[i].who] = ep.nodes[i].look || null;
   setBg(bg); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
   LOG = [];
@@ -1121,7 +1130,7 @@ async function playEpisode(no, resume) {
         case "disguise": S.disguise[n.who] = n.look || null; break;
         case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
         case "staff": await runStaffRoll(n.key); break;
-        case "bg": hidePortraits(true); setBg(n.bg); showPic(""); break;
+        case "bg": hidePortraits(true); setBg(n.bg, true); showPic(""); break;
         case "omen": await runOmen(); break;
         case "exit": await runExit(n); break;
         case "depart": await runDepart(); break;

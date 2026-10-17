@@ -651,3 +651,6 @@ rt{line-height:1}
 .tag::after,.topttl::after{clip-path:polygon(evenodd,0 50%,24px 0,100% 0,100% 100%,24px 100%,0 50%, 4px 50%,26.2px calc(100% - 2px),100% calc(100% - 2px),100% 2px,26.2px 2px,4px 50%)}
 .guide::after{clip-path:polygon(evenodd,0 0,100% 0,calc(100% - 22px) 100%,0 100%,0 0, 0 2px,0 calc(100% - 2px),calc(100% - 24.4px) calc(100% - 2px),calc(100% - 4px) 2px,0 2px)}
 .tname::after{clip-path:polygon(evenodd,0 100%,0 0,calc(100% - 22px) 0,100% 100%,0 100%, 2px 100%,calc(100% - 3.3px) 100%,calc(100% - 24.4px) 2px,2px 2px,2px 100%)}
+.bg-old{position:absolute;inset:0;z-index:0;pointer-events:none;animation:bgfade .55s ease forwards}.bg-old svg{position:absolute;inset:0;width:100%;height:100%}@keyframes bgfade{to{opacity:0}}
+.tname{height:54px}   /* ふちを消したぶん、下のまどとすき間ができないように */
+#talk:has(.tname:not(:empty):not([hidden])){border-top-left-radius:0}
