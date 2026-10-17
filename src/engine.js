@@ -119,6 +119,7 @@ function parseScript(no, src) {
         case "まとめ": add({ t: "sum", lines: [], hint: "" }); break;
         case "記憶のかけら": add({ t: "frag", title: arg, lines: [] }); break;
         case "クリア": ep.nodes.push({ t: "clear" }); break;
+        case "画像": ep.nodes.push({ t: "pic", key: rest[0] || "", fx: rest[1] || "" }); break;
         case "ゆがみ": ep.nodes.push({ t: "warp", text: arg || "歴史が ゆがんだ！" }); break;
         case "ゆがめる": ep.nodes.push({ t: "warp", text: "歴史が ゆがんだ！", who: arg }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
@@ -188,6 +189,14 @@ function setBg(key) { bgEl.classList.remove("warped"); bgEl.innerHTML = ""; bgEl
 function clearLayer() { layer.innerHTML = ""; layer.className = ""; }
 const btn = (label, cls, on) => { const b = h("button", "btn " + (cls || ""), label); b.onclick = on; return b; };
 
+/* 場面の中央に出す画像（@画像 名前 [光る]）。名前は art の名前（tokei など）。空なら消す */
+const PIC_FX = { "光る": "glow" };
+function showPic(key, fx) {
+  const el = $("#pic"); if (!el) return;
+  const A = (window.ART || {})[key];
+  if (!key || !A) { el.innerHTML = ""; return; }
+  el.innerHTML = `<img class="picimg ${PIC_FX[fx] || ""}" src="${A.normal || Object.values(A)[0]}" alt="">`;
+}
 /* 立ち絵 */
 const ports = { L: null, R: null };
 function showPortrait(name, expr, ep) {
@@ -753,7 +762,8 @@ async function playEpisode(no, resume) {
     const snap = { hand: S.hand.slice() };
     try {
       switch (n.t) {
-        case "bg": setBg(n.bg); hidePortraits(); break;
+        case "bg": setBg(n.bg); hidePortraits(); showPic(""); break;
+        case "pic": showPic(n.key, n.fx); break;
         case "say": await say(n.who, n.expr, n.text, ep); break;
         case "inv": await runInv(n); break;
         case "spot": await runSpot(n); break;
@@ -775,7 +785,7 @@ async function playEpisode(no, resume) {
       }
       throw e;
     }
-    if (n.t !== "say" && n.t !== "bg") { hideTalk(); clearLayer(); }
+    if (n.t !== "say" && n.t !== "bg" && n.t !== "pic") { hideTalk(); clearLayer(); showPic(""); }
     S.idx++;
   }
   return finishEpisode();
@@ -801,6 +811,7 @@ function finishEpisode() {
 
 /* ---------- 画面：タイトル ---------- */
 function showTitle() {
+  showPic("");
   S = null; renderHud(); hideTalk(); hidePortraits(); closeModal();
   bgEl.classList.remove("warped"); bgEl.innerHTML = ""; clearLayer(); layer.className = "menu title-white";
   const logo = window.ART && window.ART.title && window.ART.title.logo;
