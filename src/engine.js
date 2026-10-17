@@ -1293,8 +1293,8 @@ function drawTimeline(pi, sel, fx2 = {}) {
   if (!open) br.appendChild(btn("じゅもんを 入れる", "", enterSpell));
   else if (!ready) br.appendChild(btn("じゅんび中", "", () => { }));
   else {
-    if (SAVE.resume && SAVE.resume.no === no) br.appendChild(btn("つづきから", "red", () => playEpisode(no, true)));
-    br.appendChild(btn(SAVE.resume && SAVE.resume.no === no ? "はじめから" : "はじめる", SAVE.resume && SAVE.resume.no === no ? "" : "red", () => playEpisode(no, false)));
+    if (SAVE.resume && SAVE.resume.no === no) br.appendChild(btn("つづきから", "red startbtn", () => playEpisode(no, true)));
+    br.appendChild(btn(SAVE.resume && SAVE.resume.no === no ? "はじめから" : "はじめる", (SAVE.resume && SAVE.resume.no === no ? "" : "red") + " startbtn", () => playEpisode(no, false)));
   }
   if (!ready && open) br.firstChild.disabled = true;
   panel.querySelector(".tp-r").appendChild(br);
@@ -1521,7 +1521,7 @@ function boot() {
   $("#cardBtn").onclick = showHandViewer;
   $("#logBtn").onclick = showLog;
   $(".skipbtn").onclick = e => { e.stopPropagation(); const on = !SKIP; setSkip(on); if (SKIP && ADV) ADV(); };
-  stage.addEventListener("pointerdown", e => { BGM.unlock(); const b = e.target.closest("button"); if (b && b.id !== "cardBtn") SE.play(S ? "decide" : "cursor"); });
+  stage.addEventListener("pointerdown", e => { BGM.unlock(); const b = e.target.closest("button"); if (b && b.id !== "cardBtn") SE.play(b.classList.contains("startbtn") ? "start" : S ? "decide" : "cursor"); });
   $("#menuBtn").onclick = async () => {
     if (!S || S.busy) return;
     const box = h("div", "inbox"); box.appendChild(h("div", "in-msg", "おはなしを ちゅうだんしますか？<br><small>場面の はじめから 再開できます</small>"));
