@@ -191,8 +191,8 @@ function fit() {
 let CUR_BG = "夜";
 function setBg(key) { CUR_BG = key; bgEl.classList.remove("warped", "restoring"); bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key)); }
 /* ゆがみの度合い（0〜1）。背景がくもり、ひびが広がる */
-const CRACKS = ["M0 120 L140 170 L210 140 L330 230", "M1600 80 L1460 150 L1380 120 L1250 260", "M0 760 L160 700 L230 740 L380 640",
-  "M1600 820 L1470 760 L1400 800 L1260 690", "M700 0 L760 120 L720 180 L800 300", "M980 900 L940 780 L990 720 L930 600"];
+const CRACKS = ["M0 120 L140 170 L210 140 L330 230", "M1600 80 L1460 150 L1380 120 L1250 260", "M0 420 L120 380 L170 430 L280 360",
+  "M1600 430 L1480 400 L1430 450 L1320 380", "M620 0 L680 90 L640 140 L720 230", "M1100 0 L1060 80 L1110 130 L1040 210"];   // セリフのまどに重ならない位置
 function setWarpLevel(v) {
   bgEl.style.setProperty("--wl", v);
   let c = bgEl.querySelector(".cracks");
