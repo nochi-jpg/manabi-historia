@@ -155,6 +155,7 @@ function parseScript(no, src) {
         case "退場": ep.nodes.push({ t: "exit", who: arg }); break;
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
+        case "SE": ep.nodes.push({ t: "se", key: arg }); break;
         case "BGM": ep.nodes.push({ t: "bgm", key: arg }); break;
         case "スタッフロール": ep.nodes.push({ t: "staff", key: arg }); break;
         case "議論": add({ t: "testi", who: arg, rounds: [{ title: "", lines: [] }], hint: "" }); break;
@@ -538,6 +539,7 @@ function alertBox(html) {
 /* 手札をいつでも見る（法廷記録） */
 function showHandViewer() {
   if (!S || S.busy || !modal.hidden || !talk.hidden) return;
+  SE.play("hand");
   const box = h("div", "inbox wide");
   box.appendChild(h("div", "in-title", `もっている カード（${S.hand.length}まい）`));
   const detail = h("div", "hv-detail", S.hand.length ? "カードを タップすると 説明が 見られるよ" : "まだ カードを もっていないよ");
@@ -788,7 +790,7 @@ function runBattle(n) {
                 const last = r + 1 >= total;
                 if (last) {   // さいごの1本：スロー → 無音 → ドン
                   FX.add("dimmer slow", "", 1600); await sleep(800);
-                  FX.flash("#fff", 300); FX.shake("l"); FX.lines(1500); SE.play("ronpaBig");
+                  FX.flash("#fff", 300); FX.shake("l"); FX.lines(1500); if (SE.has("objection")) { SE.play("objection"); SE.play("shatter"); } else SE.play("ronpaBig");
                   FX.add("big ronpa obj huge", "論破！", 1700);
                   battleBg(100, { win: true }); SE.play("shatter");
                   face.classList.add("recoil"); await sleep(1500);
@@ -1065,6 +1067,7 @@ async function playEpisode(no, resume) {
     autoBgm(n);
     try {
       switch (n.t) {
+        case "se": SE.play(n.key); break;
         case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
         case "staff": await runStaffRoll(n.key); break;
         case "bg": hidePortraits(true); setBg(n.bg); showPic(""); break;
@@ -1093,14 +1096,14 @@ async function playEpisode(no, resume) {
       }
       throw e;
     }
-    if (!["say", "bg", "pic", "omen", "exit", "bgm"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
+    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
     S.idx++;
   }
   return finishEpisode();
 }
 /* BGM の自動切りかえ。すぐ前（背景・画像をはさんでもよい）に「@BGM」があれば、そちらを優先する */
 function prevBgm(ep, idx) {
-  for (let i = idx - 1; i >= 0; i--) { const t = ep.nodes[i].t; if (t === "bgm") return ep.nodes[i].key || "なし"; if (t !== "bg" && t !== "pic") return null; }
+  for (let i = idx - 1; i >= 0; i--) { const t = ep.nodes[i].t; if (t === "bgm") return ep.nodes[i].key || "なし"; if (t !== "bg" && t !== "pic" && t !== "se") return null; }
   return null;
 }
 const AUTO_BGM = { battle: "バトル", sum: "日常", frag: "一方", restore: "封印", omen: "神殿", warp: "神殿", exit: null, depart: null };
@@ -1239,7 +1242,7 @@ async function playRewind() {
     drawTimeline(pi, no, { noPanel: true, flick: PAGES[pi].eps });
     layer.classList.add("rewinding");
     yr.textContent = EP_INFO[no][1]; layer.appendChild(yr);
-    blip();
+    SE.play("tick");
     await sleep(k === 0 ? 1200 : Math.max(140, 420 - k * 25));
   }
   drawTimeline(0, 1, { noPanel: true });
@@ -1413,12 +1416,12 @@ function boot() {
   $("#hintBtn").onclick = onHint;
   $("#cardBtn").onclick = showHandViewer;
   $("#logBtn").onclick = showLog;
-  stage.addEventListener("pointerdown", e => { BGM.unlock(); if (e.target.closest("button")) SE.play("click"); });
+  stage.addEventListener("pointerdown", e => { BGM.unlock(); const b = e.target.closest("button"); if (b && b.id !== "cardBtn") SE.play(S ? "decide" : "cursor"); });
   $("#menuBtn").onclick = async () => {
     if (!S || S.busy) return;
     const box = h("div", "inbox"); box.appendChild(h("div", "in-msg", "おはなしを ちゅうだんしますか？<br><small>場面の はじめから 再開できます</small>"));
     const row = h("div", "btnrow");
-    row.appendChild(btn("ちゅうだんする", "", () => { closeModal(); location.reload(); }));
+    row.appendChild(btn("ちゅうだんする", "", () => { closeModal(); SE.play("save"); setTimeout(() => location.reload(), 900); }));
     row.appendChild(btn("つづける", "sub", closeModal));
     box.appendChild(row); openModal(box);
   };

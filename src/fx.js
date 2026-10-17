@@ -70,13 +70,29 @@ const SE = (() => {
     timewarp() { noise(0, 1.4, .2, 300, "bandpass", 5000); [400, 600, 900, 1350].forEach((f, i) => tone(f, i * .25, .5, "sine", .07)); },
     thud() { tone(120, 0, .2, "sine", .3, 60); },
   };
-  return { ac, play(name) { if (!on()) return; try { P[name] && P[name](); } catch (e) { } } };
+  // 素材の音（window.SE_DATA）があれば、そちらを鳴らす。最初にタップしたとき、まとめて読みこむ
+  const FD = window.SE_DATA || {}, BUF = {};
+  function loadAll() {
+    for (const k in FD) {
+      if (BUF[k]) continue; BUF[k] = "loading";
+      const bin = atob(FD[k].d), u = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+      ac().decodeAudioData(u.buffer, b => BUF[k] = b, () => delete BUF[k]);
+    }
+  }
+  function file(k) {
+    const b = BUF[k]; if (!b || b === "loading") return false;
+    const c = ac(), s = c.createBufferSource(), g = c.createGain();
+    s.buffer = b; g.gain.value = .9 * FD[k].v; s.connect(g); g.connect(c.destination); s.start();
+    return true;
+  }
+  return { ac, loadAll, has: k => !!FD[k], play(name) { if (!on()) return; try { if (FD[name] && file(name)) return; P[name] && P[name](); } catch (e) { } } };
 })();
 
 /* BGM：埋めこんだ曲（window.BGM_DATA）を WebAudio でループ再生する。
    BGM.play("呼び名") で切りかえ（同じ曲なら そのまま流しつづける）、BGM.stop() で止める */
 const BGM = (() => {
-  const TR = window.BGM_DATA || {}, VOL = .42, cache = new Map();
+  const TR = window.BGM_DATA || {}, VOL = .32, cache = new Map();
   let cur = null, curKey = null, want = null, token = 0;
   const on = () => { try { return typeof SAVE === "undefined" || SAVE.opt.bgm !== false; } catch (e) { return true; } };
   async function load(key) {
@@ -114,7 +130,7 @@ const BGM = (() => {
     },
     stop(fade = 1) { this.play(null, { fade }); },
     get key() { return want; },
-    unlock() { try { const c = SE.ac(); if (c.state === "suspended") c.resume(); } catch (e) { } },
+    unlock() { try { const c = SE.ac(); if (c.state === "suspended") c.resume(); SE.loadAll(); } catch (e) { } },
     refresh() { const k = want; curKey = null; fadeOut(cur, .3); cur = null; if (on() && k) this.play(k); else want = k; },
   };
 })();

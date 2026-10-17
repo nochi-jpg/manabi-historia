@@ -87,6 +87,14 @@ for line in (R/"data/bgm.txt").read_text(encoding="utf-8").splitlines():
     if fp.exists(): bgm[key] = {"ls": int(ls) / 44100, "le": (int(ls) + int(ll)) / 44100, "d": base64.b64encode(fp.read_bytes()).decode()}
     else: print("⚠ BGMなし:", key, f)
 data += "\nwindow.BGM_DATA=" + json.dumps(bgm, ensure_ascii=False) + ";\nwindow.BGM_TITLES=" + json.dumps(bgm_list, ensure_ascii=False) + ";"
+# 効果音：data/se.txt の一覧どおり audio/se/呼び名.ogg を埋めこむ（ないものは合成の音）
+se = {}
+for line in (R/"data/se.txt").read_text(encoding="utf-8").splitlines():
+    if not line.strip() or line.startswith("#"): continue
+    key, f, st, du, vol, use = [x.strip() for x in line.split("|")]
+    fp = R/"audio/se"/(key + ".ogg")
+    if fp.exists(): se[key] = {"v": float(vol), "d": base64.b64encode(fp.read_bytes()).decode()}
+data += "\nwindow.SE_DATA=" + json.dumps(se) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
 import base64, subprocess, tempfile
