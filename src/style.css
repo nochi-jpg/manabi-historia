@@ -642,3 +642,4 @@ rt{line-height:1}
 .frag-pic.has{top:196px}.frag-pic.has img{height:380px}
 .big.obj{left:68%;font-size:132px}   /* カットインのユウキの顔（左）に文字がかからないよう右へ */
 .plabel{white-space:nowrap}.plabel.long{font-size:16px;letter-spacing:-.03em}
+.skipbtn{top:8px;right:12px;height:28px;padding:0 10px;font-size:14px;border-width:1px;border-radius:4px;letter-spacing:.05em;opacity:.85}   /* 小さく、すみに寄せる */
