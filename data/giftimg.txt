@@ -1,0 +1,5 @@
+# おくりもの（各話のさいごにもらう物）の写真。tools/make_cardimg.py で art/呼び名_normal.webp に作る
+# 呼び名 | 画像URL | 出典ページ | ライセンス | 作者・所蔵 | fit | crop | 表示名
+gmimi | https://colbase.nich.go.jp/media/tnm/J-23217/image/slideshow_s/J-23217_E0107226.jpg | https://colbase.nich.go.jp/collection_items/tnm/J-23217 | CC BY 4.0相当 | ColBase／東京国立博物館 | pad |  | おくりもの：土の耳かざり（第1話）
+gmagatama | https://colbase.nich.go.jp/media/tnm/J-9048/image/slideshow_s/J-9048_C0043062.jpg | https://colbase.nich.go.jp/collection_items/tnm/J-9048 | CC BY 4.0相当 | ColBase／東京国立博物館 | pad |  | おくりもの：勾玉（第2話）
+gkatana | https://ibmuseum.mapps.ne.jp/files/9355/media_files/mid/1528.jpg | https://jmapps.ne.jp/chigasaki_museum/det.html?data_id=1493 | CC BY 4.0相当 | 茅ヶ崎市博物館 | pad |  | おくりもの：鉄の小刀（第3話）

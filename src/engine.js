@@ -68,6 +68,16 @@ function autoRuby(s) {
 }
 /* fmt：セリフ・証言・カードの説明など、ふりがなを入れてよい所に使う
    fmtUI：帯・見出し・ボタンなど高さの決まった所に使う（ふりがなを入れない） */
+/* 題名やカード名を「切りのいいところ」で改行する：助詞（の・と・を…）のあとに漢字・カタカナが来るところだけで折り返す
+   （例：町人の｜文化と｜新しい学問）。区切りがない名前（漢字だけ等）は、ふつうに折り返す */
+function phr(t) {
+  const ch = [...(t || "")]; let out = "", any = false;
+  ch.forEach((c, i) => {
+    if (i > 0 && (/[のとをにでがはへやも、・]/.test(ch[i - 1]) && /[^ぁ-ゖ、。！？・ー）」]/.test(c) || ch[i - 1] === " ")) { out += "<wbr>"; any = true; }
+    out += esc(c);
+  });
+  return any ? `<span class="kp">${out}</span>` : out;
+}
 function fmtUI(t) { return esc(t).replace(new RegExp(`(${KANJI})《[^》]+》`, "g"), "$1").replace(/【([^】]+)】/g, '<span class="kw">$1</span>'); }
 function fmt(t) {
   let s = esc(t);
@@ -110,7 +120,8 @@ const ART_EXP = { "ふつう": "normal", "おどろき": "surprise", "笑顔": "
 function faceHTML(c, expr, key) {
   const A = window.ART || {};
   if (c.art && A[c.art]) {
-    const src = A[c.art][ART_EXP[expr]] || A[c.art].normal;
+    const dz = S && S.disguise && S.disguise[key];   // 変装中（@変装）はその絵
+    const src = (dz && A[c.art][dz]) || A[c.art][ART_EXP[expr]] || A[c.art].normal;
     if (src) return `<img class="fimg" src="${src}" alt="">`;
   }
   if (/^人[:：]/.test(c.icon || "")) return iconHTML(c.icon, key, "silface");
@@ -155,6 +166,7 @@ function parseScript(no, src) {
         case "退場": ep.nodes.push({ t: "exit", who: arg }); break;
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
+        case "変装": ep.nodes.push({ t: "disguise", who: rest[0] || "", look: rest[1] || "" }); break;   // @変装 卑弥呼 hood ／ @変装 卑弥呼（もどす）
         case "SE": ep.nodes.push({ t: "se", key: arg }); break;
         case "BGM": ep.nodes.push({ t: "bgm", key: arg }); break;
         case "スタッフロール": ep.nodes.push({ t: "staff", key: arg }); break;
@@ -286,7 +298,7 @@ function blip() {
     actx = actx || new (window.AudioContext || window.webkitAudioContext)();
     const o = actx.createOscillator(), g = actx.createGain();
     o.type = "square"; o.frequency.value = 760 + Math.random() * 60;
-    g.gain.setValueAtTime(0.035, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.045);
+    g.gain.setValueAtTime(0.09, actx.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + 0.045);
     o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.05);
   } catch (e) { }
 }
@@ -320,16 +332,28 @@ function typeIn(el, html, onEnd) {
   if (!units.length) end();
   return t;
 }
+/* ---------- 既読スキップ：クリアした話だけ。セリフを高速で送る。調査・証言・選択肢では自動でオフ ---------- */
+let SKIP = false, ADV = null;
+const canSkip = () => !!(S && SAVE.stars[S.no] > 0 && !S.noSkip);
+function setSkip(on) {
+  SKIP = !!on && canSkip();
+  const b = $(".skipbtn"); if (b) { b.classList.toggle("on", SKIP); b.textContent = SKIP ? "スキップ中 ■" : "スキップ ▶▶"; }
+}
 function waitAdvance(typer) {
   return new Promise(res => {
     catcher.hidden = false;
+    let timer = null;
+    const done = () => { clearTimeout(timer); ADV = null; catcher.hidden = true; catcher.onclick = null; talk.onclick = null; document.removeEventListener("keydown", key); res(); };
     const go = () => {
+      if (SKIP) { setSkip(false); clearTimeout(timer); return; }   // スキップ中にタップ → 早送りを止める
       if (typer && !typer.done) { typer.finish(); return; }   // 表示中ならまず全部出す
-      catcher.hidden = true; catcher.onclick = null; talk.onclick = null; document.removeEventListener("keydown", key); res();
+      done();
     };
     const key = e => { if (!modal.hidden) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
-    catcher.onclick = go; talk.onclick = e => { if (!e.target.closest(".speak")) go(); };
+    catcher.onclick = go; talk.onclick = e => { if (!e.target.closest(".skipbtn")) go(); };
     document.addEventListener("keydown", key);
+    ADV = () => { if (typer) typer.finish(); timer = setTimeout(done, 70); };   // スキップ：すぐ全部出して、すぐ次へ
+    if (SKIP) ADV();
   });
 }
 async function say(who, expr, text, ep, opt = {}) {
@@ -339,7 +363,6 @@ async function say(who, expr, text, ep, opt = {}) {
   talk.querySelector(".tname").hidden = !who;
   const tt = talk.querySelector(".ttext");
   tt.classList.toggle("narr", !who);
-  talk.querySelector(".speak").onclick = e => { e.stopPropagation(); speak(text); };
   tt.classList.toggle("inner", /^（[\s\S]*）$/.test(text.trim()));   // （ ）は心の声
   logPush(who, text);
   stage.classList.add("talking");
@@ -350,7 +373,8 @@ async function say(who, expr, text, ep, opt = {}) {
     showPortrait(who, expr, ep);
     if (who === "レキシクイ") { const pe = $("#portR"); pe.classList.add("lexi"); }
   }
-  if (SAVE.opt.autoRead) speak(text);
+  const sb = talk.querySelector(".skipbtn"); sb.hidden = !canSkip(); if (!canSkip()) setSkip(false);
+  if (SAVE.opt.autoRead && !SKIP) speak(text);
   talk.classList.add("typing");
   const typer = typeIn(tt, fmt(text), () => talk.classList.remove("typing"));
   await waitAdvance(typer);
@@ -367,20 +391,32 @@ function logPush(who, text) {
 }
 function showLog() {
   if (!modal.hidden) return;
-  const per = 7, pages = Math.max(1, Math.ceil(LOG.length / per));
-  let page = pages - 1;
   const box = h("div", "inbox wide logbox");
   box.appendChild(h("div", "in-title", "これまでの おはなし"));
-  const list = h("div", "log-list"), nav = h("div", "pg-row log-nav");
-  const prev = h("button", "pg-arrow", "◀"), next = h("button", "pg-arrow", "▶"), pn = h("div", "log-pn");
-  const draw = () => {
-    list.innerHTML = LOG.length ? LOG.slice(page * per, page * per + per).map(l => `<div class="log-row"><span class="log-who">${esc(l.who || "")}</span><span class="log-text${l.who ? "" : " narr"}">${fmt(l.text)}</span></div>`).join("") : `<div class="log-row">まだ ないよ</div>`;
-    prev.disabled = page === 0; next.disabled = page >= pages - 1; pn.textContent = `${page + 1} / ${pages}`;
-  };
-  prev.onclick = () => { if (page > 0) { page--; draw(); } }; next.onclick = () => { if (page < pages - 1) { page++; draw(); } };
-  nav.append(prev, pn, next);
-  box.append(list, nav, btn("とじる", "sub", closeModal));
-  draw(); openModal(box);
+  const list = h("div", "log-list"), bar = h("div", "log-bar");
+  const prev = h("button", "pg-arrow sq", "◀"), next = h("button", "pg-arrow sq", "▶"), pn = h("div", "log-pn");
+  const rowHTML = l => `<div class="log-row"><span class="log-who${[...(l.who || "")].length > 7 ? " small" : ""}">${esc(l.who || "")}</span><span class="log-text${l.who ? "" : " narr"}">${fmt(l.text)}</span></div>`;
+  bar.append(prev, pn, next, btn("とじる", "sub", closeModal));
+  box.append(list, bar);
+  openModal(box);
+  // 行の高さを実際に測って、はみ出さないようにページを分ける（スクロールなし）
+  const pages = [];
+  if (!LOG.length) pages.push(`<div class="log-row">まだ ないよ</div>`);
+  else {
+    list.innerHTML = LOG.map(rowHTML).join("");
+    const H = list.clientHeight, rows = [...list.children];
+    let cur = [], used = 0;
+    rows.forEach((r, i) => {
+      const rh = r.offsetHeight + 6;
+      if (cur.length && used + rh > H) { pages.push(cur.join("")); cur = []; used = 0; }
+      cur.push(rowHTML(LOG[i])); used += rh;
+    });
+    if (cur.length) pages.push(cur.join(""));
+  }
+  let page = pages.length - 1;
+  const draw = () => { list.innerHTML = pages[page]; prev.disabled = page === 0; next.disabled = page >= pages.length - 1; pn.textContent = `${page + 1} / ${pages.length}`; };
+  prev.onclick = () => { if (page > 0) { page--; draw(); } }; next.onclick = () => { if (page < pages.length - 1) { page++; draw(); } };
+  draw();
 }
 
 /* 効果 */
@@ -389,7 +425,7 @@ function shake(l) { FX.shake(l); }
 function banner(text, html) { const e = h("div", "banner" + (html ? " tall" : ""), html || fmtUI(text)); fx.appendChild(e); setTimeout(() => e.remove(), 1800); }
 
 /* モーダル */
-function openModal(content, cls) { modal.innerHTML = ""; modal.className = "modal " + (cls || ""); modal.appendChild(content); modal.hidden = false; stage.classList.add("modal-on"); }
+function openModal(content, cls) { setSkip(false); modal.innerHTML = ""; modal.className = "modal " + (cls || ""); modal.appendChild(content); modal.hidden = false; stage.classList.add("modal-on"); }
 function closeModal() { modal.hidden = true; modal.innerHTML = ""; stage.classList.remove("modal-on"); }
 
 /* カードの絵：写真（window.CARDIMG）があれば写真、なければ絵文字 */
@@ -399,7 +435,7 @@ function cardIcon(c) {
 }
 function cardEl(name, opts = {}) {
   const c = CARDS[name] || { name, icon: "？" };
-  const e = h("button", "card" + (opts.unknown ? " unknown" : ""), opts.unknown ? `<div class="cicon">？</div><div class="cname">？？？</div>` : `${cardIcon(c)}<div class="cname${[...c.name].length > 6 ? " long" : ""}">${esc(c.name)}</div>`);
+  const e = h("button", "card" + (opts.unknown ? " unknown" : ""), opts.unknown ? `<div class="cicon">？</div><div class="cname">？？？</div>` : `${cardIcon(c)}<div class="cname${[...c.name].length > 6 ? " long" : ""}">${phr(c.name)}</div>`);
   return e;
 }
 function showCardGet(name) {
@@ -441,12 +477,12 @@ async function throwCard(name, target, ok) {
   setTimeout(() => fc.remove(), 700);
   await sleep(ok ? 250 : 450);
 }
-/* 矛盾はっけん！：タメ → ユウキのカットイン → フラッシュ・揺れ・集中線 */
+/* 矛盾発見！：タメ → ユウキのカットイン → フラッシュ・揺れ・集中線 */
 async function objection(text) {
   stopSpeak(); SE.play("tame");
   FX.add("dimmer", "", 1500); await sleep(450);
   const img = window.ART && window.ART.yuuki ? `<img src="${window.ART.yuuki.angry || window.ART.yuuki.normal}" alt="">` : "";
-  FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1150); SE.play("whoosh");
+  FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1700); SE.play("whoosh");
   await sleep(450);
   FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("objection");
   FX.add("big ronpa obj", text, 1500);
@@ -483,6 +519,7 @@ function pager(names, opts) {
 
 /* 手札からカードを選ぶ。キャンセルで null */
 function chooseCard(title, correct, quote) {
+  setSkip(false);
   return new Promise(res => {
     let list = S.hand.slice();
     if (S.narrow) {
@@ -644,7 +681,12 @@ function runInv(n) {
       if (warping) setWarpLevel(.3 + .6 * got.size / n.items.length);
     };
     n.items.forEach(it => {
-      const e = h("button", "prop", `${iconHTML(it.icon, it.name)}<div class="plabel">${esc(it.name)}</div>`);
+      // 人でない調べものは、手に入るカードの写真を出す（写真がなければ絵文字）
+      // 「写真:カード名」でほかのカードの写真、「絵:🏯」で絵文字のまま
+      const CI = window.CARDIMG || {}, ic = it.icon || "";
+      let photo = /^写真[:：]/.test(ic) ? CI[ic.replace(/^写真[:：]/, "")] : (!/^(人|絵)[:：]/.test(ic) && it.card && CI[it.card]);
+      if (/^絵[:：]/.test(ic)) it.icon = ic.replace(/^絵[:：]/, "");
+      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : iconHTML(it.icon, it.name)}<div class="plabel">${phr(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       els.push(e);
       e.onclick = async () => {
@@ -699,14 +741,14 @@ function runSpot(n) {
     const upd = () => { info.innerHTML = `ゆがんだ 証言を 見やぶれ（のこり ${bads - fixed.size}）`; };
     upd();
     n.items.forEach((it, i) => {
-      const e = h("button", "prop warped", `${iconHTML(it.icon, it.name)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${esc(it.name)}</div>`);
+      const e = h("button", "prop warped", `${iconHTML(it.icon, it.name)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${phr(it.name)}</div>`);
       placeAt(e, it.pos);
       e.onclick = async () => {
         if (S.busy || fixed.has(i)) return; S.busy = true;
         try {
           const pick = await chooseCard("この 証言と 矛盾する カードを つきつけろ！", it.bad ? it.card : null, { who: it.name, text: it.quote });
           if (pick && it.bad && pick === it.card) {
-            fixed.add(i); bigText("矛盾 はっけん！", "ronpa"); shake(); await sleep(900);
+            fixed.add(i); bigText("矛盾 発見！", "ronpa"); shake(); await sleep(900);
             e.classList.remove("warped"); e.classList.add("fixed");
             const pi = e.querySelector(".pitem"); if (pi && it.fixItem) pi.textContent = it.fixItem;
             if (it.explain) await say("本じい", "笑顔", it.explain, S.ep);
@@ -965,7 +1007,6 @@ function runTesti(n) {
       layer.appendChild(h("div", "guide", `証言「${esc(round.title || "")}」（${r + 1} / ${n.rounds.length}）`));
       const box = h("div", "tbox");
       box.innerHTML = `<div class="tname">${esc(who)}</div><div class="ttext"></div><div class="tcount"></div>`;
-      const sp = h("button", "speak", "🔊"); box.appendChild(sp);
       layer.appendChild(box);
       const nav = h("div", "tnav");
       const prev = btn("◀ 前へ", "sub", () => go(-1));
@@ -983,7 +1024,6 @@ function runTesti(n) {
         if (suspect && i === lieIdx) SE.play("doku");
         logPush(who, line.text);
         prev.disabled = i === 0;
-        sp.onclick = () => speak(line.text);
         if (SAVE.opt.autoRead) speak(line.text);
         box.classList.remove("flip"); void box.offsetWidth; box.classList.add("flip");
       };
@@ -1008,7 +1048,7 @@ function runTesti(n) {
           const pick = await chooseCard("この 証言と 矛盾する カードを つきつけろ！", line.lie ? line.card : null, { who, text: line.text });
           if (pick) await throwCard(pick, wface, line.lie && pick === line.card);
           if (pick && line.lie && pick === line.card) {
-            await objection("矛盾 はっけん！");
+            await objection("矛盾 発見！");
             if (line.retort) await say("ユウキ", "怒り", line.retort, S.ep);
             if (line.reaction) await say(who, "おどろき", line.reaction, S.ep, { noPort: true });
             r++; i = 0;
@@ -1039,7 +1079,8 @@ async function runFrag(n) {
   layer.className = "frag";
   const t = h("div", "frag-head", "一方 そのころ……");
   layer.appendChild(t); await sleep(1400);
-  layer.appendChild(h("div", "frag-pic", `<div>🖼️</div><div class="frag-cap">記憶のかけら「${esc(n.title)}」</div>`));
+  const fa = window.ART && window.ART["frag" + S.no];   // 記憶のかけらの絵：art/frag話数_normal.webp
+  layer.appendChild(h("div", "frag-pic" + (fa ? " has" : ""), `${fa ? `<img src="${fa.normal}" alt="">` : "<div>🖼️</div>"}<div class="frag-cap">記憶のかけら「${esc(n.title)}」</div>`));
   layer.appendChild(h("div", "film"));
   for (const l of n.lines) await say(l.who, l.expr, l.text, S.ep, { dark: true });
   hideTalk();
@@ -1059,6 +1100,7 @@ async function playEpisode(no, resume) {
   // 再開時は直前の背景を復元
   let bg = EP_META[no][1];
   for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg") bg = ep.nodes[i].bg;
+  S.disguise = {}; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "disguise") S.disguise[ep.nodes[i].who] = ep.nodes[i].look || null;
   setBg(bg); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
   LOG = [];
   if (!resume) { BGM.stop(.6); await titleCard(no); BGM.play(no === 0 ? "学校" : "町"); }
@@ -1067,12 +1109,14 @@ async function playEpisode(no, resume) {
     const n = ep.nodes[S.idx];
     S.node = n; S.hintLv = 0; S.rej = null; newRound(null);
     const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
+    S.noSkip = ["inv", "spot", "testi", "battle", "sum"].includes(n.t); if (S.noSkip) setSkip(false);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
     autoBgm(n);
     try {
       switch (n.t) {
         case "se": SE.play(n.key); break;
+        case "disguise": S.disguise[n.who] = n.look || null; break;
         case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
         case "staff": await runStaffRoll(n.key); break;
         case "bg": hidePortraits(true); setBg(n.bg); showPic(""); break;
@@ -1101,7 +1145,7 @@ async function playEpisode(no, resume) {
       }
       throw e;
     }
-    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
+    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se", "disguise"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
     S.idx++;
   }
   return finishEpisode();
@@ -1132,6 +1176,7 @@ async function titleCard(no) {
   tc.classList.add("out"); await sleep(500); tc.remove();
 }
 function finishEpisode() {
+  setSkip(false);
   bgEl.classList.remove("warped");
   hideTalk(); hidePortraits(); clearLayer();
   const no = S.no;
@@ -1206,7 +1251,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
     const [era, year] = EP_INFO[no];
     const open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
     const nd = h("button", "tl-node" + (no === sel ? " sel" : "") + (open ? "" : " locked") + (st ? " done" : "") + (page.future ? " future" : "") + (fx2.flick && fx2.flick.includes(no) ? " flick" : ""),
-      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
+      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open ? phr(EP_META[no][0]) : "？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
     nd.style.left = xs[i] + "px";
     nd.onclick = () => { SEL = { page: pi, no }; SEL_TOUCHED = true; drawTimeline(pi, no); };
     layer.appendChild(nd);
@@ -1224,7 +1269,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const no = sel, [era, year, key] = EP_INFO[no], open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
   const panel = h("div", "tl-panel");
   panel.innerHTML = `<div class="tp-l"><div class="tp-no">${no === 0 ? "プロローグ" : "第" + no + "話"}　<span>${esc(era)}・${esc(year)}</span></div>
-    <div class="tp-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "キーマン：" + esc(key) : "&nbsp;"}</div></div>
+    <div class="tp-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
     <div class="tp-r"><div class="tp-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : ""}</div></div>`;
   const br = h("div", "tp-btns");
   if (!open) br.appendChild(btn("じゅもんを 入れる", "", enterSpell));
@@ -1425,6 +1470,7 @@ function boot() {
   $("#hintBtn").onclick = onHint;
   $("#cardBtn").onclick = showHandViewer;
   $("#logBtn").onclick = showLog;
+  $(".skipbtn").onclick = e => { e.stopPropagation(); const on = !SKIP; setSkip(on); if (SKIP && ADV) ADV(); };
   stage.addEventListener("pointerdown", e => { BGM.unlock(); const b = e.target.closest("button"); if (b && b.id !== "cardBtn") SE.play(S ? "decide" : "cursor"); });
   $("#menuBtn").onclick = async () => {
     if (!S || S.busy) return;

@@ -18,7 +18,10 @@ def fetch(u):
                 if k == 4: raise
                 time.sleep(30 if "429" in str(e) else 3)
     return Image.open(io.BytesIO(fp.read_bytes())).convert("RGB")
-for line in (R/"data/cardimg.txt").read_text(encoding="utf-8").splitlines():
+JOBS = [(R/"data/cardimg.txt", lambda n: OUT/(n + ".webp"), (256, 190)),   # カード
+        (R/"data/giftimg.txt", lambda n: R/"art"/(n + "_normal.webp"), (480, 360))]   # おくりもの（@画像 呼び名 で出す）
+for listf, dest, (W, H) in JOBS:
+  for line in listf.read_text(encoding="utf-8").splitlines():
     if not line.strip() or line.startswith("#"): continue
     p = [x.strip() for x in line.split("|")]
     name, url, fit, crop = p[0], p[1], p[5], p[6] if len(p) > 6 else ""
@@ -36,5 +39,5 @@ for line in (R/"data/cardimg.txt").read_text(encoding="utf-8").splitlines():
         w, h = im.size; s = max(W/w, H/h)
         im = im.resize((int(w*s+.5), int(h*s+.5)), Image.LANCZOS)
         l, t = (im.width-W)//2, (im.height-H)//2; im = im.crop((l, t, l+W, t+H))
-    im.save(OUT/(name + ".webp"), "WEBP", quality=62, method=6)
+    im.save(dest(name), "WEBP", quality=62 if W < 300 else 75, method=6)
 print("OK", len(list(OUT.glob("*.webp"))), "枚", sum(f.stat().st_size for f in OUT.glob("*.webp"))//1024, "KB")
