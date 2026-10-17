@@ -40,6 +40,41 @@ const BG = (() => {
       el("path", { d: "M745 750 Q750 715 760 700 Q770 715 775 750Z", fill: "#ffcf6b" }, svg);
       person(n, 140, 760, 1, "#3d1f12", true);
     } },
+    弥生: { ground: "#2a2410", draw(svg) {
+      const d = sky(svg, "skyY", [[0, "#7fb3d6"], [.6, "#cfe3d8"], [1, "#f5ecc8"]]);
+      glow(d, "sunY", "#fffbe6");
+      el("circle", { cx: 300, cy: 420, r: 220, fill: "url(#sunY)" }, svg);
+      el("path", { d: "M0 540 Q300 470 620 520 T1200 500 T1600 530 V900 H0Z", fill: "#8fae7a", opacity: .7 }, svg);
+      const fld = el("g", {}, svg);   // 実った田んぼ
+      el("path", { d: "M0 620 Q400 590 800 610 T1600 600 V900 H0Z", fill: "#d8b24a" }, fld);
+      for (let x = 0; x < 1600; x += 26) el("path", { d: `M${x} 640 q6 -18 12 0`, stroke: "#b8902c", "stroke-width": 3, fill: "none" }, fld);
+      const n = el("g", { fill: "#2a2410" }, svg);
+      el("path", { d: "M0 740 Q400 715 800 730 T1600 720 V900 H0Z" }, n);
+      for (let x = 0; x < 1600; x += 22) el("rect", { x, y: 690 + Math.sin(x / 90) * 6, width: 8, height: 60 }, n);   // さく
+      el("rect", { x: 0, y: 738, width: 1600, height: 8 }, n);
+      const tower = (x, s) => { const g = el("g", { transform: `translate(${x},735) scale(${s})` }, n);   // 物見やぐら
+        el("path", { d: "M-50 0 L-34-210 L-26-210 L-40 0Z M50 0 L34-210 L26-210 L40 0Z" }, g);
+        el("rect", { x: -60, y: -230, width: 120, height: 26 }, g); el("path", { d: "M-70-226 L0-290 L70-226Z" }, g);
+        el("path", { d: "M-44-120 L44-60 M44-120 L-44-60", stroke: "#2a2410", "stroke-width": 8 }, g); };
+      tower(1180, 1); tower(260, .8);
+      const kura = (x, s) => { const g = el("g", { transform: `translate(${x},735) scale(${s})` }, n);   // 高床倉庫
+        [-60, -20, 20, 60].forEach(px => el("rect", { x: px - 6, y: -90, width: 12, height: 90 }, g));
+        el("rect", { x: -80, y: -150, width: 160, height: 60 }, g); el("path", { d: "M-110-140 L0-230 L110-140Z" }, g); };
+      kura(560, 1); kura(800, .85);
+      person(n, 960, 760, 1, "#2a2410", true);
+    } },
+    宮殿: { ground: "#0d0805", draw(svg) {
+      const d = sky(svg, "skyP", [[0, "#140c08"], [1, "#2c1a10"]]);
+      glow(d, "lampP", "#ffb35c");
+      el("circle", { cx: 800, cy: 420, r: 520, fill: "url(#lampP)", opacity: .45 }, svg);
+      const w = el("g", { fill: "#0d0805" }, svg);
+      [120, 420, 1180, 1480].forEach(x => el("rect", { x: x - 22, y: 0, width: 44, height: 900 }, w));   // 柱
+      el("rect", { x: 0, y: 0, width: 1600, height: 70 }, w); el("rect", { x: 0, y: 760, width: 1600, height: 140 }, w);
+      for (let x = 470; x < 1140; x += 14) el("rect", { x, y: 90, width: 5, height: 560, fill: "#c99a5b", opacity: .5 }, svg);   // すだれ
+      el("rect", { x: 460, y: 80, width: 690, height: 18, fill: "#5a3a1c" }, svg);
+      el("rect", { x: 460, y: 640, width: 690, height: 14, fill: "#5a3a1c" }, svg);
+      [300, 1300].forEach(x => { el("circle", { cx: x, cy: 600, r: 70, fill: "url(#lampP)" }, svg); el("rect", { x: x - 8, y: 600, width: 16, height: 160, fill: "#0d0805" }, svg); });
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");
@@ -105,7 +140,7 @@ const BG = (() => {
     const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid slice" });
     sc.draw(svg);
     // セリフ枠に隠れないよう、景色を上へずらす（空はそのまま）
-    if (key !== "夜" && key !== "時空") {
+    if (key !== "夜" && key !== "時空" && key !== "宮殿") {
       const g = el("g", { transform: "translate(0,-120)" });
       [...svg.childNodes].slice(2).forEach(c => g.appendChild(c)); svg.appendChild(g);
       el("rect", { x: 0, y: H - 130, width: W, height: 130, fill: sc.ground }, svg);
