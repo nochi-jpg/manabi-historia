@@ -48,8 +48,27 @@ function persist() { try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } c
 /* ---------- 文字の整形（ルビ・キーワード） ---------- */
 const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const KANJI = "[\\u4E00-\\u9FFF\\u3005\\u30F6]+";
+/* 自動ふりがな：data/yomi.txt の辞書で、漢字に読みをつける（台本の 漢字《よみ》 が優先） */
+const YMAP = {};
+(window.YOMI || []).forEach(([k, n, v]) => (YMAP[k[0]] = YMAP[k[0]] || []).push([k, n, v]));
+Object.values(YMAP).forEach(a => a.sort((x, y) => y[0].length - x[0].length));
+const KJ1 = /[\u4E00-\u9FFF\u3005\u30F6]/;
+function autoRuby(s) {
+  let out = "", i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (!KJ1.test(ch)) { out += ch; i++; continue; }
+    let j = i; while (j < s.length && KJ1.test(s[j])) j++;
+    if (s[j] === "《") { out += s.slice(i, j); i = j; continue; }   // 台本でよみを書いたところは そのまま
+    const hit = (YMAP[ch] || []).find(e => s.startsWith(e[0], i));
+    if (hit && hit[1] > 0) { out += `<ruby>${s.substr(i, hit[1])}<rt>${hit[2]}</rt></ruby>`; i += hit[1]; }
+    else { out += ch; i++; }
+  }
+  return out;
+}
 function fmt(t) {
   let s = esc(t);
+  if (SAVE.opt.ruby) s = autoRuby(s);
   s = s.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), (m, k, r) => SAVE.opt.ruby ? `<ruby>${k}<rt>${r}</rt></ruby>` : k);
   s = s.replace(/【([^】]+)】/g, '<span class="kw">$1</span>');
   return s;
@@ -807,6 +826,23 @@ function shatter(el) {
 }
 
 /* ---------- 場面：まとめ ---------- */
+/* まとめ完成：うめた言葉が順に光る → 紙がかがやく → 「まとめ かんせい！」のハンコ → 光の粒 */
+async function sumComplete(paper) {
+  await sleep(300);
+  const oks = [...paper.querySelectorAll(".slot.ok")];
+  for (const o of oks) { o.classList.add("glow"); SE.play("star"); await sleep(260); }
+  paper.classList.add("done"); FX.flash("rgba(255,230,150,.55)", 320); FX.shake("s"); SE.play("starGold");
+  const st = FX.add("sum-stamp", "まとめ<br>かんせい！", 2400);
+  for (let k = 0; k < 40; k++) {
+    const c = FX.add("confetti", "", 2200);
+    c.style.left = (200 + Math.random() * 1200) + "px"; c.style.top = "-30px";
+    c.style.background = ["#ffd166", "#ff8fa3", "#8ecae6", "#b9fbc0", "#fff"][k % 5];
+    c.style.setProperty("--dx", (Math.random() * 300 - 150) + "px"); c.style.setProperty("--rot", (Math.random() * 900) + "deg");
+    c.style.animationDelay = (Math.random() * 500) + "ms";
+  }
+  setTimeout(() => SE.play("found"), 450);
+  await sleep(2300);
+}
 function runSum(n) {
   return new Promise((res, rej) => {
     S.rej = rej;
@@ -835,7 +871,7 @@ function runSum(n) {
         hideTalk(); hidePortraits();
       } catch (er) { S.busy = false; return rej(er); }
       S.busy = false;
-      if (filled >= slots.length) { bigText("まとめ かんせい！", "good"); await sleep(900); res(); }
+      if (filled >= slots.length) { await sumComplete(paper); res(); }
     });
   });
 }

@@ -44,6 +44,33 @@ for f in sorted((R/"art").glob("*.webp")):
     nm, ex = f.stem.rsplit("_", 1)
     art.setdefault(nm, {})[ex] = "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode()
 data += "\nwindow.ART=" + json.dumps(art) + ";"
+# ふりがな辞書（data/yomi.txt）：[ことば, 漢字部分の長さ, よみ]
+KJ = re.compile(r"[\u4E00-\u9FFF\u3005\u30F6]")
+yomi = []
+for line in (R/"data/yomi.txt").read_text(encoding="utf-8").splitlines():
+    if not line.strip() or line.startswith("#"): continue
+    k, v = line.split("=", 1); n = 0
+    while n < len(k) and KJ.match(k[n]): n += 1
+    yomi.append([k, n, v])
+data += "\nwindow.YOMI=" + json.dumps(yomi, ensure_ascii=False) + ";"
+# ふりがなが つかない 漢字が ないか 調べる
+ymap = {}
+for k, n, v in yomi: ymap.setdefault(k[0], []).append((k, n, v))
+for k in ymap: ymap[k].sort(key=lambda t: -len(t[0]))
+miss = set()
+for src in scen.values():
+    for line in src.splitlines():
+        if line.startswith(("//", "@", "#")): continue
+        t = re.sub(r"[\u4E00-\u9FFF\u3005\u30F6]+《[^》]+》", "", line)
+        t = re.sub(r"人[:：](おとこ|おんな|こども|としより)", "", t)
+        i = 0
+        while i < len(t):
+            if KJ.match(t[i]):
+                hit = next((e for e in ymap.get(t[i], []) if t.startswith(e[0], i)), None)
+                if hit: i += hit[1]; continue
+                miss.add(t[i])
+            i += 1
+if miss: print("⚠ ふりがな辞書にない漢字:", "".join(sorted(miss)))
 # あいことば（★5のときだけ表示）：teacher/aikotoba.md の表から。そのままは読めないように 逆順＋base64 にする
 ak = {}
 for line in (R/"teacher/aikotoba.md").read_text(encoding="utf-8").splitlines():
