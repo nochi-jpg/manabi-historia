@@ -17,7 +17,7 @@ const EP_META = [
 const EP_COUNT = EP_META.length;
 // 年表：[時代, 年代, キーマン]
 const EP_INFO = {
-  0: ["令和", "2023年", "ユウキ"], 1: ["縄文", "約1万年前", "ミナ"], 2: ["弥生", "約2300年前", "卑弥呼"], 3: ["古墳", "3〜7世紀", "？"],
+  0: ["令和", "2023年", "ユウキ"], 1: ["縄文", "約5500年前", "ミナ"], 2: ["弥生", "約2300年前", "卑弥呼"], 3: ["古墳", "3〜7世紀", "ワカタケル大王"],
   4: ["飛鳥", "600年ごろ", "聖徳太子"], 5: ["飛鳥", "645年", "中大兄皇子"], 6: ["奈良", "752年", "聖武天皇"], 7: ["平安", "1000年ごろ", "藤原道長"],
   8: ["平安", "1167年", "平清盛"], 9: ["鎌倉", "1192年", "源頼朝"], 10: ["鎌倉", "1274年", "北条時宗"], 11: ["室町", "1400年ごろ", "足利義政"],
   12: ["戦国", "1575年", "織田信長"], 13: ["安土桃山", "1600年", "豊臣秀吉"], 14: ["江戸", "1635年", "徳川家光"], 15: ["江戸", "1774年", "杉田玄白"],
@@ -73,18 +73,18 @@ const CHARS = {
   "トケイ": { icon: "⏱️", side: "L", art: "tokei" },
   "ユガミ": { icon: "人:こども", side: "R", art: "yugami" },
   "ミナ": { icon: "人:こども", side: "R", art: "mina" },
-  "レキシクイ": { icon: "🐟", side: "R" },
+  "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
-const ART_EXP = { "ふつう": "normal", "おどろき": "surprise", "笑顔": "smile", "怒り": "angry" };
+const ART_EXP = { "ふつう": "normal", "おどろき": "surprise", "笑顔": "smile", "怒り": "angry", "泣き": "cry" };
 /* 顔グラ：画像があれば画像（表情がなければ「ふつう」）、人間はシルエット、それ以外は絵文字 */
-function faceHTML(c, expr) {
+function faceHTML(c, expr, key) {
   const A = window.ART || {};
   if (c.art && A[c.art]) {
     const src = A[c.art][ART_EXP[expr]] || A[c.art].normal;
     if (src) return `<img class="fimg" src="${src}" alt="">`;
   }
-  if (/^人[:：]/.test(c.icon || "")) return iconHTML(c.icon).replace('class="sil"', 'class="sil silface"');
+  if (/^人[:：]/.test(c.icon || "")) return iconHTML(c.icon, key, "silface");
   return `<span class="femoji">${c.icon}</span>`;
 }
 const EXPR = { "ふつう": "", "おどろき": "❗", "笑顔": "♪", "怒り": "💢" };
@@ -160,11 +160,22 @@ const SIL = {
   "こども": '<circle cx="50" cy="56" r="13"/><path d="M34 74 Q50 68 66 74 L70 112 L60 112 L58 136 L52 136 L50 118 L48 136 L42 136 L40 112 L30 112Z"/>',
 };
 const SIL_EYES = { "おとこ": [44, 56, 25], "おんな": [44, 56, 27], "としより": [37, 47, 37], "こども": [45, 55, 55] };
-function iconHTML(icon) {
+/* 影絵の素材（art/sil_*.webp）があれば使う。同じ名前の人は、いつも同じ形になる */
+const SIL_KIND = { "おとこ": "m", "おんな": "w", "こども": "c", "としより": "o" };
+function silPick(type, key) {
+  const S2 = (window.ART || {}).sil; if (!S2) return null;
+  const k = SIL_KIND[type] || "m", list = Object.keys(S2).filter(x => x[0] === k).sort();
+  if (!list.length) return null;
+  let hsh = 0; for (const ch of String(key || "")) hsh = (hsh * 31 + ch.codePointAt(0)) >>> 0;
+  return S2[list[hsh % list.length]];
+}
+function iconHTML(icon, key, cls = "") {
   const m = /^人[:：](.+)$/.exec(icon || "");
   if (!m) return `<div class="picon">${icon}</div>`;
+  const src = silPick(m[1], key);
+  if (src) return `<img class="sil silimg ${cls}" src="${src}" alt="">`;
   const t = SIL[m[1]] ? m[1] : "おとこ", [x1, x2, y] = SIL_EYES[t];
-  return `<svg class="sil" viewBox="0 0 100 140">${SIL[t]}<g class="eyes"><circle cx="${x1}" cy="${y}" r="3.2"/><circle cx="${x2}" cy="${y}" r="3.2"/></g></svg>`;
+  return `<svg class="sil ${cls}" viewBox="0 0 100 140">${SIL[t]}<g class="eyes"><circle cx="${x1}" cy="${y}" r="3.2"/><circle cx="${x2}" cy="${y}" r="3.2"/></g></svg>`;
 }
 
 /* ---------- 画面の基本部品 ---------- */
@@ -187,7 +198,7 @@ function showPortrait(name, expr, ep) {
   const aura = !!(S && S.aura && S.aura.includes(name));
   if (aura) expr = "ふつう";   // ゆがめられている間は「ふつう」＋紫のオーラ
   const hasArt = !!(c.art && window.ART && window.ART[c.art]);
-  el.innerHTML = `<div class="pface">${faceHTML(c, expr)}</div>` + (!hasArt && EXPR[expr] ? `<div class="pexpr">${EXPR[expr]}</div>` : "");
+  el.innerHTML = `<div class="pface">${faceHTML(c, expr, name)}</div>` + (!hasArt && EXPR[expr] ? `<div class="pexpr">${EXPR[expr]}</div>` : "");
   el.classList.toggle("aura", aura);
   el.hidden = false; el.classList.remove("dim"); other.classList.add("dim");
   ports[side] = name;
@@ -466,7 +477,7 @@ function runInv(n) {
     const upd = () => { info.innerHTML = `むらを 調べよう（のこり ${n.items.length - got.size}）`; };
     upd();
     n.items.forEach(it => {
-      const e = h("button", "prop", `${iconHTML(it.icon)}<div class="plabel">${esc(it.name)}</div>`);
+      const e = h("button", "prop", `${iconHTML(it.icon, it.name)}<div class="plabel">${esc(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       e.onclick = async () => {
         if (S.busy) return; S.busy = true;
@@ -504,7 +515,7 @@ function runSpot(n) {
     const upd = () => { info.innerHTML = `ゆがんだ 証言を 見やぶれ（のこり ${bads - fixed.size}）`; };
     upd();
     n.items.forEach((it, i) => {
-      const e = h("button", "prop warped", `${iconHTML(it.icon)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${esc(it.name)}</div>`);
+      const e = h("button", "prop warped", `${iconHTML(it.icon, it.name)}${it.item ? `<div class="pitem">${it.item}</div>` : ""}<div class="plabel">${esc(it.name)}</div>`);
       placeAt(e, it.pos);
       e.onclick = async () => {
         if (S.busy || fixed.has(i)) return; S.busy = true;
@@ -644,7 +655,7 @@ function runTesti(n) {
       clearLayer(); hideTalk(); hidePortraits();
       layer.className = "testi";
       const aura = S.aura.includes(who);
-      layer.appendChild(h("div", "witness" + (aura ? " aura" : ""), `<div class="w-face">${faceHTML(c, "ふつう")}</div><div class="w-name">${esc(who)}</div>`));
+      layer.appendChild(h("div", "witness" + (aura ? " aura" : ""), `<div class="w-face">${faceHTML(c, "ふつう", who)}</div><div class="w-name">${esc(who)}</div>`));
       const round = n.rounds[r];
       layer.appendChild(h("div", "guide", `証言「${esc(round.title || "")}」（${r + 1} / ${n.rounds.length}）`));
       const box = h("div", "tbox");
@@ -791,13 +802,12 @@ function finishEpisode() {
 /* ---------- 画面：タイトル ---------- */
 function showTitle() {
   S = null; renderHud(); hideTalk(); hidePortraits(); closeModal();
-  setBg("現代"); clearLayer(); layer.className = "menu";
-  layer.appendChild(h("div", "logo", `<div class="logo-sub">時をこえて 歴史を まもれ</div><div class="logo-main">まなびヒストリア</div>`));
-  const col = h("div", "menu-col");
-  col.appendChild(btn("おはなしを えらぶ", "", () => showSelect()));
-  col.appendChild(btn("カードずかん", "", showZukan));
-  col.appendChild(btn("じゅもんを 入れる", "", enterSpell));
-  col.appendChild(btn("せってい", "", showSettings));
+  bgEl.classList.remove("warped"); bgEl.innerHTML = ""; clearLayer(); layer.className = "menu title-white";
+  const logo = window.ART && window.ART.title && window.ART.title.logo;
+  layer.appendChild(h("div", "tlogo", logo ? `<img src="${logo}" alt="まなびヒストリア">` : `<div class="logo-main">まなびヒストリア</div>`));
+  const col = h("div", "tmenu");
+  [["おはなしを えらぶ", () => showSelect()], ["カードずかん", showZukan], ["じゅもんを 入れる", enterSpell], ["せってい", showSettings]]
+    .forEach(([t, f]) => { const b = h("button", "titem", esc(t)); b.onclick = f; col.appendChild(b); });
   layer.appendChild(col);
   layer.appendChild(h("div", "credit", "企画・ゲームデザイン・キャラクターデザイン　のち（まなび堂）"));
 }
