@@ -813,7 +813,7 @@ let tauntN = 0;
 function runBattle(n) {
   return new Promise((res, rej) => {
     S.rej = rej;
-    let r = 0;
+    let r = subStart();
     const total = n.rounds.length;
     const splitOf = k => 42 + (100 - 42) * k / total * .8;
     const draw = () => {
@@ -867,7 +867,7 @@ function runBattle(n) {
                   battleBg(splitOf(r + 1)); await sleep(1100);
                 }
                 if (c.reply) await say("ユウキ", "怒り", c.reply, S.ep);
-                r++;
+                r++; subSave(r);
                 if (r >= total) { S.busy = false; hideTalk(); const bb = bgEl.querySelector(".bbg"); if (bb) bb.remove(); return res(); }
                 await foeSay(r === 1 ? "おどろき" : "怒り", c.foeLine || FOE_HIT[(r - 1) % FOE_HIT.length]);
                 S.busy = false; return draw();
@@ -1013,7 +1013,7 @@ function runTesti(n) {
   return new Promise((res, rej) => {
     S.rej = rej;
     const who = n.who, c = charOf(who, S.ep);
-    let r = 0, i = 0;
+    let r = subStart(), i = 0;
     const draw = async (first) => {
       clearLayer(); hideTalk(); hidePortraits();
       layer.className = "testi"; stage.classList.add("testi-on");
@@ -1070,7 +1070,7 @@ function runTesti(n) {
             await objection("矛盾 発見！");
             if (line.retort) await say("ユウキ", "怒り", line.retort, S.ep);
             if (line.reaction) await say(who, "おどろき", line.reaction, S.ep, { noPort: true });
-            r++; i = 0;
+            r++; i = 0; subSave(r);
             S.busy = false;
             if (r >= n.rounds.length) { hideTalk(); return res(); }
             return draw();
@@ -1111,8 +1111,15 @@ async function runFrag(n) {
 }
 
 /* ---------- 話の進行 ---------- */
+/* 議論・論破バトルの「何パート目まで進んだか」も保存する（ちゅうだんしても、そのパートから再開） */
+const subStart = () => (S.sub && S.sub.idx === S.idx ? S.sub.r : 0);
+function subSave(r) {
+  S.sub = { idx: S.idx, r };
+  if (!SAVE.resume || SAVE.resume.idx !== S.idx) return;
+  Object.assign(SAVE.resume, { sub: S.sub, hearts: S.hearts, hand: S.hand.slice(), hint2: S.hint2, failed: S.failed }); persist();
+}
 function checkpoint() {
-  SAVE.resume = { no: S.no, idx: S.idx, hearts: S.hearts, hand: S.hand.slice(), aura: S.aura.slice(), hint2: S.hint2, failed: S.failed };
+  SAVE.resume = { no: S.no, idx: S.idx, hearts: S.hearts, hand: S.hand.slice(), aura: S.aura.slice(), hint2: S.hint2, failed: S.failed, sub: S.sub && S.sub.idx === S.idx ? S.sub : null };
   persist();
 }
 async function playEpisode(no, resume) {
@@ -1165,7 +1172,7 @@ async function playEpisode(no, resume) {
         closeModal(); hideTalk(); S.busy = false;
         bigText("ゲームオーバー", "bad"); await sleep(1500);
         await say("本じい", "おどろき", "しっかりするのじゃ！ ♡3つで、この場面の 最初から やりなおすぞ", ep);
-        S.hearts = RETRY_HEARTS; S.failed = true; S.hand = snap.hand; renderHud();
+        S.hearts = RETRY_HEARTS; S.failed = true; S.hand = snap.hand; S.sub = null; renderHud();   // ゲームオーバーは場面の最初から
         continue;
       }
       throw e;
