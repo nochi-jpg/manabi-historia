@@ -1075,7 +1075,7 @@ function runTesti(n) {
             if (r >= n.rounds.length) { hideTalk(); return res(); }
             return draw();
           } else if (pick && line.near && line.near[pick]) {   // おしい：♡はへらさず、本じいがヒントを出して証言にもどる
-            await say("本じい", "ふつう", line.near[pick], S.ep);
+            for (const seg of line.near[pick].split(/\s*／\s*/)) await say("本じい", "ふつう", seg, S.ep);   // 「／」で区切って何行でも
             hideTalk(); hidePortraits();
           } else if (pick) {
             await loseHeart("本じい", "おどろき", line.lie ? "むむ……その カードでは、矛盾を 説明 できんようじゃ" : "むむ……その 証言には、おかしな ところは ないようじゃ");
