@@ -75,6 +75,20 @@ const BG = (() => {
       el("rect", { x: 460, y: 640, width: 690, height: 14, fill: "#5a3a1c" }, svg);
       [300, 1300].forEach(x => { el("circle", { cx: x, cy: 600, r: 70, fill: "url(#lampP)" }, svg); el("rect", { x: x - 8, y: 600, width: 16, height: 160, fill: "#0d0805" }, svg); });
     } },
+    古墳: { ground: "#1d2410", draw(svg) {
+      const d = sky(svg, "skyK", [[0, "#5d86b5"], [.6, "#c9d8c0"], [1, "#efe2b8"]]);
+      glow(d, "sunK", "#fff8e0");
+      el("circle", { cx: 1300, cy: 380, r: 240, fill: "url(#sunK)" }, svg);
+      el("path", { d: "M0 560 Q400 500 800 540 T1600 520 V900 H0Z", fill: "#8aa275", opacity: .7 }, svg);
+      const m = el("g", { fill: "#4f6a3a" }, svg);   // 大きな前方後円墳（横から）
+      el("path", { d: "M160 650 Q200 560 330 540 L520 520 Q600 430 760 420 Q930 420 1010 520 Q1060 590 1080 650Z" }, m);
+      el("path", { d: "M200 650 Q240 580 340 565 L530 548 Q610 470 760 462 Q900 462 970 545 Q1010 600 1030 650Z", fill: "#5f7d45" }, m);
+      for (let x = 230; x < 1040; x += 34) el("rect", { x, y: 640 - Math.max(0, 70 - Math.abs(x - 760) / 6), width: 8, height: 14, fill: "#c98a4b" }, svg);   // はにわの列
+      const n = el("g", { fill: "#1d2410" }, svg);
+      el("path", { d: "M0 740 Q400 715 800 730 T1600 720 V900 H0Z" }, n);
+      [1180, 1290, 1400, 1500].forEach((x, i) => { person(n, x, 745, .9, "#1d2410", false); el("path", { d: `M${x - 30} ${640} q30 -20 60 0 l-8 30 h-44z` }, n); });   // 土を運ぶ人々
+      person(n, 120, 760, 1, "#1d2410", true);
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");
