@@ -41,8 +41,8 @@ const isOpen = no => DEBUG_UNLOCK_ALL || no === 0 || no <= SAVE.unlocked;
 /* ---------- 保存 ---------- */
 const SKEY = "manabi-historia-v1";
 function loadSave() { try { return JSON.parse(localStorage.getItem(SKEY)) || null; } catch (e) { return null; } }
-let SAVE = Object.assign({ unlocked: 0, stars: {}, cards: {}, resume: null, opt: { ruby: true, autoRead: false, speed: "normal", blip: true, se: true } }, loadSave() || {});
-SAVE.opt = Object.assign({ ruby: true, autoRead: false, speed: "normal", blip: true, se: true }, SAVE.opt);
+let SAVE = Object.assign({ unlocked: 0, stars: {}, cards: {}, resume: null, opt: { ruby: true, autoRead: false, speed: "normal", blip: true, se: true, bgm: true } }, loadSave() || {});
+SAVE.opt = Object.assign({ ruby: true, autoRead: false, speed: "normal", blip: true, se: true, bgm: true }, SAVE.opt);
 function persist() { try { localStorage.setItem(SKEY, JSON.stringify(SAVE)); } catch (e) { } }
 
 /* ---------- 文字の整形（ルビ・キーワード） ---------- */
@@ -155,6 +155,8 @@ function parseScript(no, src) {
         case "退場": ep.nodes.push({ t: "exit", who: arg }); break;
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
+        case "BGM": ep.nodes.push({ t: "bgm", key: arg }); break;
+        case "スタッフロール": ep.nodes.push({ t: "staff", key: arg }); break;
         case "議論": add({ t: "testi", who: arg, rounds: [{ title: "", lines: [] }], hint: "" }); break;
         default: console.warn("不明な命令", cmd);
       }
@@ -947,6 +949,7 @@ function runTesti(n) {
     const draw = async (first) => {
       clearLayer(); hideTalk(); hidePortraits();
       layer.className = "testi"; stage.classList.add("testi-on");
+      BGM.play(r === n.rounds.length - 1 && n.rounds.length > 1 ? "最後の証言" : "証言");
       const aura = S.aura.includes(who);
       const wit = h("div", "witness" + (aura ? " aura" : ""), (aura ? AURA_HTML : "") + `<div class="w-face">${faceHTML(c, "ふつう", who)}</div><div class="w-name">${esc(who)}</div>`);
       layer.appendChild(wit);
@@ -1051,15 +1054,19 @@ async function playEpisode(no, resume) {
   for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg") bg = ep.nodes[i].bg;
   setBg(bg); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
   LOG = [];
-  if (!resume) await titleCard(no);
+  if (!resume) { BGM.stop(.6); await titleCard(no); BGM.play(no === 0 ? "学校" : "町"); }
+  else { const k = prevBgm(ep, S.idx); BGM.play(k && k !== "なし" ? k : null); }
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
     S.node = n; S.hintLv = 0; S.rej = null; newRound(null);
     const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
+    autoBgm(n);
     try {
       switch (n.t) {
+        case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
+        case "staff": await runStaffRoll(n.key); break;
         case "bg": hidePortraits(true); setBg(n.bg); showPic(""); break;
         case "omen": await runOmen(); break;
         case "exit": await runExit(n); break;
@@ -1086,10 +1093,23 @@ async function playEpisode(no, resume) {
       }
       throw e;
     }
-    if (!["say", "bg", "pic", "omen", "exit"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
+    if (!["say", "bg", "pic", "omen", "exit", "bgm"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
     S.idx++;
   }
   return finishEpisode();
+}
+/* BGM の自動切りかえ。すぐ前（背景・画像をはさんでもよい）に「@BGM」があれば、そちらを優先する */
+function prevBgm(ep, idx) {
+  for (let i = idx - 1; i >= 0; i--) { const t = ep.nodes[i].t; if (t === "bgm") return ep.nodes[i].key || "なし"; if (t !== "bg" && t !== "pic") return null; }
+  return null;
+}
+const AUTO_BGM = { battle: "バトル", sum: "日常", frag: "一方", restore: "封印", omen: "神殿", warp: "神殿", exit: null, depart: null };
+function autoBgm(n) {
+  const isInv = n.t === "inv" || n.t === "spot";
+  if (!isInv && !(n.t in AUTO_BGM)) return;
+  if (prevBgm(S.ep, S.idx)) return;
+  if (isInv) return BGM.play(S.ep.nodes.slice(0, S.idx).some(x => x.t === "warp") ? "調査2" : "調査1");
+  if (AUTO_BGM[n.t]) BGM.play(AUTO_BGM[n.t]); else BGM.stop(1.5);
 }
 /* 話のはじまり：タイトルと、年がスロットのように巻きもどる */
 async function titleCard(no) {
@@ -1128,6 +1148,7 @@ function showTitle() {
   showPic("");
   S = null; renderHud(); hideTalk(); hidePortraits(); closeModal();
   bgEl.classList.remove("warped"); bgEl.innerHTML = ""; clearLayer(); layer.className = "menu title-white";
+  BGM.play("図書館");
   const logo = window.ART && window.ART.title && window.ART.title.logo;
   layer.appendChild(h("div", "tlogo", logo ? `<img src="${logo}" alt="まなびヒストリア">` : `<div class="logo-main">まなびヒストリア</div>`));
   const col = h("div", "tmenu");
@@ -1150,6 +1171,7 @@ function showSelect(opt = {}) {
 let TL_LAST = null;
 function drawTimeline(pi, sel, fx2 = {}) {
   S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu timeline";
+  BGM.play("図書館");
   const page = PAGES[pi];
   const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
   const top = h("div", "topbar");
@@ -1255,6 +1277,7 @@ function showClearList() {
 async function showResult(no, ep, star) {
   setBg("夜"); clearLayer(); layer.className = "menu";
   const box = h("div", "result");
+  BGM.play("図書館");
   box.appendChild(h("div", "res-title", no === 0 ? "プロローグ クリア！" : `第${no}話 クリア！`));
   const stars = h("div", "res-star", Array.from({ length: MAX_HEARTS }, () => `<span class="rs">☆</span>`).join(""));
   box.appendChild(stars);
@@ -1281,7 +1304,7 @@ async function showResult(no, ep, star) {
 
 /* ---------- 画面：ずかん ---------- */
 function showZukan() {
-  S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu";
+  BGM.play("図書館"); S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu";
   const names = Object.keys(CARDS);
   const have = names.filter(n => SAVE.cards[n]).length;
   const top = h("div", "topbar");
@@ -1301,7 +1324,7 @@ function showZukan() {
 
 /* ---------- 画面：せってい ---------- */
 function showSettings() {
-  S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu";
+  BGM.play("図書館"); S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu";
   const top = h("div", "topbar");
   top.appendChild(btn("もどる", "sub", showTitle));
   top.appendChild(h("div", "topttl", "せってい"));
@@ -1315,8 +1338,42 @@ function showSettings() {
   col.appendChild(btn(`文字の 速さ：${SPN[SAVE.opt.speed] || "ふつう"}`, "", () => { SAVE.opt.speed = order[(order.indexOf(SAVE.opt.speed) + 1) % 3]; persist(); showSettings(); }));
   col.appendChild(tog("文字の 音（ぽぽぽ）", "blip"));
   col.appendChild(tog("効果音", "se"));
+  col.appendChild(tog("BGM", "bgm"));
   col.appendChild(btn("あいことばを 入れる（★5を もどす）", "", enterAikotoba));
+  col.appendChild(btn("スタッフロール", "", async () => { await runStaffRoll(); showSettings(); }));
   layer.appendChild(col);
+}
+
+/* ---------- スタッフロール（エンディングで「@スタッフロール 曲の呼び名」。せっていからも見られる） ---------- */
+const STAFF = [
+  ["", "まなびヒストリア", "big"],
+  ["企画・ゲームデザイン", "のち（まなび堂）"],
+  ["キャラクターデザイン", "のち（まなび堂）"],
+  ["音楽", "ユーフルカ"],
+  ["", "__SONGS__"],
+  ["", "https://youfulca.com/music_assets/?scene=dungeon_stage", "url"],
+  ["シルエット素材", "イラスト緑花　https://illust-ryokka.jp/"],
+  ["", "イラストカット　https://illustcut.com/"],
+  ["フォント", "Zen Kaku Gothic New（SIL Open Font License 1.1）"],
+  ["", "あそんで くれて ありがとう！", "big"],
+];
+function runStaffRoll(key) {
+  return new Promise(res => {
+    if (key) BGM.play(key);
+    const songs = (window.BGM_TITLES || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("");
+    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` :
+      `<div class="sr-item ${cls || ""}">${role ? `<div class="sr-role">${esc(role)}</div>` : ""}<div class="sr-name">${esc(name)}</div></div>`).join("");
+    const el = h("div", "staffroll", `<div class="sr-inner">${inner}</div><div class="sr-skip">タップで とばす</div>`);
+    stage.appendChild(el);
+    const box = el.querySelector(".sr-inner");
+    requestAnimationFrame(() => {
+      const dist = box.offsetHeight + 900, sec = Math.max(30, dist / 60);
+      box.animate([{ transform: "translateY(900px)" }, { transform: `translateY(${-box.offsetHeight}px)` }], { duration: sec * 1000, easing: "linear", fill: "forwards" }).onfinish = done;
+    });
+    let fin = false;
+    function done() { if (fin) return; fin = true; el.classList.add("out"); setTimeout(() => { el.remove(); res(); }, 600); }
+    el.onclick = done;
+  });
 }
 
 /* ---------- かいほうの じゅもん ---------- */
@@ -1356,7 +1413,7 @@ function boot() {
   $("#hintBtn").onclick = onHint;
   $("#cardBtn").onclick = showHandViewer;
   $("#logBtn").onclick = showLog;
-  stage.addEventListener("pointerdown", e => { if (e.target.closest("button")) SE.play("click"); });
+  stage.addEventListener("pointerdown", e => { BGM.unlock(); if (e.target.closest("button")) SE.play("click"); });
   $("#menuBtn").onclick = async () => {
     if (!S || S.busy) return;
     const box = h("div", "inbox"); box.appendChild(h("div", "in-msg", "おはなしを ちゅうだんしますか？<br><small>場面の はじめから 再開できます</small>"));

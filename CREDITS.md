@@ -1,6 +1,9 @@
 # クレジット
 
 - 企画・ゲームデザイン・キャラクターデザイン：のち（まなび堂）
+- 音楽：ユーフルカ https://youfulca.com/music_assets/?scene=dungeon_stage
+  - 曲名はゲーム内のスタッフロールに表示（data/bgm.txt）
+  - ※素材の再配布にあたるので、音のファイル（audio/）はリポジトリに入れていません。作り直すときは `python3 tools/make_bgm.py 素材のフォルダ`
 - フォント：Zen Kaku Gothic New（SIL Open Font License 1.1）
 - モブキャラクターのシルエット素材
   - イラスト緑花 https://illust-ryokka.jp/

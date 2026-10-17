@@ -579,3 +579,17 @@ rt{line-height:1}
 .log-row{line-height:2.1}
 .log-list{height:500px;overflow:hidden}
 #talk,.tbox{padding-top:44px}
+
+/* ===== スタッフロール ===== */
+.staffroll{position:absolute;inset:0;z-index:90;background:#0b0d18;overflow:hidden;color:#fff;cursor:pointer;animation:srIn .8s ease}
+.staffroll.out{opacity:0;transition:opacity .6s}
+@keyframes srIn{from{opacity:0}to{opacity:1}}
+.sr-inner{position:absolute;left:0;right:0;top:0;transform:translateY(900px);text-align:center}
+.sr-item{margin:0 0 90px}
+.sr-role{font-size:28px;color:#c9b8ff;font-weight:700;letter-spacing:.1em;margin-bottom:12px}
+.sr-name{font-size:40px;font-weight:700}
+.sr-item.big .sr-name{font-size:64px;font-weight:900;margin:60px 0}
+.sr-item.url .sr-name{font-size:26px;color:#ccd}
+.sr-songs{margin:-60px 0 50px}
+.sr-song{font-size:30px;line-height:1.75;color:#eee}
+.sr-skip{position:absolute;right:30px;bottom:24px;font-size:22px;color:#889}

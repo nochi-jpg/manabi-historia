@@ -70,7 +70,53 @@ const SE = (() => {
     timewarp() { noise(0, 1.4, .2, 300, "bandpass", 5000); [400, 600, 900, 1350].forEach((f, i) => tone(f, i * .25, .5, "sine", .07)); },
     thud() { tone(120, 0, .2, "sine", .3, 60); },
   };
-  return { play(name) { if (!on()) return; try { P[name] && P[name](); } catch (e) { } } };
+  return { ac, play(name) { if (!on()) return; try { P[name] && P[name](); } catch (e) { } } };
+})();
+
+/* BGM：埋めこんだ曲（window.BGM_DATA）を WebAudio でループ再生する。
+   BGM.play("呼び名") で切りかえ（同じ曲なら そのまま流しつづける）、BGM.stop() で止める */
+const BGM = (() => {
+  const TR = window.BGM_DATA || {}, VOL = .42, cache = new Map();
+  let cur = null, curKey = null, want = null, token = 0;
+  const on = () => { try { return typeof SAVE === "undefined" || SAVE.opt.bgm !== false; } catch (e) { return true; } };
+  async function load(key) {
+    if (cache.has(key)) { const b = cache.get(key); cache.delete(key); cache.set(key, b); return b; }
+    const bin = atob(TR[key].d), u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    const b = await new Promise((ok, ng) => SE.ac().decodeAudioData(u.buffer, ok, ng));
+    cache.set(key, b);
+    while (cache.size > 3) cache.delete(cache.keys().next().value);   // メモリを使いすぎないよう、3曲まで覚えておく
+    return b;
+  }
+  function fadeOut(node, sec) {
+    if (!node) return;
+    const c = SE.ac(), g = node.g.gain;
+    g.cancelScheduledValues(c.currentTime); g.setValueAtTime(g.value, c.currentTime); g.linearRampToValueAtTime(0, c.currentTime + sec);
+    try { node.s.stop(c.currentTime + sec + .05); } catch (e) { }
+  }
+  async function start(key) {
+    const my = ++token;
+    let b; try { b = await load(key); } catch (e) { return; }
+    if (my !== token || want !== key || !on()) return;
+    const c = SE.ac(), s = c.createBufferSource(), g = c.createGain();
+    s.buffer = b; s.loop = true;
+    const t = TR[key]; s.loopStart = t.ls; s.loopEnd = Math.min(t.le, b.duration);
+    g.gain.setValueAtTime(0, c.currentTime); g.gain.linearRampToValueAtTime(VOL, c.currentTime + .8);
+    s.connect(g); g.connect(c.destination); s.start();
+    fadeOut(cur, .6); cur = { s, g }; curKey = key;
+  }
+  return {
+    play(key, opt = {}) {
+      if (key === curKey && cur && !opt.restart) { want = key; return; }
+      want = key;
+      if (!key || !TR[key] || !on()) { token++; fadeOut(cur, opt.fade ?? 1); cur = null; curKey = null; return; }
+      start(key);
+    },
+    stop(fade = 1) { this.play(null, { fade }); },
+    get key() { return want; },
+    unlock() { try { const c = SE.ac(); if (c.state === "suspended") c.resume(); } catch (e) { } },
+    refresh() { const k = want; curKey = null; fadeOut(cur, .3); cur = null; if (on() && k) this.play(k); else want = k; },
+  };
 })();
 
 /* 画面効果 */

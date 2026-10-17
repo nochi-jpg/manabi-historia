@@ -77,11 +77,21 @@ for line in (R/"teacher/aikotoba.md").read_text(encoding="utf-8").splitlines():
     m = re.match(r"\|\s*(\d+)\s*\|[^|]*\|[^|]*\|\s*([ぁ-ゖー]+)\s*\|", line)
     if m and int(m.group(1)) > 0: ak[int(m.group(1))] = m.group(2)
 data += "\nwindow.AIKOTOBA=" + json.dumps([base64.b64encode(ak.get(i, "")[::-1].encode()).decode() for i in range(1, max(ak) + 1)]) + ";"
+# BGM：data/bgm.txt の一覧どおり audio/bgm/〇〇.ogg を埋めこむ（ファイルがない曲は、音なしになる）
+bgm, bgm_list = {}, []
+for line in (R/"data/bgm.txt").read_text(encoding="utf-8").splitlines():
+    if not line.strip() or line.startswith("#"): continue
+    key, f, title, ls, ll, use = [x.strip() for x in line.split("|")]
+    bgm_list.append(title)
+    fp = R/"audio/bgm"/(f + ".ogg")
+    if fp.exists(): bgm[key] = {"ls": int(ls) / 44100, "le": (int(ls) + int(ll)) / 44100, "d": base64.b64encode(fp.read_bytes()).decode()}
+    else: print("⚠ BGMなし:", key, f)
+data += "\nwindow.BGM_DATA=" + json.dumps(bgm, ensure_ascii=False) + ";\nwindow.BGM_TITLES=" + json.dumps(bgm_list, ensure_ascii=False) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
 import base64, subprocess, tempfile
 chars = set()
-for f in [R/"src/engine.js", R/"src/fx.js", R/"src/template.html", R/"src/bg.js", R/"build.py"]: chars |= set(f.read_text(encoding="utf-8"))
+for f in [R/"src/engine.js", R/"src/fx.js", R/"src/template.html", R/"src/bg.js", R/"build.py", R/"data/bgm.txt"]: chars |= set(f.read_text(encoding="utf-8"))
 for v in scen.values(): chars |= set(v)
 chars |= {chr(c) for c in range(0x20, 0x7f)} | {chr(c) for c in range(0x3041, 0x3097)} | {chr(c) for c in range(0x30a1, 0x30fb)} | set("ー・「」『』、。！？（）…―〜★☆♡◀▶▼")
 fcss = ""
