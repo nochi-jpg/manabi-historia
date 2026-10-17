@@ -34,6 +34,9 @@ const PAGES = [
 ];
 const FUTURE_AFTER = 15;   // この話をクリアすると「未来」があらわれる
 const pageOf = no => PAGES.findIndex(p => p.eps.includes(no));
+/* ★デバッグ用：true のあいだは、すべての話がひらく。公開するときは false にもどす */
+const DEBUG_UNLOCK_ALL = true;
+const isOpen = no => DEBUG_UNLOCK_ALL || no === 0 || no <= SAVE.unlocked;
 
 /* ---------- 保存 ---------- */
 const SKEY = "manabi-historia-v1";
@@ -1128,7 +1131,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   if (litTo >= 0) { const lit = h("div", "tl-lit"); lit.style.width = (xs[litTo] - X0 + 2) + "px"; layer.appendChild(lit); }
   page.eps.forEach((no, i) => {
     const [era, year] = EP_INFO[no];
-    const open = no <= SAVE.unlocked || (no === 0), ready = !!EPS[no], st = SAVE.stars[no] || 0;
+    const open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
     const nd = h("button", "tl-node" + (no === sel ? " sel" : "") + (open ? "" : " locked") + (st ? " done" : "") + (page.future ? " future" : "") + (fx2.flick && fx2.flick.includes(no) ? " flick" : ""),
       `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
     nd.style.left = xs[i] + "px";
@@ -1145,7 +1148,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   if (pi === PAGES.length - 2 && !futureOpen()) { R.hidden = true; layer.appendChild(h("div", "tl-fog", "？？？")); }
   if (fx2.noPanel) return;
   // 下のパネル
-  const no = sel, [era, year, key] = EP_INFO[no], open = no <= SAVE.unlocked || no === 0, ready = !!EPS[no], st = SAVE.stars[no] || 0;
+  const no = sel, [era, year, key] = EP_INFO[no], open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
   const panel = h("div", "tl-panel");
   panel.innerHTML = `<div class="tp-l"><div class="tp-no">${no === 0 ? "プロローグ" : "第" + no + "話"}　<span>${esc(era)}・${esc(year)}</span></div>
     <div class="tp-tt">${open ? esc(EP_META[no][0]) : "？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "キーマン：" + esc(key) : "&nbsp;"}</div></div>
