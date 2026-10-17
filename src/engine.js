@@ -168,7 +168,7 @@ function parseScript(no, src) {
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
         case "変装": ep.nodes.push({ t: "disguise", who: rest[0] || "", look: rest[1] || "" }); break;   // @変装 卑弥呼 hood ／ @変装 卑弥呼（もどす）
-        case "SE": ep.nodes.push({ t: "se", key: arg }); break;
+        case "SE": ep.nodes.push({ t: "se", key: rest[0] || "", times: Number(rest[1]) || 1 }); break;   // @SE taiko 3 ＝3回
         case "BGM": ep.nodes.push({ t: "bgm", key: arg }); break;
         case "スタッフロール": ep.nodes.push({ t: "staff", key: arg }); break;
         case "議論": add({ t: "testi", who: arg, rounds: [{ title: "", lines: [] }], hint: "" }); break;
@@ -1133,7 +1133,7 @@ async function playEpisode(no, resume) {
     autoBgm(n);
     try {
       switch (n.t) {
-        case "se": SE.play(n.key); break;
+        case "se": for (let k = 0; k < n.times; k++) setTimeout(() => SE.play(n.key), k * 1900); break;
         case "disguise": S.disguise[n.who] = n.look || null; break;
         case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
         case "staff": await runStaffRoll(n.key); break;
