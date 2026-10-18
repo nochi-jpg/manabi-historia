@@ -623,7 +623,7 @@ rt{line-height:1}
 .hand,.inbox.wide{top:64px;bottom:36px;padding-bottom:40px}
 .hand-quote{margin-bottom:12px}
 .hand .pager,.inbox.wide .pager{margin-bottom:0}
-.hand .btnrow,.inbox.wide>.btn{margin-top:auto;padding-top:18px}
+.hand .btnrow{margin-top:auto;padding-top:18px}.inbox.wide>.btn{margin-top:auto}
 
 /* ===== 既読スキップ ===== */
 .skipbtn{position:absolute;right:26px;top:20px;height:50px;padding:0 22px;border:2px solid var(--line);border-radius:6px;background:rgba(255,255,255,.06);color:#fff;font-size:22px;font-weight:700;font-family:var(--font);z-index:2}
@@ -680,3 +680,4 @@ rt{line-height:1}
 .btn.danger{border-color:#d8392f;color:#ff8a8a}.btn.danger:hover{background:rgba(216,57,47,.18)}
 .del-list{text-align:left;font-size:24px;line-height:1.7;margin:14px auto 10px;display:inline-block}
 .del-box{display:block;text-align:center}.del-title{font-size:34px;font-weight:900;color:#ff8a8a;margin-bottom:6px}.del-list{display:block;width:max-content;margin:12px auto}.del-note{font-size:22px;color:#c7cad6}
+.log-bar .btn{display:none}.inbox.wide>.btn.log-close{margin-top:14px;width:300px}.log-bar{margin-top:10px}

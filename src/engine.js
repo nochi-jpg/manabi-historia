@@ -409,8 +409,9 @@ function showLog() {
   const list = h("div", "log-list"), bar = h("div", "log-bar");
   const prev = h("button", "pg-arrow sq", "◀"), next = h("button", "pg-arrow sq", "▶"), pn = h("div", "log-pn");
   const rowHTML = l => `<div class="log-row"><span class="log-who${[...(l.who || "")].length > 7 ? " small" : ""}">${esc(l.who || "")}</span><span class="log-text${l.who ? "" : " narr"}">${fmt(l.text)}</span></div>`;
-  bar.append(prev, pn, next, btn("とじる", "sub", closeModal));
-  box.append(list, bar);
+  bar.append(prev, pn, next);
+  const close = btn("とじる", "sub log-close", closeModal);
+  box.append(list, bar, close);   // ページ送り（上）と とじる（下）をたてに
   openModal(box);
   // 行の高さを実際に測って、はみ出さないようにページを分ける（スクロールなし）
   const pages = [];
