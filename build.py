@@ -38,11 +38,22 @@ for no, src in scen.items():
             if width(seg) > 72:
                 warn += 1; print(f"⚠ 2行こえ ep{no:02d} {ln}行目（{width(seg):.0f}字ぶん）: {seg[:30]}…")
 data = "window.SCENARIO_SRC=" + json.dumps(scen, ensure_ascii=False) + ";\nwindow.UNLOCK_HASHES=" + json.dumps(hashes) + ";"
+# 前の index.html から、手元にない素材（音・シルエットなど、リポジトリに入れていないもの）を引きつぐ
+OLD = {}
+if (R/"index.html").exists():
+    _old = (R/"index.html").read_text(encoding="utf-8")
+    for _k in ("ART", "BGM_DATA", "SE_DATA"):
+        _m = re.search(r"window\." + _k + r"=(\{.*?\});(?=\n|</script>)", _old, re.S)
+        if _m:
+            try: OLD[_k] = json.loads(_m.group(1))
+            except Exception: pass
 # 顔グラ：art/名前_表情.webp を window.ART に埋めこむ
 art = {}
 for f in sorted((R/"art").glob("*.webp")):
     nm, ex = f.stem.rsplit("_", 1)
     art.setdefault(nm, {})[ex] = "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode()
+for _nm, _ex in OLD.get("ART", {}).items():   # 手元にない絵（art/sil_*.webp など）は前の index.html から
+    for _e, _v in _ex.items(): art.setdefault(_nm, {}).setdefault(_e, _v)
 data += "\nwindow.ART=" + json.dumps(art) + ";"
 # カードの写真：cardimg/カード名.webp（一覧と出典は data/cardimg.txt）
 cimg, ccred = {}, []
@@ -97,6 +108,7 @@ for line in (R/"data/bgm.txt").read_text(encoding="utf-8").splitlines():
     bgm_list.append(title)
     fp = R/"audio/bgm"/(f + ".ogg")
     if fp.exists(): bgm[key] = {"ls": int(ls) / 44100, "le": (int(ls) + int(ll)) / 44100, "d": base64.b64encode(fp.read_bytes()).decode()}
+    elif key in OLD.get("BGM_DATA", {}): bgm[key] = OLD["BGM_DATA"][key]   # audio/ がないときは前の index.html から
     else: print("⚠ BGMなし:", key, f)
 data += "\nwindow.BGM_DATA=" + json.dumps(bgm, ensure_ascii=False) + ";\nwindow.BGM_TITLES=" + json.dumps(bgm_list, ensure_ascii=False) + ";"
 # 効果音：data/se.txt の一覧どおり audio/se/呼び名.ogg を埋めこむ（ないものは合成の音）
@@ -106,6 +118,7 @@ for line in (R/"data/se.txt").read_text(encoding="utf-8").splitlines():
     key, f, st, du, vol, use = [x.strip() for x in line.split("|")]
     fp = R/"audio/se"/(key + ".ogg")
     if fp.exists(): se[key] = {"v": float(vol), "d": base64.b64encode(fp.read_bytes()).decode()}
+    elif key in OLD.get("SE_DATA", {}): se[key] = OLD["SE_DATA"][key]
 data += "\nwindow.SE_DATA=" + json.dumps(se) + ";"
 html = (R/"src/template.html").read_text(encoding="utf-8")
 # フォント：ゲームで使う字だけにしぼって埋めこむ（OFL）
