@@ -20,7 +20,7 @@ for f in sorted((R/"scenarios").glob("ep*.txt")):
     scen[int(re.search(r"\d+", f.stem).group())] = f.read_text(encoding="utf-8")
 # 2行チェック：セリフ・証言が セリフ枠2行（約37字×2）を こえていないか
 def width(t):
-    t = re.sub(r"《[^》]+》", "", t).replace("【", "").replace("】", "")
+    t = re.sub(r"《[^》]+》", "", t).replace("【", "").replace("】", "").replace("｛", "").replace("｝", "")
     return sum(0.3 if c == " " else (0.55 if ord(c) < 128 else 1) for c in t)
 warn = 0
 for no, src in scen.items():

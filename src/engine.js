@@ -8,7 +8,7 @@ const FAIL = { fail: true };
 /* ---------- 話の一覧 ---------- */
 const EP_META = [
   ["時をこえて", "現代"], ["縄文のむら", "縄文"], ["弥生のくに", "弥生"], ["古墳のくに", "古墳"],
-  ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "夜"], ["大仏をつくれ！", "夜"], ["貴族のくらし", "夜"],
+  ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "飛鳥"], ["大仏をつくれ！", "夜"], ["貴族のくらし", "夜"],
   ["武士の世へ① 平氏", "夜"], ["武士の世へ② 源頼朝", "夜"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
   ["戦国① 織田信長", "夜"], ["戦国② 秀吉と家康", "夜"], ["江戸幕府", "江戸"], ["町人の文化と新しい学問", "江戸"],
   ["明治① 開国と明治維新", "夜"], ["明治② 文明開化と憲法", "夜"], ["世界に歩みだした日本", "夜"],
@@ -79,16 +79,17 @@ function phr(t) {
   });
   return any ? `<span class="kp">${out}</span>` : out;
 }
-function fmtUI(t) { return esc(t).replace(new RegExp(`(${KANJI})《[^》]+》`, "g"), "$1").replace(/【([^】]+)】/g, '<span class="kw">$1</span>'); }
+function fmtUI(t) { return esc(t).replace(new RegExp(`(${KANJI})《[^》]+》`, "g"), "$1").replace(/【([^】]+)】/g, '<span class="kw">$1</span>').replace(/[｛｝]/g, ""); }
 function fmt(t) {
   let s = esc(t);
   if (SAVE.opt.ruby) s = autoRuby(s);
   s = s.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), (m, k, r) => SAVE.opt.ruby ? `<ruby>${k}<rt>${r}</rt></ruby>` : k);
   s = s.replace(/【([^】]+)】/g, '<span class="kw">$1</span>');
+  s = s.replace(/｛([^｝]+)｝/g, '<span class="tq">$1</span>');   // 証言の「カードに関係する文」（黄色）
   return s;
 }
-const plain = t => t.replace(/《[^》]+》/g, "").replace(/[【】]/g, "");
-const forSpeech = t => t.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), "$2").replace(/[【】＊]/g, "");
+const plain = t => t.replace(/《[^》]+》/g, "").replace(/[【】｛｝]/g, "");
+const forSpeech = t => t.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), "$2").replace(/[【】｛｝＊]/g, "");
 
 /* ---------- 読み上げ ---------- */
 function speak(t) {
@@ -113,6 +114,8 @@ const CHARS = {
   "弟": { icon: "人:おとこ", side: "R", art: "otouto" },
   "ワカタケル大王": { icon: "人:おとこ", side: "R", art: "wakatakeru" },
   "聖徳太子": { icon: "人:おとこ", side: "R", art: "shotoku" },
+  "中大兄皇子": { icon: "人:おとこ", side: "R", art: "nakanooe" },
+  "中臣鎌足": { icon: "人:おとこ", side: "L", art: "kamatari" },
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };

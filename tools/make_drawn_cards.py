@@ -45,4 +45,37 @@ for i, (nm, c) in enumerate(cols):
         d.rectangle((x + 4, y + 88, x + 74, y + 98), fill=(60, 50, 40))                                    # ふち
         d.text((x + 39, y + 104), pre + nm, font=f, fill=(40, 30, 20), anchor="mt")
 save(im, "冠位十二階")
+
+# ===== 第5話（大化の改新） =====
+def seal(im, x=40, y=290, s=52):
+    ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+# 大化の改新：改新の詔
+im = paper(11); vtext(im, ["改新之詔", "大化二年", "春正月"], 48, 420, 40, 120); seal(im); save(im, "大化の改新")
+# 唐の学問：論語のはじめ
+im = paper(12, (230, 222, 196)); vtext(im, ["論語", "学而時習之", "不亦説乎"], 46, 420, 34, 118); seal(im); save(im, "唐の学問")
+# 唐：大きな国の名
+im = paper(13, (238, 214, 190)); d = ImageDraw.Draw(im); d.rectangle((150, 30, 362, 350), outline=(160, 40, 30), width=8)
+vtext(im, ["大唐"], 120, 256, 60, 0); save(im, "唐")
+# 蘇我入鹿
+im = paper(14); vtext(im, ["蘇我大臣", "入鹿"], 64, 380, 40, 150); seal(im); save(im, "蘇我入鹿")
+# 公地公民：田んぼ＋文字
+im = paper(15); d = ImageDraw.Draw(im)
+for i in range(4):
+    for j in range(2): d.rectangle((40 + i * 110, 250 + j * 60, 140 + i * 110, 300 + j * 60), fill=(120, 160, 70), outline=(90, 70, 40), width=3)
+vtext(im, ["公地", "公民"], 70, 330, 20, 150); save(im, "公地公民")
+# 税のしくみ：租・調・庸
+im = paper(16); vtext(im, ["租", "調", "庸"], 120, 420, 90, 160)
+f = ImageFont.truetype(SERIF, 28); d = ImageDraw.Draw(im)
+for x, t in ((420, "稲"), (260, "特産物"), (100, "布")): d.text((x, 300), t, font=f, fill=(120, 40, 30), anchor="mt")
+save(im, "税のしくみ")
+# 難波の都：海と宮
+im = paper(17); d = ImageDraw.Draw(im)
+for k in range(5): d.arc((-40 + k * 120, 300, 80 + k * 120, 380), 180, 360, fill=(50, 90, 150), width=6)
+d.polygon([(150, 170), (362, 170), (330, 130), (182, 130)], fill=(60, 45, 35)); d.rectangle((180, 170, 332, 250), fill=(170, 50, 35))
+vtext(im, ["難波宮"], 54, 470, 30, 0); save(im, "難波の都")
+# 藤原氏：藤の花
+im = paper(18); d = ImageDraw.Draw(im); random.seed(4)
+for x in range(60, 300, 48):
+    for k in range(8): r = 14 - k; d.ellipse((x - r + random.randint(-3, 3), 30 + k * 26 - r, x + r, 30 + k * 26 + r), fill=(150 + k * 6, 110 + k * 8, 200))
+vtext(im, ["藤原"], 90, 410, 60, 0); save(im, "藤原氏")
 print("OK")
