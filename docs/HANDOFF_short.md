@@ -9,11 +9,18 @@
 
 ## 進め方（トークン節約）
 1. プロット → 台本の下書きを `docs/drafts/epNN_draft.txt` にファイルで出す → 先生が番号で直し → 「OK」で一括実装
-2. 実装：素材（顔グラ `tools/make_faces.py`・カード写真）→ `scenarios/epNN.txt` → `python3 build.py`（⚠をなくす）→ `python3 tools/yomi_missing.py`（足りない読みを data/yomi.txt に）→ テスト → commit（日本語一文）→ push。最後に「GitHub Pagesへの反映は1〜2分」
+2. 実装：素材（顔グラ `tools/make_faces.py`・カード写真）→ `scenarios/epNN.txt` → `python3 build.py`（⚠をなくす）→ **ふりがなの見直し（下の「ふりがな」）** → テスト → commit（日本語一文）→ push。最後に「GitHub Pagesへの反映は1〜2分」
 3. テスト：`mkdir -p /tmp/pw && cd /tmp/pw && npm i playwright@1.56.1` → `NODE_PATH=/tmp/pw/node_modules PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tools/test/play3.js "$PWD/index.html" 話数`（RUBY_OVERFLOW [] と ERR [] ならOK。新しい話は play3.js のじゅもん表に足す）
 4. push は add_repo（access:"push"）→ `/home/claude/manabi-historia` に clone して作業
 5. `index.html` は消さない（音・影絵は再配布できないので、今の index.html から引きつぐ）
 6. 写真：ジャパンサーチAPI（文字だけ）で探す → 候補は1枚の一覧画像で1回だけ確認。ColBaseは `image/slideshow/` と `curl -L`。ないものは描いた絵（make_drawn_cards.py）。make_cardimg.py は新しい行だけの一覧で動かす
+
+## ふりがな（先生が いちばん 困ったところ。必ず やる）
+- 原因：辞書の「1字の読み」（物=もの・語=かた・息=いき・着=つ）が 熟語の中で つながって「ものかた」「いきこ」に なる。yomi_missing.py は「読みがない字」しか 見ないので 気づけない
+- 新しい話を書いたら `python3 tools/yomi_check.py NN` →「？」（熟語が1字ずつの つなぎ合わせ）を **0に**。まちがいは data/yomi.txt に ことばごと（物語=ものがたり）、正しければ data/yomi_ok.txt へ
+- つぎに `python3 tools/yomi_check.py --1 NN` で 1字の読みの一覧を 全部 目で見る（生んだ→う、着る→き、行う→おこな、年を とる→とし など）。送りがなつきで足す（例：着る=き、生ん=う）
+- 辞書を足したら、前の話の読みが 変わっていないかも たしかめる（同じ --1 を 前の話でも 実行して くらべる）
+- 文の中で 読みが ゆれる字は 台本に 漢字《よみ》 と書く（例：行《おこな》った）
 
 ## 台本のいちばん大事な決まり
 - ひらがな多め・文節ごとに半角スペース。1吹き出し2行まで。絵文字は使わない（モブは影絵 `人:おとこ` など）

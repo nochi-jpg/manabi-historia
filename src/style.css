@@ -505,9 +505,9 @@ img.silimg.silface{width:100%;height:100%;margin:0;opacity:1;filter:drop-shadow(
 /* ♡ */
 .heart-fall{position:absolute;width:34px;height:30px;animation:hfall 1s ease-in forwards}
 @keyframes hfall{0%{transform:none}20%{transform:rotate(-15deg) scale(1.2)}100%{transform:translate(20px,160px) rotate(60deg);opacity:0}}
-#stage.danger #hearts .heart:first-child{animation:hpulse .8s ease-in-out infinite}
+#stage.danger:is(.testi-on,.battle-on) #hearts .heart:first-child{animation:hpulse .8s ease-in-out infinite}
 @keyframes hpulse{50%{transform:scale(1.25)}}
-#stage.danger::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:34;box-shadow:inset 0 0 120px rgba(255,30,50,.45);animation:dpulse 1.6s ease-in-out infinite}
+#stage.danger:is(.testi-on,.battle-on)::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:34;box-shadow:inset 0 0 120px rgba(255,30,50,.45);animation:dpulse 1.6s ease-in-out infinite}
 @keyframes dpulse{50%{box-shadow:inset 0 0 70px rgba(255,30,50,.25)}}
 /* 記憶のかけら */
 #layer.frag::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(120,90,50,.18),rgba(0,0,0,.85) 85%);pointer-events:none}

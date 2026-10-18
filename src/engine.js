@@ -312,7 +312,7 @@ function setWarpLevel(v) {
   [...c.children].forEach((pth, i) => pth.style.opacity = v > i / CRACKS.length ? 1 : 0);
 }
 let HB = null;   // 心拍音のくり返し
-function clearLayer() { layer.innerHTML = ""; layer.className = ""; stage.classList.remove("testi-on", "battle-on"); if (HB) { clearInterval(HB); HB = null; } }
+function clearLayer() { layer.innerHTML = ""; layer.className = ""; stage.classList.remove("testi-on", "battle-on", "danger"); if (HB) { clearInterval(HB); HB = null; } }
 const btn = (label, cls, on) => { const b = h("button", "btn " + (cls || ""), label); b.onclick = on; return b; };
 
 /* 場面の中央に出す画像（@画像 名前 [光る]）。名前は art の名前（tokei など）。空なら消す */
@@ -876,7 +876,7 @@ function runBattle(n) {
     const splitOf = k => 42 + (100 - 42) * k / total * .8;
     const draw = () => {
       clearLayer(); hideTalk(); hidePortraits();
-      layer.className = "battle"; stage.classList.add("battle-on");
+      layer.className = "battle"; stage.classList.add("battle-on"); stage.classList.toggle("danger", S.hearts === 1);
       battleBg(splitOf(r));
       const foe = h("div", "foe mist" + (total - r), `<div class="foe-face">${faceHTML(charOf("ユガミ"), "笑顔")}</div><div class="foe-name">ユガミ</div>`);
       const gauge = h("div", "gauge", Array.from({ length: total }, (_, i) => `<span class="seg${i < total - r ? "" : " off"}"></span>`).join(""));
@@ -1130,7 +1130,7 @@ function runTesti(n) {
     let r = subStart(), i = 0;
     const draw = async (first) => {
       clearLayer(); hideTalk(); hidePortraits();
-      layer.className = "testi"; stage.classList.add("testi-on");
+      layer.className = "testi"; stage.classList.add("testi-on"); stage.classList.toggle("danger", S.hearts === 1);
       BGM.play(r === n.rounds.length - 1 && n.rounds.length > 1 ? "最後の証言" : "証言");
       const aura = S.aura.includes(who);
       const wit = h("div", "witness" + (aura ? " aura" : ""), (aura ? AURA_HTML : "") + `<div class="w-face">${faceHTML(c, "ふつう", who)}</div><div class="w-name">${esc(who)}</div>`);
