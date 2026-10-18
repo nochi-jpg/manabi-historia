@@ -53,6 +53,8 @@ for line in (R/"data/cardimg.txt").read_text(encoding="utf-8").splitlines():
     if f.exists():
         cimg[p[0]] = ["data:image/webp;base64," + base64.b64encode(f.read_bytes()).decode(), "cover"]
         ccred.append([p[0], p[4], p[3]])
+for f in sorted((R/"cardimg").glob("*.webp")):   # 一覧にない絵（tools/make_drawn_cards.py で描いたもの）も入れる。クレジットはなし
+    if f.stem not in cimg: cimg[f.stem] = ["data:image/webp;base64," + base64.b64encode(f.read_bytes()).decode(), "cover"]
 data += "\nwindow.CARDIMG=" + json.dumps(cimg, ensure_ascii=False) + ";\nwindow.CARDIMG_CREDITS=" + json.dumps(ccred, ensure_ascii=False) + ";"
 # ふりがな辞書（data/yomi.txt）：[ことば, 漢字部分の長さ, よみ]
 KJ = re.compile(r"[\u4E00-\u9FFF\u3005\u30F6]")
