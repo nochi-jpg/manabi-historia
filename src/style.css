@@ -718,3 +718,40 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 
 /* 証言の「カードに関係する文」は黄色（矛盾をさがすのはここだけ） */
 .tq{color:#ffe04a;font-weight:700}
+
+/* ===== 時ワープ（@時ワープ）===== */
+#bg::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity 1s,background 1s}
+#bg[data-tint="夕焼け"]::after{opacity:1;background:linear-gradient(180deg,rgba(255,110,40,.55),rgba(255,70,60,.35) 55%,rgba(60,10,50,.55));mix-blend-mode:multiply}
+#bg[data-tint="朝"]::after{opacity:1;background:linear-gradient(180deg,rgba(255,170,150,.55),rgba(255,215,170,.4) 55%,rgba(200,170,190,.35));mix-blend-mode:multiply}
+#bg[data-tint="夜"]::after{opacity:1;background:linear-gradient(180deg,rgba(10,20,70,.8),rgba(20,30,80,.6));mix-blend-mode:multiply}
+.tj{position:absolute;inset:0;overflow:hidden}
+.tj-sky{position:absolute;inset:0;opacity:0;transition:background .12s,opacity .6s;mix-blend-mode:multiply}
+.tj.on .tj-sky{opacity:1}
+.tj-sky.sky-am{background:linear-gradient(rgba(255,190,160,.5),rgba(255,230,200,.3))}
+.tj-sky.sky-noon{background:linear-gradient(rgba(200,230,255,.25),rgba(255,255,240,.15))}
+.tj-sky.sky-pm{background:linear-gradient(rgba(255,110,40,.65),rgba(160,40,60,.55))}
+.tj-sky.sky-night{background:linear-gradient(rgba(10,15,60,.9),rgba(30,30,90,.8))}
+.tj-ring{position:absolute;left:50%;top:44%;width:1500px;height:1500px;margin:-750px 0 0 -750px;border-radius:50%;opacity:0;
+  background:repeating-conic-gradient(rgba(255,240,200,.5) 0 .6deg,transparent .6deg 30deg),radial-gradient(circle,rgba(255,250,230,.55) 0,rgba(255,230,180,.15) 30%,transparent 55%);transition:opacity .8s}
+.tj.on .tj-ring{opacity:1;animation:tjring 6s linear infinite}
+.tj.stop .tj-ring{animation-play-state:paused;opacity:.4}
+@keyframes tjring{to{transform:rotate(-360deg)}}
+.tj-tokei{position:absolute;left:50%;top:44%;width:360px;height:360px;margin:-180px 0 0 -180px;transform:scale(.2);opacity:0;transition:transform .8s cubic-bezier(.2,1.4,.4,1),opacity .5s;filter:drop-shadow(0 0 30px rgba(255,230,160,.9))}
+.tj.on .tj-tokei{transform:scale(1);opacity:1}
+.tj-tokei img{width:100%;height:100%}
+.tj-tokei i{position:absolute;left:50%;top:64.5%;transform-origin:50% 100%;background:#d9a520;border-radius:3px;box-shadow:0 0 8px #ffd26a}
+.tj-m{width:6px;height:96px;margin:-96px 0 0 -3px}
+.tj-h{width:9px;height:62px;margin:-62px 0 0 -4.5px;background:#a8761a!important}
+.tj-year{position:absolute;left:0;right:0;bottom:70px;text-align:center;color:#fff;text-shadow:0 0 18px rgba(0,0,0,.9),0 0 30px rgba(255,210,120,.6);opacity:0;transition:opacity .4s}
+.tj.on .tj-year{opacity:1}
+.tj-year b{font-size:120px;font-weight:900;letter-spacing:.06em;display:inline-block}
+.tj-year span{display:inline-block;margin-left:28px;font-size:64px;font-weight:900;vertical-align:18px}
+.tj-year b.land{animation:tjland .5s ease-out}
+@keyframes tjland{0%{transform:scale(1.5)}100%{transform:scale(1)}}
+.tj-black{position:absolute;inset:0;background:#000;opacity:0;animation:tjbo .9s forwards;z-index:9}
+.tj-black.out{animation:tjbi 1.2s forwards}
+@keyframes tjbo{to{opacity:1}}
+@keyframes tjbi{from{opacity:1}to{opacity:0}}
+.tj-ban{display:flex;align-items:baseline;gap:28px}
+.tj-ban b{font-size:60px;font-weight:900;letter-spacing:.08em}
+.tj-ban span{font-size:34px;font-weight:900;color:var(--gold)}

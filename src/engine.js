@@ -157,7 +157,8 @@ function parseScript(no, src) {
       block = null;
       const add = b => { ep.nodes.push(b); block = b; };
       switch (cmd) {
-        case "背景": ep.nodes.push({ t: "bg", bg: arg }); break;
+        case "背景": ep.nodes.push({ t: "bg", bg: rest[0] || arg, tint: rest[1] || "" }); break;   // @背景 飛鳥 夕焼け（色は 朝／夕焼け／夜。なしで ふつう）
+        case "時ワープ": ep.nodes.push({ t: "tjump", from: Number(rest[0]), to: Number(rest[1]), bg: rest[2] || "", tint: rest[3] || "" }); break;   // @時ワープ 643 645 飛鳥 夕焼け
         case "人物": { const [n, ic, side, art] = rest; ep.chars[n] = Object.assign({}, CHARS[n] || {}, { icon: ic || "人:おとこ", side: side || "R" }, art ? { art } : {}); break; }   // 4つめ＝顔グラ（名のる前の ？？？ に使う）
         case "カード": block = { t: "cards" }; break;
         case "調査": add({ t: "inv", items: [], hint: "" }); break;
@@ -285,13 +286,15 @@ function setupScreen() {
   setTimeout(fit, 100);
 }
 let CUR_BG = "夜";
-function setBg(key, fade) {
+function setBg(key, fade, tint) {
   if (fade && CUR_BG !== key && bgEl.firstChild) {   // 場面の中の背景がわり：前の背景を上に重ねて、ふわっと消す
     const old = bgEl.cloneNode(true); old.removeAttribute("id"); old.classList.add("bg-old");
     bgEl.parentNode.insertBefore(old, bgEl.nextSibling); setTimeout(() => old.remove(), 600);
   }
   CUR_BG = key; bgEl.classList.remove("warped", "restoring"); bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key));
+  setTint(tint);
 }
+function setTint(t) { if (t) bgEl.dataset.tint = t; else delete bgEl.dataset.tint; }   // 背景の時間帯の色（朝／夕焼け／夜）
 /* ゆがみの度合い（0〜1）。背景がくもり、ひびが広がる */
 const CRACKS = ["M0 120 L140 170 L210 140 L330 230", "M1600 80 L1460 150 L1380 120 L1250 260", "M0 420 L120 380 L170 430 L280 360",
   "M1600 430 L1480 400 L1430 450 L1320 380", "M620 0 L680 90 L640 140 L720 230", "M1100 0 L1060 80 L1110 130 L1040 210"];   // セリフのまどに重ならない位置
@@ -1048,6 +1051,52 @@ async function runDepart() {   // 旅立ち：文字盤のように回りなが�
   await sleep(1800);
 }
 
+/* 同じ話の中で 時が進む（@時ワープ 643 645 飛鳥 夕焼け）
+   トケイが あらわれ、針が 回りだす → 年と季節が カウントされ、空の色が 朝・昼・夕・夜と めぐる（だんだん速く）
+   → 針が ゆっくりになって 止まる → 無音 → ブラックアウト → 新しい 背景（時間帯の色）で 明ける → 「〇年後」 */
+async function runTimeJump(n) {
+  hideTalk(); hidePortraits(true); showPic("");
+  const fast = SKIP;
+  const A = window.ART && window.ART.tokei;
+  const ov = FX.add("tj", `<div class="tj-sky"></div><div class="tj-ring"></div><div class="tj-tokei">${A ? `<img src="${A.normal}" alt="">` : ""}<i class="tj-h"></i><i class="tj-m"></i></div><div class="tj-year"><b></b><span></span></div>`);
+  const sky = ov.querySelector(".tj-sky"), yb = ov.querySelector(".tj-year b"), ys = ov.querySelector(".tj-year span");
+  const hm = ov.querySelector(".tj-m"), hh = ov.querySelector(".tj-h");
+  BGM.stop(.8); SE.play("tick"); await sleep(fast ? 100 : 700);
+  ov.classList.add("on"); SE.play("timewarp"); await sleep(fast ? 100 : 900);
+  BGM.play("封印");
+  const SEASON = ["春", "夏", "秋", "冬"], SKYC = ["sky-am", "sky-noon", "sky-pm", "sky-night"];
+  const steps = []; for (let y = n.from; y < n.to; y++) for (const se of SEASON) steps.push([y, se]); steps.push([n.to, "春"]);
+  let ang = 0, spd = 2, run = true;   // 針の速さ（1フレームの角度）
+  const spin = () => { if (!run) return; ang += spd; hm.style.transform = `rotate(${ang}deg)`; hh.style.transform = `rotate(${ang / 12}deg)`; requestAnimationFrame(spin); };
+  requestAnimationFrame(spin);
+  const N = steps.length;
+  for (let k = 0; k < N; k++) {
+    const [y, se] = steps[k];
+    yb.textContent = y + "年"; ys.textContent = se;
+    sky.className = "tj-sky " + SKYC[k % 4];
+    SE.play("tick");
+    const left = N - 1 - k;   // のこり 3つは ゆっくり（止まる前のため）
+    const t = fast ? 40 : left < 3 ? [520, 360, 240][left] : Math.max(70, 460 - k * 45);
+    spd = fast ? 30 : left < 3 ? [3, 6, 10][left] : Math.min(40, 4 + k * 3);
+    if (k === Math.floor(N / 2) && !fast) { FX.lines(1600); FX.shake("s"); }
+    await sleep(t);
+  }
+  run = false; ov.classList.add("stop"); BGM.stop(.2);   // ぴたりと 止まる → 無音
+  SE.play("drum"); FX.shake("s"); yb.classList.add("land");
+  await sleep(fast ? 200 : 1300);
+  const bo = FX.add("tj-black", "");   // ブラックアウト
+  await sleep(fast ? 150 : 900);
+  ov.remove();
+  if (n.bg) setBg(n.bg, false, n.tint); else setTint(n.tint);
+  await sleep(fast ? 100 : 700);
+  bo.classList.add("out"); setTimeout(() => bo.remove(), 1300);
+  await sleep(fast ? 200 : 900);
+  const d = n.to - n.from;
+  banner("", `<div class="tj-ban"><b>${n.to}年</b><span>${d}年後</span></div>`);
+  SE.play("found");
+  await sleep(fast ? 300 : 1900);
+}
+
 /* ---------- 場面：議論（証言に矛盾をつきつける） ---------- */
 async function testiOpening(title) {
   FX.add("t-dim", "", 1900);
@@ -1180,12 +1229,12 @@ async function playEpisode(no, resume) {
   if (resume && SAVE.resume && SAVE.resume.no === no) Object.assign(S, SAVE.resume, { no, ep });
   // 再開時は直前の背景を復元
   let bg = EP_META[no][1];
-  for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg") bg = ep.nodes[i].bg;
+  let tint = ""; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg" || (ep.nodes[i].t === "tjump" && ep.nodes[i].bg)) { bg = ep.nodes[i].bg; tint = ep.nodes[i].tint; }
   if (!resume) {   // はじめから：最初のセリフより前に @背景 があれば、それを最初から出す（別の背景が一瞬見えないように）
     for (const n of ep.nodes) { if (n.t === "bg") { bg = n.bg; break; } if (!["bgm", "se", "pic", "disguise"].includes(n.t)) break; }
   }
   S.disguise = {}; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "disguise") S.disguise[ep.nodes[i].who] = ep.nodes[i].look || null;
-  setBg(bg); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
+  setBg(bg, false, tint); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
   LOG = [];
   if (!resume) { BGM.stop(.6); await titleCard(no); BGM.play(no === 0 ? "学校" : "町"); }
   else { const k = prevBgm(ep, S.idx); BGM.play(k && k !== "なし" ? k : null); }
@@ -1203,7 +1252,8 @@ async function playEpisode(no, resume) {
         case "disguise": S.disguise[n.who] = n.look || null; break;
         case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
         case "staff": await runStaffRoll(n.key); break;
-        case "bg": hidePortraits(true); setBg(n.bg, true); showPic(""); break;
+        case "bg": hidePortraits(true); setBg(n.bg, true, n.tint); showPic(""); break;
+        case "tjump": await runTimeJump(n); break;
         case "omen": await runOmen(); break;
         case "exit": await runExit(n); break;
         case "depart": await runDepart(); break;
@@ -1229,7 +1279,7 @@ async function playEpisode(no, resume) {
       }
       throw e;
     }
-    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se", "disguise"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
+    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se", "disguise", "tjump"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
     S.idx++;
   }
   return finishEpisode();
@@ -1239,7 +1289,7 @@ function prevBgm(ep, idx) {
   for (let i = idx - 1; i >= 0; i--) { const t = ep.nodes[i].t; if (t === "bgm") return ep.nodes[i].key || "なし"; if (t !== "bg" && t !== "pic" && t !== "se") return null; }
   return null;
 }
-const AUTO_BGM = { battle: "バトル", sum: "日常", frag: "一方", restore: "封印", omen: "神殿", warp: "神殿", exit: null, depart: null };
+const AUTO_BGM = { tjump: null, battle: "バトル", sum: "日常", frag: "一方", restore: "封印", omen: "神殿", warp: "神殿", exit: null, depart: null };
 function autoBgm(n) {
   const isInv = n.t === "inv" || n.t === "spot";
   if (!isInv && !(n.t in AUTO_BGM)) return;
@@ -1329,8 +1379,9 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const line = h("div", "tl-line" + (page.future ? " future" : "")); layer.appendChild(line);
   const cleared = page.eps.map(no => no !== 0 && !!SAVE.stars[no]);   // プロローグはつながない（線は第1話から）
   let litTo = -1; cleared.forEach((c, i) => { if (c) litTo = i; });
-  if (PAGES.slice(pi + 1).some(p => p.eps.some(no => no !== 0 && SAVE.stars[no]))) litTo = n - 1;
-  if (litTo >= 0) { const lit = h("div", "tl-lit"); lit.style.width = (xs[litTo] - X0 + 2) + "px"; layer.appendChild(lit); }
+  const nextLit = PAGES.slice(pi + 1).some(p => p.eps.some(no => no !== 0 && SAVE.stars[no]));   // 先のページにクリアした話がある → 右はしまで つなぐ
+  if (nextLit) litTo = n - 1;
+  if (litTo >= 0) { const lit = h("div", "tl-lit"); lit.style.width = ((nextLit ? X1 : xs[litTo]) - X0 + 2) + "px"; layer.appendChild(lit); }
   page.eps.forEach((no, i) => {
     const [era, year] = EP_INFO[no];
     const open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
