@@ -79,3 +79,25 @@ for x in range(60, 300, 48):
     for k in range(8): r = 14 - k; d.ellipse((x - r + random.randint(-3, 3), 30 + k * 26 - r, x + r, 30 + k * 26 + r), fill=(150 + k * 6, 110 + k * 8, 200))
 vtext(im, ["藤原"], 90, 410, 60, 0); save(im, "藤原氏")
 print("OK")
+
+# ===== 第6話（大仏をつくれ！） =====
+# 大仏づくりの詔：「一枝の草、一把の土を持ちて像を助け造らむと情願する者あらば…」
+im = paper(21); vtext(im, ["造大仏詔", "一枝之草", "一把之土"], 46, 420, 40, 120); seal(im); save(im, "大仏づくりの詔")
+# 多くの人々：大仏の型へ 銅を 運ぶ 人々
+im = paper(22, (232, 220, 192)); d = ImageDraw.Draw(im)
+d.ellipse((150, 20, 362, 232), fill=(150, 110, 70))   # 大仏の 光背
+d.ellipse((206, 50, 306, 150), fill=(110, 80, 50)); d.rounded_rectangle((176, 140, 336, 300), 40, fill=(110, 80, 50))   # 大仏
+def man(x, y, s=1):
+    c = (50, 40, 30); d.ellipse((x - 9 * s, y - 62 * s, x + 9 * s, y - 44 * s), fill=c)
+    d.polygon([(x - 12 * s, y - 42 * s), (x + 12 * s, y - 42 * s), (x + 16 * s, y), (x - 16 * s, y)], fill=c)
+    d.rectangle((x - 26 * s, y - 52 * s, x + 26 * s, y - 40 * s), fill=(160, 80, 50))   # かついだ 銅
+for i, x in enumerate(range(30, 512, 56)): man(x, 360 - (i % 2) * 10, .9 + (i % 3) * .1)
+save(im, "多くの人々")
+# おくりもの：開眼の綱（はなだ色の 綱）
+im = paper(23, (238, 230, 210)).resize((480, 360)); d = ImageDraw.Draw(im)
+import math
+for k in range(3):   # 3本を よりあわせた 綱
+    pts = [(40 + t * 4, 180 + math.sin(t / 9 + k * 2.1) * 26 + (t - 50) * .6) for t in range(101)]
+    d.line(pts, fill=(70 + k * 20, 120 + k * 15, 170 + k * 10), width=22, joint="curve")
+for x in (40, 440): d.ellipse((x - 14, 150 + (x - 240) * .12, x + 14, 210 + (x - 240) * .12), fill=(80, 130, 180))
+im.save(R/"art"/"gtsuna_normal.webp", "WEBP", quality=80)

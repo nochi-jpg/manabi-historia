@@ -8,7 +8,7 @@ const FAIL = { fail: true };
 /* ---------- 話の一覧 ---------- */
 const EP_META = [
   ["時をこえて", "現代"], ["縄文のむら", "縄文"], ["弥生のくに", "弥生"], ["古墳のくに", "古墳"],
-  ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "飛鳥"], ["大仏をつくれ！", "夜"], ["貴族のくらし", "夜"],
+  ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "飛鳥"], ["大仏をつくれ！", "平城京"], ["貴族のくらし", "夜"],
   ["武士の世へ① 平氏", "夜"], ["武士の世へ② 源頼朝", "夜"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
   ["戦国① 織田信長", "夜"], ["戦国② 秀吉と家康", "夜"], ["江戸幕府", "江戸"], ["町人の文化と新しい学問", "江戸"],
   ["明治① 開国と明治維新", "夜"], ["明治② 文明開化と憲法", "夜"], ["世界に歩みだした日本", "夜"],
@@ -116,6 +116,9 @@ const CHARS = {
   "聖徳太子": { icon: "人:おとこ", side: "R", art: "shotoku" },
   "中大兄皇子": { icon: "人:おとこ", side: "R", art: "nakanooe" },
   "中臣鎌足": { icon: "人:おとこ", side: "L", art: "kamatari" },
+  "聖武天皇": { icon: "人:おとこ", side: "R", art: "shoumu" },
+  "光明皇后": { icon: "人:おんな", side: "L", art: "koumyou" },
+  "行基": { icon: "人:としより", side: "R", art: "gyouki" },
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
@@ -155,7 +158,7 @@ function parseScript(no, src) {
       const add = b => { ep.nodes.push(b); block = b; };
       switch (cmd) {
         case "背景": ep.nodes.push({ t: "bg", bg: arg }); break;
-        case "人物": { const [n, ic, side] = rest; ep.chars[n] = Object.assign({}, CHARS[n] || {}, { icon: ic || "人:おとこ", side: side || "R" }); break; }
+        case "人物": { const [n, ic, side, art] = rest; ep.chars[n] = Object.assign({}, CHARS[n] || {}, { icon: ic || "人:おとこ", side: side || "R" }, art ? { art } : {}); break; }   // 4つめ＝顔グラ（名のる前の ？？？ に使う）
         case "カード": block = { t: "cards" }; break;
         case "調査": add({ t: "inv", items: [], hint: "" }); break;
         case "まちがい探し": add({ t: "spot", items: [], hint: "" }); break;

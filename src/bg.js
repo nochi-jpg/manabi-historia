@@ -105,6 +105,29 @@ const BG = (() => {
       el("rect", { x: 0, y: 700, width: 1600, height: 14 }, n); for (let x = 0; x < 1600; x += 160) el("rect", { x, y: 680, width: 12, height: 50 }, n);   // 回廊
       person(n, 260, 760, 1, "#1f1a14", false);
     } },
+    平城京: { ground: "#211a14", draw(svg) {
+      const d = sky(svg, "skyH", [[0, "#9cc0de"], [.55, "#f0dfc0"], [1, "#f8d9a8"]]);
+      glow(d, "sunH", "#fff4d6");
+      el("circle", { cx: 1260, cy: 330, r: 230, fill: "url(#sunH)" }, svg);
+      el("path", { d: "M0 520 Q260 420 520 480 Q760 400 1040 470 T1600 450 V900 H0Z", fill: "#a8b896", opacity: .7 }, svg);   // 奈良の山なみ
+      const n = el("g", { fill: "#211a14" }, svg);
+      const roof = (cx, y, w, h) => el("path", { d: `M${cx - w / 2 - 40} ${y} Q${cx - w / 2} ${y - 8} ${cx - w / 2 + 16} ${y - h} L${cx + w / 2 - 16} ${y - h} Q${cx + w / 2} ${y - 8} ${cx + w / 2 + 40} ${y}Z` }, n);
+      el("rect", { x: 520, y: 470, width: 560, height: 150 }, n); roof(800, 475, 600, 46);   // 大仏殿
+      el("rect", { x: 600, y: 395, width: 400, height: 60 }, n); roof(800, 400, 440, 52);
+      el("path", { d: "M582 352 q-6 -24 10 -30 l6 30z M1018 352 q6 -24 -10 -30 l-6 30z" }, n);   // しび
+      const pag = (cx, base) => { let y = base, w = 96;   // 七重塔
+        for (let i = 0; i < 7; i++) { el("rect", { x: cx - w / 2 + 12, y: y - 30, width: w - 24, height: 30 }, n); roof(cx, y - 30, w - 40, 14); y -= 44; w -= 8; }
+        el("rect", { x: cx - 3, y: y - 70, width: 6, height: 80 }, n); };
+      pag(300, 640); pag(1300, 640);
+      el("path", { d: "M0 900 L0 690 L640 640 L960 640 L1600 690 L1600 900Z" }, n);   // 大通りの両がわ
+      el("path", { d: "M640 640 L960 640 L1240 900 L360 900Z", fill: "#c9b48e" }, svg);   // まっすぐな 大通り
+      el("path", { d: "M780 640 L820 640 L860 900 L740 900Z", fill: "#d8c6a2", opacity: .6 }, svg);
+      for (let i = 0; i < 6; i++) { const t = i / 5, y = 650 + t * 120, x = 620 - t * 380, w = 60 + t * 90;   // 両がわの 家なみ
+        el("rect", { x: x - w, y: y - 30 - t * 30, width: w, height: 40 + t * 30 }, n); el("rect", { x: 1600 - x, y: y - 30 - t * 30, width: w, height: 40 + t * 30 }, n); }
+      const cart = (x, y, k) => { el("rect", { x: x - 40 * k, y: y - 36 * k, width: 80 * k, height: 26 * k }, n); el("circle", { cx: x - 24 * k, cy: y - 6 * k, r: 12 * k }, n); el("circle", { cx: x + 24 * k, cy: y - 6 * k, r: 12 * k }, n); };
+      cart(700, 700, .55); person(n, 655, 700, .45, "#211a14", false); cart(900, 760, .8); person(n, 960, 760, .65, "#211a14", true);
+      person(n, 220, 820, 1, "#211a14", false);
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");

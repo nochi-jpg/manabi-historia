@@ -13,7 +13,7 @@ const EPN = Number(process.argv[3] || 1);
   const shot = n => p.screenshot({ path: `${SHOTDIR}b${EPN}_${n}.png` });
   await p.waitForTimeout(300); await shot('00title');
   // じゅもん
-  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ'}[EPN])); await p.click('text=けってい');
+  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな'}[EPN])); await p.click('text=けってい');
   await p.waitForTimeout(200); await shot('01spell'); await p.click('.inbox .btn');
   await p.click('text=おはなしを えらぶ'); await p.waitForTimeout(200); await shot('02select');
   await p.evaluate(n => showSelect({no:n}), EPN); await p.waitForTimeout(200); await shot('02b_tl'); await p.click('.tp-btns .btn.red'); await p.waitForTimeout(300);
@@ -21,7 +21,8 @@ const EPN = Number(process.argv[3] || 1);
   const tap = async (x, o) => { try { if (typeof x === 'string') await p.click(x, {timeout:2000}); else await x.click({timeout:2000}); } catch (e) {} };
   const pickCard = async (name) => {
     for (let k = 0; k < 3; k++) {
-      const loc = p.locator(`.hand .card:has-text("${name}")`);
+      const k2 = await p.$$eval('.hand .card .cname', (es, n) => es.findIndex(e => { const x = e.cloneNode(true); x.querySelectorAll('rt').forEach(r => r.remove()); return x.textContent.trim() === n; }), name);   // 名前が完全に一致するカード（「大仏」と「大仏づくりの詔」を取りちがえない）
+      const loc = k2 >= 0 ? p.locator('.hand .card').nth(k2) : p.locator(`.hand .card:has-text("${name}")`);
       if (await loc.count() && await loc.first().isVisible()) { await tap(loc.first()); return; }
       await tap('.hand .pg-arrow >> nth=1'); await p.waitForTimeout(150);
     }
