@@ -4,3 +4,5 @@ gmimi | https://colbase.nich.go.jp/media/tnm/J-23217/image/slideshow_s/J-23217_E
 gmagatama | https://colbase.nich.go.jp/media/tnm/J-9048/image/slideshow_s/J-9048_C0043062.jpg | https://colbase.nich.go.jp/collection_items/tnm/J-9048 | CC BY 4.0相当 | ColBase／東京国立博物館 | pad |  | おくりもの：勾玉（第2話）
 gkatana | https://ibmuseum.mapps.ne.jp/files/9355/media_files/mid/1528.jpg | https://jmapps.ne.jp/chigasaki_museum/det.html?data_id=1493 | CC BY 4.0相当 | 茅ヶ崎市博物館 | pad |  | おくりもの：鉄の小刀（第3話）
 gmari | https://colbase.nich.go.jp/media/tnm/I-2128/image/slideshow/I-2128_C0065846.jpg | https://colbase.nich.go.jp/collection_items/tnm/I-2128 | CC BY 4.0相当 | ColBase／東京国立博物館 | pad | 0.20,0.09,0.45,0.60 | おくりもの：蹴鞠の鞠（第5話）
+gsousen | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.1,0.65,0.9 | おくりもの（宋銭）
+gsousen | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.1,0.65,0.9 | おくりもの（宋銭）

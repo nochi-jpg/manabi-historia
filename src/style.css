@@ -773,3 +773,7 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .ep-curtain{position:absolute;inset:0;background:#000}
 .ep-curtain.out{opacity:0;transition:opacity 1.2s}
 .tj.solid{background:radial-gradient(ellipse at 50% 45%,#6a4bb0,#2a1660 55%,#0b0620)}
+
+/* ===== 第8話：厳島の 潮（ゆがむと 潮が 引いて 砂地が 見える。もどすと 満ちる）===== */
+#bg .tide{transition:transform 2.6s ease-in-out}
+#bg.warped .tide{transform:translateY(calc(30px + var(--wl,.25) * 120px))}

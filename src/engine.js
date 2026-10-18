@@ -9,7 +9,7 @@ const FAIL = { fail: true };
 const EP_META = [
   ["時をこえて", "現代"], ["縄文のむら", "縄文"], ["弥生のくに", "弥生"], ["古墳のくに", "古墳"],
   ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "飛鳥"], ["大仏をつくれ！", "平城京"], ["貴族のくらし", "平安京"],
-  ["武士の世へ① 平氏", "夜"], ["武士の世へ② 源頼朝", "夜"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
+  ["武士の世へ① 平氏", "六波羅"], ["武士の世へ② 源頼朝", "夜"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
   ["戦国① 織田信長", "夜"], ["戦国② 秀吉と家康", "夜"], ["江戸幕府", "江戸"], ["町人の文化と新しい学問", "江戸"],
   ["明治① 開国と明治維新", "夜"], ["明治② 文明開化と憲法", "夜"], ["世界に歩みだした日本", "夜"],
   ["長く続いた戦争", "夜"], ["新しい日本、平和な日本へ", "現代"], ["最終回 未来へ", "時空"],
@@ -121,6 +121,8 @@ const CHARS = {
   "行基": { icon: "人:としより", side: "R", art: "gyouki" },
   "藤原道長": { icon: "人:おとこ", side: "R", art: "michinaga" },   // 1018年は @変装 藤原道長 old（年をとった 道長）
   "藤式部": { icon: "人:おんな", side: "L", art: "fujishikibu" },
+  "平清盛": { icon: "人:おとこ", side: "R", art: "kiyomori" },   // 1168年は @変装 平清盛 nyudo（出家後）
+  "平重盛": { icon: "人:おとこ", side: "L", art: "shigemori" },
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
@@ -1115,7 +1117,7 @@ async function runTimeJump(n) {
   await sleep(fast ? 300 : 1900);
 }
 /* 話の はじまり：前の話の 最後の 年から その時代へ（むかしへは 逆まわし、先へは 順まわし） */
-const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008 };
+const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008, 8: 1160 };
 function epEndYear(no) { let y = epStartYear(no); const ep = EPS[no]; if (ep) for (const n of ep.nodes) if (n.t === "tjump") y = n.to; return y; }   // 話の 最後の 年（@時ワープ で 進んだ 年）
 function prevEndYear(no) { return no <= 1 ? 2023 : epEndYear(no - 1) ?? 2023; }   // 前の話の 最後の 年（第1話は プロローグの 2023年）
 function epStartYear(no) { if (EP_START[no] != null) return EP_START[no]; const m = /(\d+)/.exec(EP_INFO[no][1]); return m ? Number(m[1]) : null; }

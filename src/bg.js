@@ -189,6 +189,58 @@ const BG = (() => {
       el("ellipse", { cx: 800, cy: 452, rx: 8, ry: 14, fill: "#ffcf6a" }, svg);
       for (let k = 0; k < 4; k++) el("rect", { x: [452, 456, 1012, 1016][k] - 45, y: 586 - (k % 2) * 6, width: 90, height: 6, fill: "#f4ead2" }, svg);   // 机の 上の 紙
     } },
+    六波羅: { ground: "#1d1814", draw(svg) {   // 平氏の やかた：板べいと 門、見はりの やぐら、赤い 旗、馬
+      const d = sky(svg, "skyRk", [[0, "#b8c6d6"], [.6, "#e4e0d6"], [1, "#efe6d2"]]);
+      glow(d, "sunRk", "#fffaf0");
+      el("circle", { cx: 1250, cy: 260, r: 200, fill: "url(#sunRk)", opacity: .8 }, svg);
+      el("path", { d: "M0 470 Q240 380 520 440 Q800 360 1100 430 T1600 410 V900 H0Z", fill: "#9aa8a4", opacity: .7 }, svg);   // 東山
+      el("rect", { x: 0, y: 690, width: 1600, height: 210, fill: "#8c7a62" }, svg);   // 土の 地面
+      const n = el("g", { fill: "#1d1814" }, svg);
+      const roof = (cx, y, w, h) => el("path", { d: `M${cx - w / 2 - 30} ${y} Q${cx - w / 2 + 8} ${y - 4} ${cx - w / 2 + 22} ${y - h} L${cx + w / 2 - 22} ${y - h} Q${cx + w / 2 - 8} ${y - 4} ${cx + w / 2 + 30} ${y}Z` }, n);
+      el("rect", { x: 560, y: 470, width: 520, height: 120 }, n); roof(820, 476, 540, 50);   // おくの 主殿
+      el("rect", { x: 1120, y: 500, width: 300, height: 90 }, n); roof(1270, 506, 320, 40);
+      el("rect", { x: 0, y: 590, width: 1600, height: 110 }, n);   // 板べい
+      for (let x = 0; x < 1600; x += 26) el("rect", { x, y: 596, width: 2, height: 100, fill: "#4a3c30" }, svg);
+      el("rect", { x: 0, y: 584, width: 1600, height: 10 }, n);
+      el("rect", { x: 720, y: 560, width: 200, height: 150, fill: "#3a2e24" }, svg); roof(820, 566, 220, 34);   // 門
+      [724, 904].forEach(x => el("rect", { x, y: 560, width: 14, height: 150 }, n));
+      el("rect", { x: 812, y: 566, width: 16, height: 144, fill: "#1d1814" }, svg);
+      const tower = x => { [x - 60, x + 50].forEach(px => el("rect", { x: px, y: 360, width: 10, height: 340 }, n));   // 見はりの やぐら
+        el("rect", { x: x - 80, y: 380, width: 160, height: 14 }, n); el("rect", { x: x - 70, y: 330, width: 140, height: 50 }, n); roof(x, 334, 140, 30); };
+      tower(220);
+      person(n, 210, 330, .45, "#1d1814", true);
+      const flag = (x, y) => { el("rect", { x, y, width: 6, height: 230 }, n); el("path", { d: `M${x + 6} ${y + 6} L${x + 70} ${y + 14} L${x + 64} ${y + 120} L${x + 6} ${y + 112}Z`, fill: "#b8282a" }, svg); };   // 平氏の 赤い 旗
+      flag(600, 380); flag(1000, 380); flag(1460, 400);
+      const horse = (x, y, s) => { const g = el("g", { transform: `translate(${x},${y}) scale(${s})` }, n);
+        el("path", { d: "M-70 -60 Q-20 -80 40 -66 L70 -100 L92 -92 L78 -54 Q80 -30 60 -24 L56 0 L46 0 L44 -26 L-40 -26 L-46 0 L-56 0 L-60 -30 Q-86 -34 -70 -60Z" }, g); };
+      horse(1260, 790, 1.2); person(n, 1150, 790, .9, "#1d1814", false);
+      person(n, 420, 800, 1, "#1d1814", true);
+    } },
+    厳島: { ground: "#1a2a36", draw(svg) {   // 海に うかぶ 赤い 社殿と 鳥居。ゆがむと 潮が 引く（.tide）
+      const d = sky(svg, "skyIt", [[0, "#9cc4e4"], [.6, "#e6e4d4"], [1, "#f4dcb4"]]);
+      glow(d, "sunIt", "#fff6dc");
+      el("circle", { cx: 300, cy: 280, r: 220, fill: "url(#sunIt)" }, svg);
+      el("path", { d: "M0 520 Q160 330 360 300 Q520 270 640 380 Q760 300 900 360 Q1040 430 1200 470 L1600 500 V900 H0Z", fill: "#3e5a46" }, svg);   // 弥山
+      el("rect", { x: 0, y: 560, width: 1600, height: 340, fill: "#8a7558" }, svg);   // 潮が 引くと 見える 砂地
+      const sea = el("g", { class: "tide" }, svg);
+      el("rect", { x: 0, y: 560, width: 1600, height: 400, fill: "#4f86ad" }, sea);
+      for (let k = 0; k < 7; k++) el("path", { d: `M${k * 240 - 40} ${600 + (k % 3) * 40} q60 -10 120 0`, stroke: "#d6ecf4", "stroke-width": 4, fill: "none", opacity: .6 }, sea);
+      const red = "#c8402a", rf = "#4a3328";
+      const hall = (cx, y, w) => { for (let x = cx - w / 2; x <= cx + w / 2; x += 30) el("rect", { x, y, width: 8, height: 120, fill: red }, svg);
+        el("rect", { x: cx - w / 2 - 10, y: y - 8, width: w + 20, height: 10, fill: red }, svg);
+        el("rect", { x: cx - w / 2, y: y - 70, width: w, height: 62, fill: "#e8d8b8" }, svg);
+        for (let x = cx - w / 2; x <= cx + w / 2; x += 40) el("rect", { x, y: y - 70, width: 8, height: 62, fill: red }, svg);
+        el("path", { d: `M${cx - w / 2 - 40} ${y - 66} Q${cx - w / 2} ${y - 72} ${cx - w / 2 + 20} ${y - 104} L${cx + w / 2 - 20} ${y - 104} Q${cx + w / 2} ${y - 72} ${cx + w / 2 + 40} ${y - 66}Z`, fill: rf }, svg); };
+      hall(520, 600, 300); hall(860, 590, 220); hall(320, 610, 140);
+      el("rect", { x: 180, y: 600, width: 860, height: 10, fill: red }, svg);   // 回廊
+      const torii = (x, y, s) => { const g = el("g", { transform: `translate(${x},${y}) scale(${s})`, fill: red }, svg);
+        el("rect", { x: -70, y: -230, width: 16, height: 250 }, g); el("rect", { x: 54, y: -230, width: 16, height: 250 }, g);
+        el("rect", { x: -100, y: -180, width: 200, height: 12 }, g); el("rect", { x: -6, y: -220, width: 12, height: 40 }, g);
+        el("path", { d: "M-130 -226 Q0 -216 130 -226 L136 -246 Q0 -232 -136 -246Z", fill: "#2a1d18" }, g); };
+      torii(1290, 760, 1.1);
+      el("path", { d: "M1210 790 h160", stroke: "#d6ecf4", "stroke-width": 4, opacity: .7 }, svg);
+      const boat = el("g", { fill: "#2a1d18" }, svg); el("path", { d: "M1440 800 L1580 800 L1560 822 L1460 822Z" }, boat); person(boat, 1520, 800, .5, "#2a1d18", false);   // 小舟
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");

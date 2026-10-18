@@ -9,7 +9,8 @@ from PIL import Image
 from scipy import ndimage
 
 SRC = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(".")
-SET5 = "--set5" in sys.argv   # 5まいめ（1〜3.png=藤式部・藤原道長・年をとった道長）
+SET6 = "--set6" in sys.argv   # 6まいめ（1.png に 4人：清盛（若）・清盛（出家後）・重盛・頼朝（少年））
+SET5 = "--set5" in sys.argv or SET6   # 5まいめ（1〜3.png=藤式部・藤原道長・年をとった道長）
 SET4 = "--set4" in sys.argv or SET5   # 4まいめ（1〜3.png=光明皇后・行基・聖武天皇）
 SET3 = "--set3" in sys.argv or SET4   # 3まいめ（1〜2.png=中大兄皇子・中臣鎌足）
 SET2 = "--set2" in sys.argv or SET3   # 2まいめの素材（1〜4.png=卑弥呼・弟・ワカタケル・太子、6.png=顔なしトケイ）
@@ -42,10 +43,13 @@ if SET4:
     SHEETS = {"1.png": [("koumyou", "normal")], "2.png": [("gyouki", "normal")], "3.png": [("shoumu", "normal")]}
 if SET5:
     SHEETS = {"1.png": [("fujishikibu", "normal")], "2.png": [("michinaga", "normal")], "3.png": [("michinaga", "old")]}
+if SET6:
+    SHEETS = {"1.png": [("kiyomori", "normal"), ("kiyomori", "nyudo"), ("shigemori", "normal"), ("yoritomo", "normal")]}
 crops = {}
 for f, names in SHEETS.items():
     ps = parts(SRC / f)
-    if SET2: ps = [max(ps, key=lambda t: (t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))]   # いちばん大きい絵だけ
+    if SET6: ps = sorted([q for q in ps if q[1][1] < 560], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
+    elif SET2: ps = [max(ps, key=lambda t: (t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))]   # いちばん大きい絵だけ
     assert len(ps) == len(names), (f, len(ps))
     for (ch, ex), (im, b) in zip(names, ps):
         crops.setdefault(ch, []).append((ex, im, b))

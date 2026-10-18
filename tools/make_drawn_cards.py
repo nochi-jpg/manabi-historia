@@ -28,8 +28,9 @@ def save(im, name):
 # この環境に NotoSerifCJK がないときは、Noto Serif JP（OFL）を渡す：
 #   curl -L -o NotoSerifJP.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf"
 import sys
-if "--ep7" in sys.argv:
-    args = [a for a in sys.argv[1:] if a != "--ep7"]
+EP8 = "--ep8" in sys.argv   # 第8話（武士の世へ① 平氏）の絵だけ作る： python3 tools/make_drawn_cards.py --ep8 [明朝フォント]
+if "--ep7" in sys.argv or EP8:
+    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8")]
     if args:
         SERIF = args[0]; _tt = ImageFont.truetype
         def _black(path, size, *a, **k):
@@ -39,6 +40,17 @@ if "--ep7" in sys.argv:
             return f
         ImageFont.truetype = _black
     def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    if EP8:
+        # 太政大臣：位の 名と 笏（しゃく）
+        im = paper(41); vtext(im, ["太政大臣"], 84, 330, 24, 0); d = ImageDraw.Draw(im)
+        d.polygon([(130, 40), (166, 40), (172, 330), (124, 330)], fill=(120, 84, 48)); seal(im, 40, 300, 46); save(im, "太政大臣")
+        # 大輪田泊：港に 入る 宋の 船と 波
+        im = paper(42, (232, 222, 196)); d = ImageDraw.Draw(im)
+        for k in range(6): d.arc((-60 + k * 100, 280, 60 + k * 100, 360), 180, 360, fill=(50, 90, 150), width=6)
+        d.polygon([(90, 250), (330, 250), (300, 290), (120, 290)], fill=(90, 60, 40))   # 船体
+        d.rectangle((205, 120, 213, 250), fill=(70, 50, 30)); d.polygon([(150, 130), (270, 130), (262, 230), (158, 230)], fill=(200, 120, 70))   # 帆
+        vtext(im, ["大輪田泊"], 56, 460, 30, 0); save(im, "大輪田泊")
+        print("OK ep8"); raise SystemExit
     # 摂政・関白
     im = paper(31); vtext(im, ["摂政", "関白"], 96, 360, 50, 170); seal(im); save(im, "摂政・関白")
     # かな文字：漢字を くずして かなが できた（安→あ、以→い、宇→う）
