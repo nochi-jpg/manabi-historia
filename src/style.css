@@ -682,3 +682,18 @@ rt{line-height:1}
 .del-box{display:block;text-align:center}.del-title{font-size:34px;font-weight:900;color:#ff8a8a;margin-bottom:6px}.del-list{display:block;width:max-content;margin:12px auto}.del-note{font-size:22px;color:#c7cad6}
 .log-bar .btn{display:none}.inbox.wide>.btn.log-close{margin-top:14px;width:300px}.log-bar{margin-top:10px}
 .frag-head{top:62px}.frag-pic.has{top:132px}.frag-pic.has img{height:360px}   /* 下のウインドウとのあいだを空ける */
+
+/* ===== ずかん：時代ごとのタブ＋たいせつ ===== */
+.ztabs{position:absolute;left:120px;right:120px;top:108px;height:64px;display:flex;align-items:center;justify-content:center;gap:10px}
+.ztab-row{display:flex;gap:10px}
+.ztab{width:120px;height:60px;border:2px solid var(--line2);border-radius:6px;background:var(--win);font-size:22px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15}
+.ztab small{font-size:15px;color:#aab;font-weight:500;margin-top:2px}
+.ztab.on{border-color:#fff;background:rgba(255,255,255,.14);box-shadow:0 0 0 2px #fff}
+.ztab.gift{width:150px;margin-left:24px;border-color:var(--gold);color:var(--gold)}
+.ztab.gift.on{background:rgba(255,200,80,.16);box-shadow:0 0 0 2px var(--gold)}
+.ztab-arrow{width:48px;height:60px;border:2px solid var(--line2);border-radius:6px;background:none;font-size:20px}
+.zbody{top:186px}
+.gift-grid{gap:24px}
+.card.gift .cicon.ph{background:#f3efe6}
+.pg-arrow{width:80px}   /* ページ送りのボタンを太く */
+.btn.ztab{width:128px;min-width:0;padding:0}.btn.ztab.gift{width:150px}.btn.ztab-arrow{width:48px;min-width:0;padding:0}

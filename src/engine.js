@@ -168,6 +168,7 @@ function parseScript(no, src) {
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
         case "変装": ep.nodes.push({ t: "disguise", who: rest[0] || "", look: rest[1] || "" }); break;   // @変装 卑弥呼 hood ／ @変装 卑弥呼（もどす）
+        case "たいせつ": { const [key, name, desc] = split(arg); ep.gift = { key, name, desc }; break; }   // その話のおくりもの（ずかんの「たいせつ」）
         case "SE": ep.nodes.push({ t: "se", key: rest[0] || "", times: Number(rest[1]) || 1 }); break;   // @SE taiko 3 ＝3回
         case "BGM": ep.nodes.push({ t: "bgm", key: arg }); break;
         case "スタッフロール": ep.nodes.push({ t: "staff", key: arg }); break;
@@ -1238,7 +1239,7 @@ function showTitle() {
   const logo = window.ART && window.ART.title && window.ART.title.logo;
   layer.appendChild(h("div", "tlogo", logo ? `<img src="${logo}" alt="まなびヒストリア">` : `<div class="logo-main">まなびヒストリア</div>`));
   const col = h("div", "tmenu");
-  [["おはなしを えらぶ", () => showSelect()], ["カードずかん", showZukan], ["じゅもんを 入れる", enterSpell], ["せってい", showSettings]]
+  [["おはなしを えらぶ", () => showSelect()], ["カードずかん", () => showZukan()], ["じゅもんを 入れる", enterSpell], ["せってい", showSettings]]
     .forEach(([t, f]) => { const b = h("button", "titem", esc(t)); b.onclick = f; col.appendChild(b); });
   layer.appendChild(col);
   layer.appendChild(h("div", "credit", "企画・ゲームデザイン・キャラクターデザイン　のち（まなび堂）"));
@@ -1371,7 +1372,7 @@ async function showResult(no, ep, star) {
   box.appendChild(note);
   const ak = h("div", "res-ak"); box.appendChild(ak);
   const row = h("div", "btnrow");
-  row.appendChild(btn("カードずかん", "sub", showZukan));
+  row.appendChild(btn("カードずかん", "sub", () => showZukan()));
   row.appendChild(btn("おはなしを えらぶ", "", () => showSelect()));
   box.appendChild(row);
   layer.appendChild(box);
@@ -1389,7 +1390,8 @@ async function showResult(no, ep, star) {
 }
 
 /* ---------- 画面：ずかん ---------- */
-function showZukan() {
+let ZTAB = null, ZTPAGE = 0;
+function showZukan(tab) {
   BGM.play("図書館"); S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu";
   const names = Object.keys(CARDS);
   const have = names.filter(n => SAVE.cards[n]).length;
@@ -1398,13 +1400,51 @@ function showZukan() {
   top.appendChild(h("div", "topttl", `カードずかん　${have} / ${names.length}`));
   top.appendChild(h("div", "spacer"));
   layer.appendChild(top);
+  // 上のタブ：時代ごと ＋「たいせつ」
+  const eps = Object.keys(EPS).map(Number).filter(no => no > 0 && EPS[no].cards.length).sort((a, b) => a - b);
+  if (tab !== undefined) ZTAB = tab;
+  if (ZTAB == null || (ZTAB !== "gift" && !eps.includes(ZTAB))) ZTAB = eps[0];
+  const PER = 8, tpages = Math.max(1, Math.ceil(eps.length / PER));
+  if (ZTAB !== "gift") ZTPAGE = Math.floor(eps.indexOf(ZTAB) / PER);
+  const tabs = h("div", "ztabs");
+  const seen = {};
+  const label = no => { const era = EP_INFO[no][0]; seen[era] = (seen[era] || 0) + 1; return seen[era] > 1 ? era + "②" : era; };
+  const labels = {}; eps.forEach(no => labels[no] = label(no));
+  if (tpages > 1) { const l = btn("◀", "ztab-arrow", () => { ZTPAGE = Math.max(0, ZTPAGE - 1); drawTabs(); }); tabs.appendChild(l); }
+  const tabRow = h("div", "ztab-row"); tabs.appendChild(tabRow);
+  if (tpages > 1) { const r = btn("▶", "ztab-arrow", () => { ZTPAGE = Math.min(tpages - 1, ZTPAGE + 1); drawTabs(); }); tabs.appendChild(r); }
+  const drawTabs = () => {
+    tabRow.innerHTML = "";
+    eps.slice(ZTPAGE * PER, ZTPAGE * PER + PER).forEach(no => {
+      const got = EPS[no].cards.filter(n => SAVE.cards[n]).length;
+      const b = btn(`${esc(labels[no])}<small>${got}/${EPS[no].cards.length}</small>`, "ztab" + (ZTAB === no ? " on" : ""), () => showZukan(no));
+      tabRow.appendChild(b);
+    });
+  };
+  drawTabs();
+  tabs.appendChild(btn("たいせつ", "ztab gift" + (ZTAB === "gift" ? " on" : ""), () => showZukan("gift")));
+  layer.appendChild(tabs);
   const zb = h("div", "zbody"); layer.appendChild(zb);
   const zd = h("div", "zdetail", "カードを タップすると、説明が 出るよ");
-  zb.appendChild(pager(names, { perPage: 16, cols: 8, unknown: n => !SAVE.cards[n], onTap: n => {
-    if (!SAVE.cards[n]) { zd.innerHTML = "まだ 手に入れて いない カードだよ"; return; }
-    const c = CARDS[n];
-    zd.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">調べる キーワード：<b>${esc(c.kw)}</b></div>`;
-  } }));
+  if (ZTAB === "gift") {   // たいせつ：各話の さいごに もらった もの
+    zd.innerHTML = "おはなしの さいごに もらった たいせつな ものだよ";
+    const grid = h("div", "pg-grid gift-grid"); grid.style.gridTemplateColumns = "repeat(4, 220px)";
+    eps.forEach(no => {
+      const g = EPS[no].gift; if (!g) return;
+      const got = (SAVE.stars[no] || 0) > 0, A = window.ART && window.ART[g.key];
+      const e = h("button", "card large gift" + (got ? "" : " unknown"), got ? `<div class="cicon ph">${A ? `<img src="${A.normal}" alt="" style="object-fit:contain">` : "🎁"}</div><div class="cname${[...g.name].length > 6 ? " long" : ""}">${phr(g.name)}</div>` : `<div class="cicon">？</div><div class="cname">第${no}話</div>`);
+      e.onclick = () => { grid.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel"); zd.innerHTML = got ? `<b>${esc(g.name)}</b>　${fmt(g.desc)}` : `第${no}話を クリアすると 手に入るよ`; };
+      grid.appendChild(e);
+    });
+    zb.appendChild(grid);
+  } else {
+    const list = EPS[ZTAB].cards;
+    zb.appendChild(pager(list, { perPage: 12, cols: 6, unknown: n => !SAVE.cards[n], onTap: n => {
+      if (!SAVE.cards[n]) { zd.innerHTML = "まだ 手に入れて いない カードだよ"; return; }
+      const c = CARDS[n];
+      zd.innerHTML = `<b>${esc(c.name)}</b>　${fmt(c.desc)}<div class="cg-kw">調べる キーワード：<b>${esc(c.kw)}</b></div>`;
+    } }));
+  }
   layer.appendChild(zd);
 }
 
