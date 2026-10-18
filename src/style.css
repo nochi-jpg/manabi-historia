@@ -755,3 +755,16 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .tj-ban{display:flex;align-items:baseline;gap:28px}
 .tj-ban b{font-size:60px;font-weight:900;letter-spacing:.08em}
 .tj-ban span{font-size:34px;font-weight:900;color:var(--gold)}
+
+/* ===== 第7話：平安京の 月（@背景 平安京 夜）===== */
+#bg .moonlayer{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;opacity:0;transition:opacity 1.2s}
+#bg[data-tint="夜"] .moonlayer{opacity:1}
+#bg .moonlayer .bite{transform:translateX(150px);transition:transform 2.4s ease-in-out}
+#bg.warped .moonlayer .bite{transform:translateX(calc(130px - var(--wl,.25) * 110px))}   /* ゆがむほど 大きく 欠ける */
+#bg .moonlayer .halo{transition:filter 1.5s}
+#bg.warped .moonlayer .halo{filter:hue-rotate(200deg) saturate(4) brightness(.9);animation:moonpulse 3s ease-in-out infinite}
+#bg.warped .moonlayer .disc{fill:#e6d4ff}
+@keyframes moonpulse{50%{opacity:.85}}
+/* 時間帯の色（朝／夕焼け／夜）がついていても、ゆがみの 紫を 上に 出す（第5・6・7話） */
+#bg.warped[data-tint]::after{opacity:calc(.45 + var(--wl,.3) * .55);mix-blend-mode:normal;
+  background:radial-gradient(ellipse at center,rgba(120,40,200,.15),rgba(40,0,80,.65))}

@@ -128,6 +128,35 @@ const BG = (() => {
       cart(700, 700, .55); person(n, 655, 700, .45, "#211a14", false); cart(900, 760, .8); person(n, 960, 760, .65, "#211a14", true);
       person(n, 220, 820, 1, "#211a14", false);
     } },
+    平安京: { ground: "#1c1712", draw(svg) {   // 寝殿造の やしき：池と 中島、反り橋、渡り廊下でつながる 寝殿と 対屋
+      const d = sky(svg, "skyK", [[0, "#a9c6e0"], [.55, "#efe2c8"], [1, "#f6dcb0"]]);
+      glow(d, "sunK", "#fff6dc");
+      el("circle", { cx: 300, cy: 300, r: 210, fill: "url(#sunK)" }, svg);
+      el("path", { d: "M0 500 Q200 400 420 450 Q640 380 900 440 Q1160 370 1380 430 T1600 420 V900 H0Z", fill: "#9fb59a", opacity: .7 }, svg);   // 東山の 山なみ
+      el("path", { d: "M0 560 Q300 500 640 540 T1300 520 T1600 540 V900 H0Z", fill: "#7f9a84", opacity: .5 }, svg);
+      const n = el("g", { fill: "#1c1712" }, svg);
+      const roof = (cx, y, w, h) => el("path", { d: `M${cx - w / 2 - 34} ${y} Q${cx - w / 2 + 10} ${y - 4} ${cx - w / 2 + 26} ${y - h} L${cx + w / 2 - 26} ${y - h} Q${cx + w / 2 - 10} ${y - 4} ${cx + w / 2 + 34} ${y}Z` }, n);   // ひわだぶきの ゆるい 屋根
+      const hall = (cx, y, w, h) => { el("rect", { x: cx - w / 2, y: y - h, width: w, height: h }, n); roof(cx, y - h + 6, w, 40);
+        for (let x = cx - w / 2 + 14; x < cx + w / 2; x += 46) el("rect", { x, y, width: 8, height: 44 }, n);   // 床下の 柱
+        el("rect", { x: cx - w / 2 - 20, y: y - 6, width: w + 40, height: 10 }, n); };   // 縁
+      hall(800, 560, 440, 90);   // 寝殿
+      hall(250, 590, 260, 70); hall(1350, 590, 260, 70);   // 東西の 対屋
+      const roka = (x1, x2, y) => { el("rect", { x: x1, y: y - 52, width: x2 - x1, height: 8 }, n); el("rect", { x: x1, y: y - 6, width: x2 - x1, height: 8 }, n);
+        for (let x = x1; x < x2; x += 34) el("rect", { x, y: y - 50, width: 5, height: 92 }, n); };
+      roka(380, 580, 590); roka(1020, 1220, 590);   // 渡り廊下
+      roka(1360, 1440, 680); el("rect", { x: 1300, y: 640, width: 200, height: 54 }, n); roof(1400, 646, 200, 26);   // 釣殿（池に つき出た あずまや）
+      const pine = (x, y, s) => { el("rect", { x: x - 5 * s, y: y - 120 * s, width: 10 * s, height: 120 * s }, n);
+        [[0, -130, 70], [-30, -100, 56], [34, -92, 52]].forEach(([dx, dy, r]) => el("ellipse", { cx: x + dx * s, cy: y + dy * s, rx: r * s, ry: r * .38 * s }, n)); };
+      pine(80, 700, 1.1); pine(620, 640, .7);
+      el("path", { d: "M0 900 L0 700 Q300 680 560 690 Q900 700 1260 690 L1600 700 V900Z" }, n);   // 庭の 地面
+      el("path", { d: "M180 900 Q220 760 520 740 Q820 720 1100 744 Q1380 770 1440 900Z", fill: "#7aa3b8" }, svg);   // 池
+      el("path", { d: "M300 840 Q600 780 900 790 Q1150 800 1300 850", stroke: "#cfe4ec", "stroke-width": 4, fill: "none", opacity: .6 }, svg);
+      el("ellipse", { cx: 820, cy: 800, rx: 150, ry: 38, fill: "#1c1712" }, svg);   // 中島
+      el("path", { d: "M560 812 Q640 740 720 798 L716 806 Q640 756 566 820Z M900 798 Q980 740 1060 812 L1054 820 Q980 756 904 806Z", fill: "#1c1712" }, svg);   // 反り橋
+      pine(820, 790, .55);
+      const noble = (x, y, s) => { person(n, x, y, s, "#1c1712", false); el("path", { d: `M${x - 6 * s} ${y - 132 * s} L${x + 6 * s} ${y - 132 * s} L${x + 4 * s} ${y - 166 * s} L${x - 4 * s} ${y - 166 * s}Z` }, n); };   // 冠の 貴族
+      noble(480, 690, .55); noble(1180, 690, .5);
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");
@@ -200,5 +229,17 @@ const BG = (() => {
     }
     return svg;
   }
-  return { render, keys: Object.keys(scenes) };
+  // 月（@背景 平安京 夜 で出る）。夜の色の上に重ねるので、べつの層にする。ゆがむと 紫の 影に 食われて 欠ける
+  function moon() {
+    const svg = el("svg", { class: "moonlayer", viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "xMidYMid slice" });
+    const d = el("defs", {}, svg); glow(d, "moonHalo", "#fff3c8");
+    el("clipPath", { id: "moonClip" }, d).appendChild(el("circle", { cx: 1260, cy: 190, r: 70 }));
+    el("circle", { class: "halo", cx: 1260, cy: 190, r: 230, fill: "url(#moonHalo)", opacity: .55 }, svg);
+    el("circle", { class: "disc", cx: 1260, cy: 190, r: 70, fill: "#fbf3d6" }, svg);
+    [[1236, 172, 14], [1282, 214, 10], [1290, 168, 7]].forEach(([x, y, r]) => el("circle", { cx: x, cy: y, r, fill: "#e8dcb4", opacity: .7 }, svg));   // 月の もよう
+    const g = el("g", { "clip-path": "url(#moonClip)" }, svg);
+    el("circle", { class: "bite", cx: 1260, cy: 190, r: 74, fill: "#2a0c46" }, g);   // 欠ける 影
+    return svg;
+  }
+  return { render, moon, keys: Object.keys(scenes) };
 })();

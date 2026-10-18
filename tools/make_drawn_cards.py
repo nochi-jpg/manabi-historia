@@ -24,6 +24,45 @@ def vtext(im, cols, size, x0, y0, gap):   # たて書き（右から左へ）
 def save(im, name):
     im = im.resize((256, 190), Image.LANCZOS); im.save(R/"cardimg"/(name + ".webp"), "WEBP", quality=70)
 
+# ===== 第7話（貴族のくらし）=====  python3 tools/make_drawn_cards.py --ep7 [明朝フォント]（第7話の絵だけ作る）
+# この環境に NotoSerifCJK がないときは、Noto Serif JP（OFL）を渡す：
+#   curl -L -o NotoSerifJP.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf"
+import sys
+if "--ep7" in sys.argv:
+    args = [a for a in sys.argv[1:] if a != "--ep7"]
+    if args:
+        SERIF = args[0]; _tt = ImageFont.truetype
+        def _black(path, size, *a, **k):
+            f = _tt(path, size, *a, **k)
+            try: f.set_variation_by_name("Black")
+            except Exception: pass
+            return f
+        ImageFont.truetype = _black
+    def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    # 摂政・関白
+    im = paper(31); vtext(im, ["摂政", "関白"], 96, 360, 50, 170); seal(im); save(im, "摂政・関白")
+    # かな文字：漢字を くずして かなが できた（安→あ、以→い、宇→う）
+    im = paper(32, (238, 228, 204)); d = ImageDraw.Draw(im)
+    fk = ImageFont.truetype(SERIF, 70); fa = ImageFont.truetype(SERIF, 30)
+    for i, (k, kana) in enumerate((("安", "あ"), ("以", "い"), ("宇", "う"))):
+        x = 410 - i * 150
+        d.text((x, 40), k, font=fk, fill=(70, 60, 50), anchor="mt")
+        d.text((x, 140), "↓", font=fa, fill=(170, 60, 40), anchor="mt")
+        d.text((x, 200), kana, font=ImageFont.truetype(SERIF, 96), fill=(28, 22, 18), anchor="mt")
+    save(im, "かな文字")
+    # おくりもの：望月の歌（道長の 字。目が かすんで 少し ふるえている）
+    im = paper(33, (240, 232, 212)).resize((480, 360)); d = ImageDraw.Draw(im)
+    d.ellipse((24, 24, 150, 150), fill=(250, 244, 222), outline=(214, 196, 150), width=3)   # 満月
+    f = ImageFont.truetype(SERIF, 34); t = Image.new("L", im.size, 0); dt = ImageDraw.Draw(t); random.seed(7)
+    cols = ["この世をば", "わが世とぞ思ふ", "望月の", "欠けたることも", "なしと思へば"]
+    for c, col in enumerate(cols):
+        x = 440 - c * 66; y = 26 + (c % 2) * 22
+        for ch in col:
+            dt.text((x + random.uniform(-2, 2), y), ch, font=f, fill=255, anchor="mt"); y += 36
+    t = t.filter(ImageFilter.GaussianBlur(.7)); im.paste((30, 24, 20), (0, 0), t)
+    im.save(R/"art"/"gmochizuki_normal.webp", "WEBP", quality=80)
+    print("OK ep7"); raise SystemExit
+
 # 十七条の憲法：第一条「和を以て貴しと為し…」
 im = paper(3); vtext(im, ["十七條憲法", "一曰以和為貴", "無忤為宗"], 44, 430, 40, 120)
 d = ImageDraw.Draw(im); d.rectangle((40, 290, 92, 342), fill=(188, 40, 30)); save(im, "十七条の憲法")
