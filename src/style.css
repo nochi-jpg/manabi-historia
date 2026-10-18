@@ -681,3 +681,4 @@ rt{line-height:1}
 .del-list{text-align:left;font-size:24px;line-height:1.7;margin:14px auto 10px;display:inline-block}
 .del-box{display:block;text-align:center}.del-title{font-size:34px;font-weight:900;color:#ff8a8a;margin-bottom:6px}.del-list{display:block;width:max-content;margin:12px auto}.del-note{font-size:22px;color:#c7cad6}
 .log-bar .btn{display:none}.inbox.wide>.btn.log-close{margin-top:14px;width:300px}.log-bar{margin-top:10px}
+.frag-head{top:62px}.frag-pic.has{top:132px}.frag-pic.has img{height:360px}   /* 下のウインドウとのあいだを空ける */
