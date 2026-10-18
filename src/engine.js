@@ -236,9 +236,47 @@ function iconHTML(icon, key, cls = "") {
 
 /* ---------- 画面の基本部品 ---------- */
 let stage, layer, bgEl, talk, catcher, modal, fx, hud;
+/* ---------- 画面の拡大縮小・スマホの全画面（まなびバトルと同じしくみ） ---------- */
+// Canva の枠（iframe）の中では、じっさいに見えている範囲に合わせる
+const IN_FRAME = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+let VIS = null;
 function fit() {
-  const s = Math.min(innerWidth / 1600, innerHeight / 900);
+  const v = window.visualViewport, W = v ? v.width : innerWidth, H = v ? v.height : innerHeight;
+  let x = 0, y = 0, w = W, hh = H;
+  if (VIS && (VIS.h < H - 2 || VIS.w < W - 2)) ({ x, y, w, h: hh } = VIS);
+  const s = Math.min(w / 1600, hh / 900);
+  stage.style.left = (x + w / 2) + "px"; stage.style.top = (y + hh / 2) + "px";
   stage.style.transform = `translate(-50%,-50%) scale(${s})`;
+}
+// スマホ・タブレット（iOS / Android）だけ全画面。パソコンでは何もしない。せっていでオフにもできる
+const UA = navigator.userAgent || "";
+const IS_IOS = /iPhone|iPad|iPod/.test(UA) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const MOBILE = IS_IOS || /Android/i.test(UA);
+const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+const fsCan = () => { const d = document.documentElement; return !!(d.requestFullscreen || d.webkitRequestFullscreen); };
+function fsEnter() {
+  if (!MOBILE || SAVE.opt.full === false || fsEl() || !fsCan()) return;
+  const d = document.documentElement;
+  try {
+    const p = d.requestFullscreen ? d.requestFullscreen({ navigationUI: "hide" }) : d.webkitRequestFullscreen();
+    if (p && p.then) p.then(() => { try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => { }); } catch (e) { } }).catch(() => { });
+  } catch (e) { }
+}
+function fsExit() { try { if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { } }
+function setupScreen() {
+  if (MOBILE) document.documentElement.classList.add("mob");
+  if (IN_FRAME && window.IntersectionObserver) {
+    try {
+      new IntersectionObserver(es => { const r = es[es.length - 1].intersectionRect; VIS = r.width > 50 && r.height > 50 ? { x: r.left, y: r.top, w: r.width, h: r.height } : null; fit(); },
+        { threshold: Array.from({ length: 101 }, (_, i) => i / 100) }).observe(document.getElementById("vp"));
+    } catch (e) { }
+  }
+  addEventListener("orientationchange", () => setTimeout(fit, 300));
+  if (window.visualViewport) visualViewport.addEventListener("resize", fit);
+  document.addEventListener("fullscreenchange", fit); document.addEventListener("webkitfullscreenchange", fit);
+  // 全画面は「タップしたとき」にしか始められない（ブラウザのきまり）→ タップのたびに、全画面でなければもどす
+  if (MOBILE) document.addEventListener("pointerup", fsEnter, true);
+  setTimeout(fit, 100);
 }
 let CUR_BG = "夜";
 function setBg(key, fade) {
@@ -1471,6 +1509,7 @@ function showSettings() {
   col.appendChild(tog("文字の 音（ぽぽぽ）", "blip"));
   col.appendChild(tog("効果音", "se"));
   col.appendChild(tog("BGM", "bgm"));
+  if (MOBILE) col.appendChild(btn(`スマホで 全画面：${SAVE.opt.full === false ? "OFF" : "ON"}`, "", () => { SAVE.opt.full = SAVE.opt.full === false; persist(); if (SAVE.opt.full === false) fsExit(); showSettings(); }));
   col.appendChild(btn("あいことばを 入れる（★5を もどす）", "", enterAikotoba));
   col.appendChild(btn("スタッフロール", "", async () => { await runStaffRoll(); showSettings(); }));
   col.appendChild(btn("データを けす", "danger", deleteData));
@@ -1592,7 +1631,7 @@ function boot() {
     row.appendChild(btn("つづける", "sub", closeModal));
     box.appendChild(row); openModal(box);
   };
-  addEventListener("resize", fit); fit();
+  addEventListener("resize", fit); setupScreen(); fit();
   showTitle();
 }
 addEventListener("DOMContentLoaded", boot);
