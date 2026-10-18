@@ -203,7 +203,11 @@ function parseScript(no, src) {
           const near = {}; (nearS || "").split(/\s*；\s*/).forEach(x => { const m = x.match(/^(.+?)[＝=](.+)$/); if (m) near[m[1].trim()] = m[2].trim(); });
           block.rounds[block.rounds.length - 1].lines.push({ lie: /矛盾|ウソ/.test(kind), text, card, retort, reaction, near });
         }
-        else if (block.t === "battle") { const [kind, text, card, reply, foeLine] = p; block.rounds[block.rounds.length - 1].push({ lie: /ウソ/.test(kind), text, card, reply, foeLine }); }
+        else if (block.t === "battle") {   // 6つめ：おしいカード（議論と同じ書き方。♡は へらない）
+          const [kind, text, card, reply, foeLine, nearS] = p;
+          const near = {}; (nearS || "").split(/\s*；\s*/).forEach(x => { const m = x.match(/^(.+?)[＝=](.+)$/); if (m) near[m[1].trim()] = m[2].trim(); });
+          block.rounds[block.rounds.length - 1].push({ lie: /ウソ/.test(kind), text, card, reply, foeLine, near });
+        }
         continue;
       }
     }
@@ -929,6 +933,8 @@ function runBattle(n) {
                 if (r >= total) { S.busy = false; hideTalk(); const bb = bgEl.querySelector(".bbg"); if (bb) bb.remove(); return res(); }
                 await foeSay(r === 1 ? "おどろき" : "怒り", c.foeLine || FOE_HIT[(r - 1) % FOE_HIT.length]);
                 S.busy = false; return draw();
+              } else if (c.near && c.near[pick]) {   // おしい：♡は へらさず、本じいが ヒント
+                for (const seg of c.near[pick].split(/\s*／\s*/)) await say("本じい", "ふつう", seg, S.ep);
               } else {
                 await throwCard(pick, e, false);
                 face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
@@ -1064,6 +1070,7 @@ async function runTimeJump(n) {
   const A = window.ART && window.ART.tokei;
   const ov = FX.add("tj", `<div class="tj-sky"></div><div class="tj-ring"></div><div class="tj-tokei">${A ? `<img src="${A.nohands || A.normal}" alt="">` : ""}<i class="tj-h"></i><i class="tj-m"></i></div><div class="tj-year"><b></b><span></span></div>`);
   if (back) ov.classList.add("back");
+  if (n.opening) ov.classList.add("solid");   // 開幕：うしろは 黒い幕なので、時空の 色を 敷く
   const sky = ov.querySelector(".tj-sky"), yb = ov.querySelector(".tj-year b"), ys = ov.querySelector(".tj-year span");
   const hm = ov.querySelector(".tj-m"), hh = ov.querySelector(".tj-h");
   BGM.stop(.8); SE.play("tick"); await sleep(fast ? 100 : 700);
@@ -1071,8 +1078,8 @@ async function runTimeJump(n) {
   BGM.play("封印");
   const SEASON = ["春", "夏", "秋", "冬"], SKYC = ["sky-am", "sky-noon", "sky-pm", "sky-night"];
   const steps = [];
-  if (back) {   // さかのぼりは 年が 多いので、はじめは ゆっくり → だんだん 大きく とぶ（季節は 逆まわり）
-    const M = 26; for (let k = 0; k < M; k++) { const t = k / M; steps.push([Math.round(n.from - (n.from - n.to) * t * t), SEASON[3 - k % 4]]); }
+  if (Math.abs(n.to - n.from) > 12) {   // 年が 多いときは、はじめは ゆっくり → だんだん 大きく とぶ（さかのぼりは 季節も 逆まわり）
+    const M = 26; for (let k = 0; k < M; k++) { const t = k / M; steps.push([Math.round(n.from - (n.from - n.to) * t * t), back ? SEASON[3 - k % 4] : SEASON[k % 4]]); }
     steps.push([n.to, "春"]);
   } else { for (let y = n.from; y < n.to; y++) for (const se of SEASON) steps.push([y, se]); steps.push([n.to, "春"]); }
   let ang = 0, spd = 2, run = true;   // 針の速さ（1フレームの角度）
@@ -1097,6 +1104,7 @@ async function runTimeJump(n) {
   const bo = FX.add("tj-black", "");   // ブラックアウト
   await sleep(fast ? 150 : 900);
   ov.remove();
+  if (n.opening) { await sleep(fast ? 100 : 400); bo.remove(); return; }   // 開幕：黒い幕の まま 副題へ
   if (n.bg) setBg(n.bg, false, n.tint); else setTint(n.tint);
   await sleep(fast ? 100 : 700);
   bo.classList.add("out"); setTimeout(() => bo.remove(), 1300);
@@ -1106,8 +1114,10 @@ async function runTimeJump(n) {
   SE.play("found");
   await sleep(fast ? 300 : 1900);
 }
-/* 話の はじまり：2023年から その時代へ さかのぼる（時ワープを 逆まわしで） */
+/* 話の はじまり：前の話の 最後の 年から その時代へ（むかしへは 逆まわし、先へは 順まわし） */
 const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008 };
+function epEndYear(no) { let y = epStartYear(no); const ep = EPS[no]; if (ep) for (const n of ep.nodes) if (n.t === "tjump") y = n.to; return y; }   // 話の 最後の 年（@時ワープ で 進んだ 年）
+function prevEndYear(no) { return no <= 1 ? 2023 : epEndYear(no - 1) ?? 2023; }   // 前の話の 最後の 年（第1話は プロローグの 2023年）
 function epStartYear(no) { if (EP_START[no] != null) return EP_START[no]; const m = /(\d+)/.exec(EP_INFO[no][1]); return m ? Number(m[1]) : null; }
 
 /* ---------- 場面：議論（証言に矛盾をつきつける） ---------- */
@@ -1247,12 +1257,21 @@ async function playEpisode(no, resume) {
     for (const n of ep.nodes) { if (n.t === "bg") { bg = n.bg; break; } if (!["bgm", "se", "pic", "disguise"].includes(n.t)) break; }
   }
   S.disguise = {}; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "disguise") S.disguise[ep.nodes[i].who] = ep.nodes[i].look || null;
+  // はじめから：黒い幕 → トケイ（前の話の 最後の年 → この話の年）→ 黒い幕 → 副題 → 背景と 年代の帯（背景を 1コマも 先に 見せない）
+  const curtain = resume ? null : FX.add("ep-curtain", "");
   setBg(bg, false, tint); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
   LOG = [];
   if (!resume) {
-    BGM.stop(.6); await titleCard(no);
-    const y0 = no > 0 && no < 21 ? epStartYear(no) : null;
-    if (y0 != null && y0 < 2023) { setBg("時空"); await runTimeJump({ from: 2023, to: y0, bg, tint }); }
+    BGM.stop(.6);
+    const y0 = no > 0 && no < 21 ? epStartYear(no) : null, yp = prevEndYear(no);
+    if (y0 != null && y0 !== yp) { await sleep(500); await runTimeJump({ from: yp, to: y0, opening: true }); }
+    await titleCard(no);
+    curtain.classList.add("out"); setTimeout(() => curtain.remove(), 1300);
+    await sleep(900);
+    if (y0 != null) {
+      banner("", `<div class="tj-ban"><b>${yearLabel(y0)}</b><span>${y0 > 0 ? `（2023年より ${2023 - y0}年前）` : ""}</span></div>`);
+      SE.play("found"); await sleep(1900);
+    }
     BGM.play(no === 0 ? "学校" : "町");
   }
   else { const k = prevBgm(ep, S.idx); BGM.play(k && k !== "なし" ? k : null); }
@@ -1318,13 +1337,10 @@ function autoBgm(n) {
 }
 /* 話のはじまり：タイトルと、年がスロットのように巻きもどる */
 async function titleCard(no) {
-  const [era, year] = EP_INFO[no];
-  const tc = FX.add("titlecard", `<div class="tc-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tc-tt">${esc(EP_META[no][0])}</div><div class="tc-year"></div><div class="tc-era">${esc(era)}</div>`);
-  const yEl = tc.querySelector(".tc-year");
-  const seq = ["2023年"];
-  if (no !== 0) seq[0] = year;   // 年の カウントは このあとの さかのぼり（時ワープ）で 見せる
-  for (let k = 0; k < seq.length; k++) { yEl.textContent = seq[k]; if (k < seq.length - 1) { SE.play("tick"); await sleep(k === 0 ? 700 : 110); } }
-  SE.play("drum"); yEl.classList.add("land"); FX.shake("s");
+  const era = EP_INFO[no][0], eraName = /^(令和|未来)$/.test(era) ? era : era + "時代";   // 副題に 年号は 出さない（年は このあとの 帯で）
+  const tc = FX.add("titlecard", `<div class="tc-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tc-year">${esc(eraName)}</div><div class="tc-tt">${esc(EP_META[no][0])}</div>`);
+  await sleep(600);
+  SE.play("drum"); tc.querySelector(".tc-year").classList.add("land"); FX.shake("s");
   await sleep(1500);
   tc.classList.add("out"); await sleep(500); tc.remove();
 }

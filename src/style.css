@@ -768,3 +768,8 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 /* 時間帯の色（朝／夕焼け／夜）がついていても、ゆがみの 紫を 上に 出す（第5・6・7話） */
 #bg.warped[data-tint]::after{opacity:calc(.45 + var(--wl,.3) * .55);mix-blend-mode:normal;
   background:radial-gradient(ellipse at center,rgba(120,40,200,.15),rgba(40,0,80,.65))}
+
+/* ===== 話の はじまり（黒い幕 → トケイ → 副題 → 背景）===== */
+.ep-curtain{position:absolute;inset:0;background:#000}
+.ep-curtain.out{opacity:0;transition:opacity 1.2s}
+.tj.solid{background:radial-gradient(ellipse at 50% 45%,#6a4bb0,#2a1660 55%,#0b0620)}

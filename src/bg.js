@@ -157,6 +157,38 @@ const BG = (() => {
       const noble = (x, y, s) => { person(n, x, y, s, "#1c1712", false); el("path", { d: `M${x - 6 * s} ${y - 132 * s} L${x + 6 * s} ${y - 132 * s} L${x + 4 * s} ${y - 166 * s} L${x - 4 * s} ${y - 166 * s}Z` }, n); };   // 冠の 貴族
       noble(480, 690, .55); noble(1180, 690, .5);
     } },
+    寝殿の部屋: { ground: "#2a1d14", draw(svg) {   // 寝殿の 中：御簾ごしの 庭の 光、几帳・畳・文机、本を 作る 女房たち
+      const d = sky(svg, "skyR", [[0, "#e9dcc0"], [.6, "#d8c39c"], [1, "#b89a6e"]]);
+      glow(d, "litR", "#fff6dc");
+      el("rect", { x: 160, y: 120, width: 1280, height: 420, fill: "#cfe0c4", opacity: .55 }, svg);   // 御簾の むこうの 庭
+      el("ellipse", { cx: 800, cy: 330, rx: 700, ry: 260, fill: "url(#litR)", opacity: .7 }, svg);
+      const n = el("g", { fill: "#2a1d14" }, svg);
+      for (let y = 130; y < 540; y += 9) el("rect", { x: 160, y, width: 1280, height: 2, fill: "#7a5a32", opacity: .55 }, svg);   // 御簾の すじ
+      el("rect", { x: 160, y: 96, width: 1280, height: 34 }, n);   // 御簾の 上の 帯
+      for (let x = 200; x < 1440; x += 120) el("circle", { cx: x, cy: 113, r: 9, fill: "#b8945a" }, svg);   // 帯の もよう
+      [160, 1440].forEach(x => el("rect", { x: x - 22, y: 0, width: 44, height: 900 }, n));   // 柱
+      el("rect", { x: 0, y: 0, width: 1600, height: 70 }, n);   // 長押
+      el("rect", { x: 0, y: 540, width: 1600, height: 360, fill: "#4a3424" }, svg);   // 板の間
+      for (let x = 0; x < 1600; x += 80) el("rect", { x, y: 540, width: 3, height: 360, fill: "#3a281a" }, svg);
+      const tatami = (x, y, w, h) => { el("rect", { x, y, width: w, height: h, fill: "#a9a46a" }, svg); el("rect", { x, y, width: w, height: 10, fill: "#2a1d14" }, svg); el("rect", { x, y: y + h - 10, width: w, height: 10, fill: "#2a1d14" }, svg); };
+      tatami(300, 600, 440, 120); tatami(860, 600, 440, 120);   // 置き畳
+      const kicho = (x, h, c) => { el("rect", { x: x - 4, y: 540 - h, width: 8, height: h + 60 }, n); el("rect", { x: x - 90, y: 540 - h, width: 180, height: 8 }, n);
+        for (let k = 0; k < 4; k++) el("rect", { x: x - 86 + k * 44, y: 548 - h, width: 40, height: h - 10, fill: c[k % c.length], opacity: .9 }, svg);
+        el("rect", { x: x - 40, y: 590, width: 80, height: 14 }, n); };   // 几帳（布を たらした ついたて）
+      kicho(220, 300, ["#7d4f7a", "#9a6b8f"]); kicho(1380, 300, ["#5d6f8f", "#7d8faa"]);
+      const desk = (x, y) => { el("rect", { x: x - 90, y: y - 46, width: 180, height: 14 }, n); el("rect", { x: x - 80, y: y - 32, width: 10, height: 34 }, n); el("rect", { x: x + 70, y: y - 32, width: 10, height: 34 }, n);
+        for (let k = 0; k < 4; k++) el("rect", { x: x - 70 + k * 8, y: y - 54 - k * 6, width: 90, height: 6, fill: "#f4ead2" }, svg); };   // 文机と 重ねた 紙
+      desk(520, 640); desk(1080, 640);
+      const lady = (x, y, s, flip) => { const g = el("g", { transform: `translate(${x},${y}) scale(${flip ? -s : s},${s})` }, n);
+        el("path", { d: "M-70 0 Q-80 -60 -30 -86 Q0 -96 30 -86 Q70 -60 76 0Z" }, g);   // すわった 重ね着
+        el("circle", { cx: 0, cy: -112, r: 20 }, g);
+        el("path", { d: "M-18 -126 Q-34 -100 -40 -40 L-26 -6 Q-14 -60 -6 -100Z" }, g); };   // 長い 髪
+      lady(400, 700, 1.25, false); lady(650, 708, 1.2, true); lady(960, 700, 1.25, false); lady(1210, 708, 1.2, true);
+      el("rect", { x: 796, y: 470, width: 8, height: 130 }, n); el("ellipse", { cx: 800, cy: 466, rx: 26, ry: 6 }, n);   // 灯台
+      svg.appendChild(n);   // 影絵（柱・几帳・机・女房）を 床や 畳より 前に
+      el("ellipse", { cx: 800, cy: 452, rx: 8, ry: 14, fill: "#ffcf6a" }, svg);
+      for (let k = 0; k < 4; k++) el("rect", { x: [452, 456, 1012, 1016][k] - 45, y: 586 - (k % 2) * 6, width: 90, height: 6, fill: "#f4ead2" }, svg);   // 机の 上の 紙
+    } },
     江戸: { ground: "#0a1122", draw(svg) {
       const d = sky(svg, "skyE", [[0, "#0f1a36"], [.6, "#34508a"], [1, "#8fa8d4"]]);
       glow(d, "lanE", "#ffb04a"); glow(d, "moonE", "#f6efd6");
