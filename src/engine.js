@@ -348,7 +348,7 @@ function typeIn(el, html, onEnd) {
 }
 /* ---------- 既読スキップ：クリアした話だけ。セリフを高速で送る。調査・証言・選択肢では自動でオフ ---------- */
 let SKIP = false, ADV = null;
-const canSkip = () => !!(S && SAVE.stars[S.no] > 0 && !S.noSkip);
+const canSkip = () => !!(S && SAVE.stars[S.no] > 0);   // 調査・証言のとちゅうのセリフでも使える（選ぶ画面にもどると自動でオフ）
 function setSkip(on) {
   SKIP = !!on && canSkip();
   const b = $(".skipbtn"); if (b) { b.classList.toggle("on", SKIP); b.textContent = SKIP ? "スキップ中 ■" : "スキップ ▶▶"; }
@@ -394,7 +394,7 @@ async function say(who, expr, text, ep, opt = {}) {
   await waitAdvance(typer);
   stopSpeak();
 }
-function hideTalk() { talk.hidden = true; stage.classList.remove("talking"); }
+function hideTalk() { talk.hidden = true; stage.classList.remove("talking"); if (S && S.noSkip && SKIP) setSkip(false); }   // 調査・証言・バトルの画面にもどったらスキップを止める
 
 /* ---------- バックログ ---------- */
 let LOG = [];
