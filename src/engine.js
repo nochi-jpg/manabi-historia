@@ -689,7 +689,7 @@ function renderHud() {
   }
   hb.innerHTML = `<span class="hb-main${[...label].length > 4 ? " s" : ""}">${label}</span>${cost ? `<span class="hb-cost">${cost}</span>` : ""}`; hb.disabled = dis;
   $("#cardBtn").hidden = !S.hand.length;
-  stage.classList.toggle("danger", S.hearts === 1);
+  stage.classList.toggle("danger", S.hearts === 1 && !!S.node && ["testi", "battle"].includes(S.node.t));   // 赤い ふちは 証言・論破バトルの 間だけ
 }
 /* ♡を1つへらす演出（赤いフラッシュ・揺れ・ハートが割れて落ちる） */
 function spendHeart() {
@@ -1057,26 +1057,33 @@ async function runDepart() {   // 旅立ち：文字盤のように回りなが�
 /* 同じ話の中で 時が進む（@時ワープ 643 645 飛鳥 夕焼け）
    トケイが あらわれ、針が 回りだす → 年と季節が カウントされ、空の色が 朝・昼・夕・夜と めぐる（だんだん速く）
    → 針が ゆっくりになって 止まる → 無音 → ブラックアウト → 新しい 背景（時間帯の色）で 明ける → 「〇年後」 */
+const yearLabel = y => y > 0 ? y + "年" : "約" + Math.round((2023 - y) / 100) * 100 + "年前";   // 紀元前は「約〇年前」
 async function runTimeJump(n) {
   hideTalk(); hidePortraits(true); showPic("");
-  const fast = SKIP;
+  const fast = SKIP, back = n.to < n.from;   // back＝むかしへ さかのぼる（話の はじまり）。針を 逆に 回す
   const A = window.ART && window.ART.tokei;
-  const ov = FX.add("tj", `<div class="tj-sky"></div><div class="tj-ring"></div><div class="tj-tokei">${A ? `<img src="${A.normal}" alt="">` : ""}<i class="tj-h"></i><i class="tj-m"></i></div><div class="tj-year"><b></b><span></span></div>`);
+  const ov = FX.add("tj", `<div class="tj-sky"></div><div class="tj-ring"></div><div class="tj-tokei">${A ? `<img src="${A.nohands || A.normal}" alt="">` : ""}<i class="tj-h"></i><i class="tj-m"></i></div><div class="tj-year"><b></b><span></span></div>`);
+  if (back) ov.classList.add("back");
   const sky = ov.querySelector(".tj-sky"), yb = ov.querySelector(".tj-year b"), ys = ov.querySelector(".tj-year span");
   const hm = ov.querySelector(".tj-m"), hh = ov.querySelector(".tj-h");
   BGM.stop(.8); SE.play("tick"); await sleep(fast ? 100 : 700);
   ov.classList.add("on"); SE.play("timewarp"); await sleep(fast ? 100 : 900);
   BGM.play("封印");
   const SEASON = ["春", "夏", "秋", "冬"], SKYC = ["sky-am", "sky-noon", "sky-pm", "sky-night"];
-  const steps = []; for (let y = n.from; y < n.to; y++) for (const se of SEASON) steps.push([y, se]); steps.push([n.to, "春"]);
+  const steps = [];
+  if (back) {   // さかのぼりは 年が 多いので、はじめは ゆっくり → だんだん 大きく とぶ（季節は 逆まわり）
+    const M = 26; for (let k = 0; k < M; k++) { const t = k / M; steps.push([Math.round(n.from - (n.from - n.to) * t * t), SEASON[3 - k % 4]]); }
+    steps.push([n.to, "春"]);
+  } else { for (let y = n.from; y < n.to; y++) for (const se of SEASON) steps.push([y, se]); steps.push([n.to, "春"]); }
   let ang = 0, spd = 2, run = true;   // 針の速さ（1フレームの角度）
-  const spin = () => { if (!run) return; ang += spd; hm.style.transform = `rotate(${ang}deg)`; hh.style.transform = `rotate(${ang / 12}deg)`; requestAnimationFrame(spin); };
+  const dir = back ? -1 : 1;
+  const spin = () => { if (!run) return; ang += spd * dir; hm.style.transform = `rotate(${ang}deg)`; hh.style.transform = `rotate(${ang / 12}deg)`; requestAnimationFrame(spin); };
   requestAnimationFrame(spin);
   const N = steps.length;
   for (let k = 0; k < N; k++) {
     const [y, se] = steps[k];
-    yb.textContent = y + "年"; ys.textContent = se;
-    sky.className = "tj-sky " + SKYC[k % 4];
+    yb.textContent = yearLabel(y); ys.textContent = se;
+    sky.className = "tj-sky " + SKYC[(back ? 3 - k % 4 : k % 4)];
     SE.play("tick");
     const left = N - 1 - k;   // のこり 3つは ゆっくり（止まる前のため）
     const t = fast ? 40 : left < 3 ? [520, 360, 240][left] : Math.max(70, 460 - k * 45);
@@ -1094,11 +1101,14 @@ async function runTimeJump(n) {
   await sleep(fast ? 100 : 700);
   bo.classList.add("out"); setTimeout(() => bo.remove(), 1300);
   await sleep(fast ? 200 : 900);
-  const d = n.to - n.from;
-  banner("", `<div class="tj-ban"><b>${n.to}年</b><span>${d}年後</span></div>`);
+  const d = Math.abs(n.to - n.from);
+  banner("", `<div class="tj-ban"><b>${yearLabel(n.to)}</b><span>${back ? (n.to > 0 ? d + "年前" : "") : d + "年後"}</span></div>`);
   SE.play("found");
   await sleep(fast ? 300 : 1900);
 }
+/* 話の はじまり：2023年から その時代へ さかのぼる（時ワープを 逆まわしで） */
+const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008 };
+function epStartYear(no) { if (EP_START[no] != null) return EP_START[no]; const m = /(\d+)/.exec(EP_INFO[no][1]); return m ? Number(m[1]) : null; }
 
 /* ---------- 場面：議論（証言に矛盾をつきつける） ---------- */
 async function testiOpening(title) {
@@ -1239,11 +1249,17 @@ async function playEpisode(no, resume) {
   S.disguise = {}; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "disguise") S.disguise[ep.nodes[i].who] = ep.nodes[i].look || null;
   setBg(bg, false, tint); if (S.aura.length) { bgEl.classList.add("warped"); setWarpLevel(.6); } clearLayer(); renderHud();
   LOG = [];
-  if (!resume) { BGM.stop(.6); await titleCard(no); BGM.play(no === 0 ? "学校" : "町"); }
+  if (!resume) {
+    BGM.stop(.6); await titleCard(no);
+    const y0 = no > 0 && no < 21 ? epStartYear(no) : null;
+    if (y0 != null && y0 < 2023) { setBg("時空"); await runTimeJump({ from: 2023, to: y0, bg, tint }); }
+    BGM.play(no === 0 ? "学校" : "町");
+  }
   else { const k = prevBgm(ep, S.idx); BGM.play(k && k !== "なし" ? k : null); }
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
     S.node = n; S.hintLv = 0; S.rej = null; newRound(null);
+    stage.classList.toggle("danger", S.hearts === 1 && ["testi", "battle"].includes(n.t));
     const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
     S.noSkip = ["inv", "spot", "testi", "battle", "sum"].includes(n.t); if (S.noSkip) setSkip(false);
     if (interactive) checkpoint();
@@ -1306,7 +1322,7 @@ async function titleCard(no) {
   const tc = FX.add("titlecard", `<div class="tc-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tc-tt">${esc(EP_META[no][0])}</div><div class="tc-year"></div><div class="tc-era">${esc(era)}</div>`);
   const yEl = tc.querySelector(".tc-year");
   const seq = ["2023年"];
-  if (no !== 0) { for (let k = 20; k > no; k -= 3) seq.push(EP_INFO[k][1]); seq.push(year); }
+  if (no !== 0) seq[0] = year;   // 年の カウントは このあとの さかのぼり（時ワープ）で 見せる
   for (let k = 0; k < seq.length; k++) { yEl.textContent = seq[k]; if (k < seq.length - 1) { SE.play("tick"); await sleep(k === 0 ? 700 : 110); } }
   SE.play("drum"); yEl.classList.add("land"); FX.shake("s");
   await sleep(1500);
@@ -1314,7 +1330,7 @@ async function titleCard(no) {
 }
 function finishEpisode() {
   setSkip(false); showPic("");
-  bgEl.classList.remove("warped");
+  bgEl.classList.remove("warped"); stage.classList.remove("danger");
   hideTalk(); hidePortraits(); clearLayer();
   const no = S.no;
   // ★＝クリア時の♡の数。1度でもゲームオーバーになったら★1

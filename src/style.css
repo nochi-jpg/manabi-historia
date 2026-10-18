@@ -739,9 +739,9 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .tj-tokei{position:absolute;left:50%;top:44%;width:360px;height:360px;margin:-180px 0 0 -180px;transform:scale(.2);opacity:0;transition:transform .8s cubic-bezier(.2,1.4,.4,1),opacity .5s;filter:drop-shadow(0 0 30px rgba(255,230,160,.9))}
 .tj.on .tj-tokei{transform:scale(1);opacity:1}
 .tj-tokei img{width:100%;height:100%}
-.tj-tokei i{position:absolute;left:50%;top:64.5%;transform-origin:50% 100%;background:#d9a520;border-radius:3px;box-shadow:0 0 8px #ffd26a}
-.tj-m{width:6px;height:96px;margin:-96px 0 0 -3px}
-.tj-h{width:9px;height:62px;margin:-62px 0 0 -4.5px;background:#a8761a!important}
+.tj-tokei i{position:absolute;left:50%;top:65.3%;transform-origin:50% 100%;background:#141210;border-radius:3px;box-shadow:0 0 3px rgba(255,255,255,.9)}   /* 針なし版トケイ（art/tokei_nohands）の 文字盤の 中心。針は 黒 */
+.tj-m{width:5px;height:74px;margin:-74px 0 0 -2.5px}
+.tj-h{width:8px;height:48px;margin:-48px 0 0 -4px}
 .tj-year{position:absolute;left:0;right:0;bottom:70px;text-align:center;color:#fff;text-shadow:0 0 18px rgba(0,0,0,.9),0 0 30px rgba(255,210,120,.6);opacity:0;transition:opacity .4s}
 .tj.on .tj-year{opacity:1}
 .tj-year b{font-size:120px;font-weight:900;letter-spacing:.06em;display:inline-block}
