@@ -713,6 +713,9 @@ rt{line-height:1}
 .big.objimg.huge img{width:1080px}
 .big.objimg.huge{left:62%}
 .big.objimg.huge{left:66%}.big.objimg.huge img{width:1000px}
+/* ロゴは うしろの赤い帯と同時に消える（帯が出てから0.45秒後に出て、帯と同じタイミングでフェード） */
+.big.objimg{animation:objpop2 1.2s forwards}
+@keyframes objpop2{0%{transform:translate(-50%,-50%) scale(2.6) rotate(-6deg);opacity:0}12%{transform:translate(-50%,-50%) scale(.92) rotate(-4deg);opacity:1}20%{transform:translate(-50%,-50%) scale(1.04) rotate(-4deg)}62%{transform:translate(-50%,-50%) scale(1) rotate(-4deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1) rotate(-4deg);opacity:0}}
 </style>
 </head>
 <body>
@@ -1593,7 +1596,7 @@ async function objection(text) {
   yuukiCutin();
   await sleep(450);
   FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("objection"); SE.play("shatter");   // 矛盾発見：金属の音＋ガラスが割れる音（論破バトルと同じ）
-  objLogo("", 1500);
+  objLogo("", 1200);
   await sleep(1350);
 }
 /* カードをページ送りで並べる（逆転裁判の法廷記録ふう。スクロールバーは使わない） */
@@ -1948,13 +1951,13 @@ function runBattle(n) {
                   FX.add("dimmer slow", "", 1600); await sleep(500);
                   yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 300); FX.shake("l"); FX.lines(1500); if (SE.has("objection")) { SE.play("objection"); SE.play("shatter"); } else SE.play("ronpaBig");
-                  objLogo("huge", 1700);
+                  objLogo("huge", 1200);
                   battleBg(100, { win: true }); SE.play("shatter");
                   face.classList.add("recoil"); await sleep(1500);
                 } else {
                   yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 220); FX.shake("l"); FX.lines(1000); SE.play("objection");
-                  objLogo("", 1400);
+                  objLogo("", 1200);
                   face.classList.remove("recoil"); void face.offsetWidth; face.classList.add("recoil");
                   battleBg(splitOf(r + 1)); await sleep(1100);
                 }

@@ -509,7 +509,7 @@ async function objection(text) {
   yuukiCutin();
   await sleep(450);
   FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("objection"); SE.play("shatter");   // 矛盾発見：金属の音＋ガラスが割れる音（論破バトルと同じ）
-  objLogo("", 1500);
+  objLogo("", 1200);
   await sleep(1350);
 }
 /* カードをページ送りで並べる（逆転裁判の法廷記録ふう。スクロールバーは使わない） */
@@ -864,13 +864,13 @@ function runBattle(n) {
                   FX.add("dimmer slow", "", 1600); await sleep(500);
                   yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 300); FX.shake("l"); FX.lines(1500); if (SE.has("objection")) { SE.play("objection"); SE.play("shatter"); } else SE.play("ronpaBig");
-                  objLogo("huge", 1700);
+                  objLogo("huge", 1200);
                   battleBg(100, { win: true }); SE.play("shatter");
                   face.classList.add("recoil"); await sleep(1500);
                 } else {
                   yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 220); FX.shake("l"); FX.lines(1000); SE.play("objection");
-                  objLogo("", 1400);
+                  objLogo("", 1200);
                   face.classList.remove("recoil"); void face.offsetWidth; face.classList.add("recoil");
                   battleBg(splitOf(r + 1)); await sleep(1100);
                 }
