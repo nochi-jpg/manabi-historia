@@ -493,6 +493,12 @@ async function throwCard(name, target, ok) {
   await sleep(ok ? 250 : 450);
 }
 /* 矛盾発見！：タメ → ユウキのカットイン → フラッシュ・揺れ・集中線 */
+/* 「矛盾発見！！」のロゴ（art/objlogo）。なければ文字 */
+function objLogo(cls, life) {
+  const A = window.ART && window.ART.objlogo;
+  if (A) FX.add("big obj objimg " + (cls || ""), `<img src="${A.normal}" alt="矛盾発見！！">`, life);
+  else FX.add("big ronpa obj " + (cls || ""), "矛盾 発見！", life);
+}
 function yuukiCutin() {   // ユウキの顔が入った赤い帯（矛盾発見・論破）
   const img = window.ART && window.ART.yuuki ? `<img src="${window.ART.yuuki.angry || window.ART.yuuki.normal}" alt="">` : "";
   FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1700); SE.play("whoosh");
@@ -503,7 +509,7 @@ async function objection(text) {
   yuukiCutin();
   await sleep(450);
   FX.flash("#fff", 240); FX.shake("l"); FX.lines(1300); SE.play("objection"); SE.play("shatter");   // 矛盾発見：金属の音＋ガラスが割れる音（論破バトルと同じ）
-  FX.add("big ronpa obj", text, 1500);
+  objLogo("", 1500);
   await sleep(1350);
 }
 /* カードをページ送りで並べる（逆転裁判の法廷記録ふう。スクロールバーは使わない） */
@@ -858,13 +864,13 @@ function runBattle(n) {
                   FX.add("dimmer slow", "", 1600); await sleep(500);
                   yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 300); FX.shake("l"); FX.lines(1500); if (SE.has("objection")) { SE.play("objection"); SE.play("shatter"); } else SE.play("ronpaBig");
-                  FX.add("big ronpa obj huge", "論破！", 1700);
+                  objLogo("huge", 1700);
                   battleBg(100, { win: true }); SE.play("shatter");
                   face.classList.add("recoil"); await sleep(1500);
                 } else {
                   yuukiCutin(); await sleep(450);
                   FX.flash("#fff", 220); FX.shake("l"); FX.lines(1000); SE.play("objection");
-                  FX.add("big ronpa obj", "論破！", 1400);
+                  objLogo("", 1400);
                   face.classList.remove("recoil"); void face.offsetWidth; face.classList.add("recoil");
                   battleBg(splitOf(r + 1)); await sleep(1100);
                 }

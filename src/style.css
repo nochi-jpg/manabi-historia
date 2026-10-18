@@ -697,3 +697,9 @@ rt{line-height:1}
 .card.gift .cicon.ph{background:#f3efe6}
 .pg-arrow{width:80px}   /* ページ送りのボタンを太く */
 .btn.ztab{width:128px;min-width:0;padding:0}.btn.ztab.gift{width:150px}.btn.ztab-arrow{width:48px;min-width:0;padding:0}
+/* 矛盾発見のロゴ画像：ユウキの顔（左）にかからないよう右寄り */
+.big.objimg{left:66%;font-size:0;-webkit-text-stroke:0;text-shadow:none;filter:drop-shadow(0 0 18px rgba(255,60,40,.55))}
+.big.objimg img{width:900px;height:auto;display:block}
+.big.objimg.huge img{width:1080px}
+.big.objimg.huge{left:62%}
+.big.objimg.huge{left:66%}.big.objimg.huge img{width:1000px}
