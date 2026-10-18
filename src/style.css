@@ -757,13 +757,11 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .tj-ban span{font-size:34px;font-weight:900;color:var(--gold)}
 
 /* ===== 第7話：平安京の 月（@背景 平安京 夜）===== */
-#bg .moonlayer{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;opacity:0;transition:opacity 1.2s}
-#bg[data-tint="夜"] .moonlayer{opacity:1}
+#bg .moonlayer{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
 #bg .moonlayer .bite{transform:translateX(150px);transition:transform 2.4s ease-in-out}
 #bg.warped .moonlayer .bite{transform:translateX(calc(130px - var(--wl,.25) * 110px))}   /* ゆがむほど 大きく 欠ける */
-#bg .moonlayer .halo{transition:filter 1.5s}
-#bg.warped .moonlayer .halo{filter:hue-rotate(200deg) saturate(4) brightness(.9);animation:moonpulse 3s ease-in-out infinite}
-#bg.warped .moonlayer .disc{fill:#e6d4ff}
+#bg .moonlayer .halo{opacity:0;transition:opacity 1.5s}
+#bg.warped .moonlayer .halo{opacity:.7;animation:moonpulse 3s ease-in-out infinite}
 @keyframes moonpulse{50%{opacity:.85}}
 /* 時間帯の色（朝／夕焼け／夜）がついていても、ゆがみの 紫を 上に 出す（第5・6・7話） */
 #bg.warped[data-tint]::after{opacity:calc(.45 + var(--wl,.3) * .55);mix-blend-mode:normal;
@@ -774,6 +772,3 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .ep-curtain.out{opacity:0;transition:opacity 1.2s}
 .tj.solid{background:radial-gradient(ellipse at 50% 45%,#6a4bb0,#2a1660 55%,#0b0620)}
 
-/* ===== 第8話：厳島の 潮（ゆがむと 潮が 引いて 砂地が 見える。もどすと 満ちる）===== */
-#bg .tide{transition:transform 2.6s ease-in-out}
-#bg.warped .tide{transform:translateY(calc(30px + var(--wl,.25) * 120px))}

@@ -55,6 +55,9 @@ for f in sorted((R/"art").glob("*.webp")):
 for _nm, _ex in OLD.get("ART", {}).items():   # 手元にない絵（art/sil_*.webp など）は前の index.html から
     for _e, _v in _ex.items(): art.setdefault(_nm, {}).setdefault(_e, _v)
 data += "\nwindow.ART=" + json.dumps(art) + ";"
+# 背景：bgimg/場面の名前.webp（先生の絵。台本の @背景 の名前と同じ）。ないものは src/bg.js で描く
+bgimg = {f.stem: "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode() for f in sorted((R/"bgimg").glob("*.webp"))}
+data += "\nwindow.BGIMG=" + json.dumps(bgimg, ensure_ascii=False) + ";"
 # カードの写真：cardimg/カード名.webp（一覧と出典は data/cardimg.txt）
 cimg, ccred = {}, []
 for line in (R/"data/cardimg.txt").read_text(encoding="utf-8").splitlines():

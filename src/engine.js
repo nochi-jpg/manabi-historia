@@ -8,7 +8,7 @@ const FAIL = { fail: true };
 /* ---------- 話の一覧 ---------- */
 const EP_META = [
   ["時をこえて", "現代"], ["縄文のむら", "縄文"], ["弥生のくに", "弥生"], ["古墳のくに", "古墳"],
-  ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "飛鳥"], ["大仏をつくれ！", "平城京"], ["貴族のくらし", "平安京"],
+  ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "蹴鞠庭"], ["大仏をつくれ！", "平城京"], ["貴族のくらし", "平安京"],
   ["武士の世へ① 平氏", "六波羅"], ["武士の世へ② 源頼朝", "夜"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
   ["戦国① 織田信長", "夜"], ["戦国② 秀吉と家康", "夜"], ["江戸幕府", "江戸"], ["町人の文化と新しい学問", "江戸"],
   ["明治① 開国と明治維新", "夜"], ["明治② 文明開化と憲法", "夜"], ["世界に歩みだした日本", "夜"],
@@ -300,7 +300,7 @@ function setBg(key, fade, tint) {
     bgEl.parentNode.insertBefore(old, bgEl.nextSibling); setTimeout(() => old.remove(), 600);
   }
   CUR_BG = key; bgEl.classList.remove("warped", "restoring"); bgEl.innerHTML = ""; bgEl.appendChild(BG.render(key));
-  if (key === "平安京") bgEl.appendChild(BG.moon());   // 夜だけ 見える 月
+  if (key === "満月の屋敷") bgEl.appendChild(BG.moon());   // 満月が ゆがみで 欠ける
   setTint(tint);
 }
 function setTint(t) { if (t) bgEl.dataset.tint = t; else delete bgEl.dataset.tint; }   // 背景の時間帯の色（朝／夕焼け／夜）
