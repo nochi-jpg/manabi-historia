@@ -36,6 +36,7 @@ for e in eps:
             k = i; segs = []
             while k < j:
                 h = next((x for x in Y.get(s[k], []) if s.startswith(x[0], k)), None)
+                if h and "|" in h[2]: segs = [f"{h[0]}({h[2]})"]; j = max(j, k + len(h[0])); k += len(h[0]); continue   # かなを はさむ ことば（読みは「|」で 区切る）
                 if h and h[1] > 0: segs.append(f"{s[k:k+h[1]]}({h[2]})"); k += h[1]
                 else: none.setdefault(s[k], f"ep{int(e):02d}:{ln}"); k += 1
             w = s[i:j]

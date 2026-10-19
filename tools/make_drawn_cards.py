@@ -32,8 +32,9 @@ EP8 = "--ep8" in sys.argv   # 第8話（武士の世へ① 平氏）の絵だけ
 EP9 = "--ep9" in sys.argv   # 第9話（武士の世へ② 源頼朝）：おくりもの「義経の手紙」
 EP10 = "--ep10" in sys.argv   # 第10話（元が せめてきた！）
 EP11 = "--ep11" in sys.argv   # 第11話（室町文化）
-if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11:
-    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10", "--ep11")]
+EP1213 = "--ep12" in sys.argv   # 第12話・第13話（信長・秀吉）
+if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11 or EP1213:
+    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10", "--ep11", "--ep12")]
     if args:
         SERIF = args[0]; _tt = ImageFont.truetype
         def _black(path, size, *a, **k):
@@ -43,6 +44,70 @@ if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11:
             return f
         ImageFont.truetype = _black
     def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    if EP1213:
+        def crop_bg(name, card, box=(.1, .1, .9, .9)):   # 先生の 背景を 切りぬいて カードに
+            im = Image.open(R/"bgimg"/(name + ".webp")).convert("RGB"); w, h = im.size
+            save(im.crop((int(w * box[0]), int(h * box[1]), int(w * box[2]), int(h * box[3]))).resize((W, H), Image.LANCZOS), card)
+        def title(seed, cols, size=96, x0=360, gap=170, y0=50, base=(236, 226, 200)):
+            im = paper(seed, base); vtext(im, cols, size, x0, y0, gap); return im
+        # ---- 第12話 ----
+        im = paper(81, (210, 228, 236)); d = ImageDraw.Draw(im)   # 種子島：島と 南蛮船
+        d.ellipse((60, 200, 300, 300), fill=(120, 150, 90)); d.polygon([(330, 190), (470, 190), (450, 230), (350, 230)], fill=(90, 60, 40))
+        d.rectangle((396, 90, 402, 190), fill=(70, 50, 30)); d.polygon([(402, 96), (452, 140), (402, 170)], fill=(245, 240, 225))
+        vtext(im, ["種子島"], 48, 470, 20, 0); save(im, "種子島")
+        im = paper(82); d = ImageDraw.Draw(im)   # 足軽：ならんだ やりと 陣笠
+        for k in range(5):
+            x = 70 + k * 70; d.line((x, 60, x + 10, 340), fill=(70, 50, 30), width=5); d.polygon([(x - 6, 60), (x, 30), (x + 6, 60)], fill=(150, 150, 160))
+            d.pieslice((x - 28, 250, x + 34, 300), 180, 360, fill=(40, 34, 30))
+        vtext(im, ["足軽"], 80, 450, 60, 0); save(im, "足軽")
+        im = title(83, ["武田勝頼"], 70, 300, 0, 30); d = ImageDraw.Draw(im)   # 武田菱
+        for (x, y) in ((90, 120), (150, 120), (90, 190), (150, 190)): d.polygon([(x, y - 30), (x + 30, y), (x, y + 30), (x - 30, y)], fill=(40, 34, 30))
+        save(im, "武田勝頼")
+        im = title(84, ["室町幕府", "おわる"], 70, 360, 120, 40); seal(im); save(im, "室町幕府の終わり")
+        im = paper(85, (226, 214, 190)); d = ImageDraw.Draw(im)   # 長篠の戦い：馬防柵と 鉄砲の けむり
+        for x in range(40, 480, 50): d.line((x, 170, x, 330), fill=(100, 72, 46), width=6)
+        d.line((20, 210, 500, 210), fill=(100, 72, 46), width=5); d.line((20, 280, 500, 280), fill=(100, 72, 46), width=5)
+        sm = Image.new("L", im.size, 0); ds = ImageDraw.Draw(sm)
+        for x in range(40, 480, 60): ds.ellipse((x - 30, 120, x + 40, 180), fill=170)
+        im.paste((240, 240, 240), (0, 0), sm.filter(ImageFilter.GaussianBlur(8))); vtext(im, ["長篠"], 54, 470, 20, 0); save(im, "長篠の戦い")
+        crop_bg("安土", "安土城", (.45, .02, .95, .62))
+        im = paper(86, (238, 228, 200)); d = ImageDraw.Draw(im)   # 楽市・楽座：制札
+        d.rectangle((120, 30, 400, 300), fill=(214, 190, 150), outline=(110, 80, 50), width=6); d.polygon([(100, 40), (260, 0), (420, 40)], fill=(110, 80, 50))
+        d.rectangle((250, 300, 270, 370), fill=(110, 80, 50)); vtext(im, ["定", "楽市楽座"], 50, 330, 60, 80); save(im, "楽市・楽座")
+        im = title(87, ["ザビエル"], 70, 330, 0, 40); d = ImageDraw.Draw(im)
+        d.rectangle((96, 70, 112, 300), fill=(40, 34, 30)); d.rectangle((50, 130, 158, 146), fill=(40, 34, 30)); save(im, "フランシスコ・ザビエル")
+        im = paper(88, (232, 226, 214)).resize((480, 360)); d = ImageDraw.Draw(im)   # おくりもの：鉄砲の 玉（鉛）
+        for (x, y, r) in ((180, 190, 46), (300, 210, 40), (240, 120, 34)):
+            d.ellipse((x - r, y - r, x + r, y + r), fill=(110, 110, 116)); d.ellipse((x - r * .55, y - r * .6, x - r * .1, y - r * .2), fill=(160, 160, 168))
+        im.save(R/"art"/"gtamamono_normal.webp", "WEBP", quality=80)
+        # ---- 第13話 ----
+        im = paper(91, (226, 206, 178)); d = ImageDraw.Draw(im)   # 本能寺の変：炎の 寺
+        d.polygon([(80, 200), (260, 120), (440, 200)], fill=(60, 44, 34)); d.rectangle((120, 200, 400, 330), fill=(90, 64, 44))
+        for x in range(100, 420, 50): d.polygon([(x, 200), (x + 25, 110 + (x % 3) * 15), (x + 50, 200)], fill=(226, 100, 40))
+        vtext(im, ["本能寺"], 46, 480, 20, 0); save(im, "本能寺の変")
+        im = title(92, ["明智光秀"], 70, 300, 0, 30); d = ImageDraw.Draw(im)   # 桔梗紋
+        for k in range(5):
+            import math; a = math.radians(k * 72 - 90); x, y = 110 + 40 * math.cos(a), 160 + 40 * math.sin(a); d.ellipse((x - 26, y - 26, x + 26, y + 26), fill=(60, 80, 150))
+        save(im, "明智光秀")
+        crop_bg("大阪城", "大阪城", (.15, .05, .75, .75))
+        im = paper(93, (226, 214, 170)); d = ImageDraw.Draw(im)   # 検地：田と 竿と 縄
+        for k in range(4): d.rectangle((40 + k * 110, 200, 140 + k * 110, 330), fill=(150, 170, 90), outline=(110, 90, 50), width=3)
+        d.line((30, 180, 480, 140), fill=(120, 84, 48), width=8); d.line((30, 190, 480, 190), fill=(200, 180, 120), width=3)
+        vtext(im, ["検地"], 60, 470, 10, 0); save(im, "検地")
+        im = paper(94); d = ImageDraw.Draw(im)   # 刀狩：集められた 刀
+        for k in range(6): d.line((60 + k * 40, 330, 120 + k * 40, 60), fill=(60, 56, 54), width=8)
+        vtext(im, ["刀狩"], 80, 440, 60, 0); save(im, "刀狩")
+        crop_bg("村", "武士と百姓", (.05, .3, .75, .95))
+        im = title(95, ["天下", "一つに"], 80, 340, 140, 40); seal(im); save(im, "天下統一")
+        im = paper(96, (214, 226, 236)); d = ImageDraw.Draw(im)   # 朝鮮への出兵：海を わたる 船
+        for k in range(6): d.arc((-60 + k * 100, 280, 60 + k * 100, 360), 180, 360, fill=(40, 80, 140), width=6)
+        for x in (80, 240): d.polygon([(x, 250), (x + 140, 250), (x + 120, 285), (x + 20, 285)], fill=(90, 60, 40)); d.rectangle((x + 66, 160, x + 72, 250), fill=(70, 50, 30))
+        vtext(im, ["朝鮮へ"], 50, 470, 20, 0); save(im, "朝鮮への出兵")
+        im = Image.new("RGB", (480, 360), (44, 36, 30)); d = ImageDraw.Draw(im)   # おくりもの：黄金の 茶わん
+        d.chord((110, 60, 370, 300), 0, 180, fill=(214, 172, 62)); d.rectangle((200, 290, 280, 312), fill=(190, 150, 50))
+        d.ellipse((110, 150, 370, 210), fill=(240, 206, 96)); d.ellipse((130, 158, 350, 202), fill=(150, 108, 38))
+        d.arc((140, 90, 340, 290), 20, 70, fill=(255, 236, 160), width=6); im.save(R/"art"/"gougon_normal.webp", "WEBP", quality=80)
+        print("OK ep12・ep13"); raise SystemExit
     if EP11:
         # 応仁の乱：焼ける 町の けむりと「東軍・西軍」
         im = paper(71, (226, 206, 178)); sm = Image.new("L", im.size, 0); ds = ImageDraw.Draw(sm); random.seed(11)

@@ -93,7 +93,7 @@ for src in scen.values():
         while i < len(t):
             if KJ.match(t[i]):
                 hit = next((e for e in ymap.get(t[i], []) if t.startswith(e[0], i)), None)
-                if hit: i += hit[1]; continue
+                if hit: i += len(hit[0]) if "|" in hit[2] else hit[1]; continue
                 miss.add(t[i])
             i += 1
 if miss: print("⚠ ふりがな辞書にない漢字:", "".join(sorted(miss)))

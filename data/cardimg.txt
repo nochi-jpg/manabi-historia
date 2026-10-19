@@ -109,3 +109,11 @@
 生け花 | https://colbase.nich.go.jp/media/tnm/A-1067/image/slideshow/A-1067_E0157624.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-1067 | CC BY 4.0相当 | ColBase／東京国立博物館（立花図屏風） | cover | 0,0,1,0.6
 水墨画 | https://colbase.nich.go.jp/media/tnm/A-2291/image/slideshow/A-2291_C0067198.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-2291 | CC BY 4.0相当 | ColBase／東京国立博物館（雪舟 山水図） | cover | 0.05,0.55,0.95,0.85
 雪舟 | https://colbase.nich.go.jp/media/tnm/A-11868/image/slideshow/A-11868_C0038080.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-11868 | CC BY 4.0相当 | ColBase／東京国立博物館（雪舟画像） | cover | 0.05,0.4,0.95,0.7
+鉄砲 | https://colbase.nich.go.jp/media/tnm/F-16223/image/slideshow/F-16223_E0175232.jpg | https://colbase.nich.go.jp/collection_items/tnm/F-16223 | CC BY 4.0相当 | ColBase／東京国立博物館（火縄銃） | pad |
+織田信長 | https://colbase.nich.go.jp/media/tnm/A-9168/image/slideshow/A-9168_E0037650.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9168 | CC BY 4.0相当 | ColBase／東京国立博物館（織田信長像 模本） | cover | 0.12,0.36,0.88,0.72
+南蛮貿易 | https://colbase.nich.go.jp/media/tnm/A-11128/image/slideshow/A-11128_E0098380.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-11128 | CC BY 4.0相当 | ColBase／東京国立博物館（南蛮屏風） | cover | 0,0.35,1,0.75
+キリスト教 | https://colbase.nich.go.jp/media/tnm/C-1065/image/slideshow/C-1065_E0143784.jpg | https://colbase.nich.go.jp/collection_items/tnm/C-1065 | CC BY 4.0相当 | ColBase／東京国立博物館（メダイ） | pad |
+豊臣秀吉 | https://colbase.nich.go.jp/media/tnm/B-2058/image/slideshow/B-2058_C0050403.jpg | https://colbase.nich.go.jp/collection_items/tnm/B-2058 | CC BY 4.0相当 | ColBase／東京国立博物館（豊臣秀吉朱印状） | cover | 0,0,0.6,1
+千利休 | https://colbase.nich.go.jp/media/tnm/G-5382/image/slideshow/G-5382_E0188930.jpg | https://colbase.nich.go.jp/collection_items/tnm/G-5382 | CC BY 4.0相当 | ColBase／東京国立博物館（竹尺八花入 銘 一曲 千利休作） | pad |
+徳川家康 | https://colbase.nich.go.jp/media/tnm/A-9702/image/slideshow/A-9702_E0190246.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9702 | CC BY 4.0相当 | ColBase／東京国立博物館（徳川家康像 模本） | cover | 0.05,0.52,0.95,0.74
+江戸 | https://colbase.nich.go.jp/media/tnm/QB-6296/image/slideshow_s/QB-6296_C0059454.jpg | https://colbase.nich.go.jp/collection_items/tnm/QB-6296 | CC BY 4.0相当 | ColBase／東京国立博物館（元禄江戸図鑑綱目） | cover | 0.1,0.15,0.9,0.85
