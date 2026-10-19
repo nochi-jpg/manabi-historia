@@ -182,6 +182,7 @@ function parseScript(no, src) {
         case "ゆがめる": ep.nodes.push({ t: "warp", text: "歴史が ゆがみはじめる……！", who: arg }); break;
         case "きざし": ep.nodes.push({ t: "omen" }); break;
         case "ホワイトアウト": ep.nodes.push({ t: "white" }); break;   // 画面が まっ白に なり、うしろで 場面が かわって 明ける（回想の 出入り）
+        case "ブラックアウト": ep.nodes.push({ t: "black" }); break;   // まっ暗に して 間を ためる → うしろで 場面が かわって ゆっくり 明ける（時間が たったことを 表す）
         case "退場": ep.nodes.push({ t: "exit", who: arg }); break;
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
@@ -1040,11 +1041,13 @@ async function runWarp(n) {
   banner(n.text); await sleep(1900);
 }
 /* @ホワイトアウト：まっ白に なる → つぎの @背景・@画像 は 白の うしろで かわり、ゆっくり 明ける */
-async function runWhite() {
-  hideTalk(); SE.play("restore");
-  const w = FX.add("wfade", ""); await sleep(30); w.classList.add("on");
-  await sleep(SKIP ? 100 : 700);
-  setTimeout(() => { w.classList.remove("on"); setTimeout(() => w.remove(), 800); }, SKIP ? 50 : 400);
+async function runWhite() { await runFade("wfade", "restore", 700, 400); }
+/* 画面を 白（wfade）や 黒（bfade）で おおう → hold の あいだ ためる → つぎの 場面に かわってから、after 後に 明ける */
+async function runFade(cls, se, hold, after) {
+  hideTalk(); if (se) SE.play(se);
+  const w = FX.add(cls, ""); await sleep(30); w.classList.add("on");
+  await sleep(SKIP ? 100 : hold);
+  setTimeout(() => { w.classList.remove("on"); setTimeout(() => w.remove(), 1200); }, SKIP ? 50 : after);
 }
 async function runRestore(n) {
   const pe = n.who ? $(charOf(n.who, S.ep).side === "L" ? "#portL" : "#portR") : null;
@@ -1070,10 +1073,9 @@ async function runExit(n) {   // 退場：紫の粒になって消える
   for (let k = 0; k < 24; k++) { const d = FX.add("dust", "", 1500); d.style.left = (p0.x - 140 + Math.random() * 280) + "px"; d.style.top = (p0.y - 140 + Math.random() * 280) + "px"; d.style.animationDelay = (Math.random() * 400) + "ms"; }
   await sleep(1300); pe.hidden = true; pe.classList.remove("vanish"); ports[c.side] = null;
 }
-async function runDepart() {   // 旅立ち：文字盤のように回りながら白くなる
-  hideTalk(); hidePortraits(true);
-  SE.play("timewarp"); FX.add("timewarp", "<div class=\"tw-dial\"></div>", 1900);
-  await sleep(1800);
+async function runDepart() {   // 旅立ち：トケイの 音と ホワイトアウトだけ（時が 進む 演出は 入れない。先生の 指定 2026-10-19）
+  hidePortraits(true); showPic("");
+  await runFade("wfade", "timewarp", 1100, 400);
 }
 
 /* 同じ話の中で 時が進む（@時ワープ 643 645 飛鳥 夕焼け）
@@ -1313,6 +1315,7 @@ async function playEpisode(no, resume) {
         case "tjump": await runTimeJump(n); break;
         case "omen": await runOmen(); break;
         case "white": await runWhite(); break;
+        case "black": await runFade("bfade", null, 1800, 900); break;
         case "exit": await runExit(n); break;
         case "depart": await runDepart(); break;
         case "pic": showPic(n.key, n.fx); break;
