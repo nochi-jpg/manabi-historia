@@ -117,3 +117,13 @@
 千利休 | https://colbase.nich.go.jp/media/tnm/G-5382/image/slideshow/G-5382_E0188930.jpg | https://colbase.nich.go.jp/collection_items/tnm/G-5382 | CC BY 4.0相当 | ColBase／東京国立博物館（竹尺八花入 銘 一曲 千利休作） | pad |
 徳川家康 | https://colbase.nich.go.jp/media/tnm/A-9702/image/slideshow/A-9702_E0190246.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9702 | CC BY 4.0相当 | ColBase／東京国立博物館（徳川家康像 模本） | cover | 0.05,0.52,0.95,0.74
 江戸 | https://colbase.nich.go.jp/media/tnm/QB-6296/image/slideshow_s/QB-6296_C0059454.jpg | https://colbase.nich.go.jp/collection_items/tnm/QB-6296 | CC BY 4.0相当 | ColBase／東京国立博物館（元禄江戸図鑑綱目） | cover | 0.1,0.15,0.9,0.85
+関ヶ原の戦い | https://colbase.nich.go.jp/media/tnm/A-9276/image/slideshow/A-9276_E0053152.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9276 | CC BY 4.0相当 | ColBase／東京国立博物館（関ケ原合戦屏風絵 模本） | cover | 
+江戸幕府 | https://colbase.nich.go.jp/media/tnm/R-2282/image/slideshow/R-2282_E0100499.jpg | https://colbase.nich.go.jp/collection_items/tnm/R-2282 | CC BY 4.0相当 | ColBase／東京国立博物館（旧江戸城写真帖） | cover | 
+武家諸法度 | https://colbase.nich.go.jp/media/tnm/QB-1325/image/slideshow/QB-1325_L0598731.jpg | https://colbase.nich.go.jp/collection_items/tnm/QB-1325 | CC BY 4.0相当 | ColBase／東京国立博物館（武家諸法度） | cover | 
+島原・天草一揆 | https://colbase.nich.go.jp/media/tnm/A-9799/image/slideshow_s/A-9799_C0066805.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9799 | CC BY 4.0相当 | ColBase／東京国立博物館（島原城攻撃図） | cover | 
+キリスト教の禁止 | https://colbase.nich.go.jp/media/tnm/C-719/image/slideshow/C-719_E0175945.jpg | https://colbase.nich.go.jp/collection_items/tnm/C-719 | CC BY 4.0相当 | ColBase／東京国立博物館（踏絵 聖母子像） | pad | 
+朝鮮通信使 | https://colbase.nich.go.jp/media/tnm/A-9562/image/slideshow/A-9562_C0005453.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9562 | CC BY 4.0相当 | ColBase／東京国立博物館（朝鮮通信使人物図巻） | cover | 
+解体新書 | https://colbase.nich.go.jp/media/tnm/QB-4555/image/slideshow/QB-4555_L0551498.jpg | https://colbase.nich.go.jp/collection_items/tnm/QB-4555 | CC BY 4.0相当 | ColBase／東京国立博物館（解体新書） | cover | 
+寺子屋 | https://colbase.nich.go.jp/media/tnm/A-10569-892/image/slideshow/A-10569-892_E0026309.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-10569-892 | CC BY 4.0相当 | ColBase／東京国立博物館（浮絵天神講） | cover | 
+歌舞伎 | https://colbase.nich.go.jp/media/tnm/A-11084/image/slideshow/A-11084_A-11084-L.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-11084 | CC BY 4.0相当 | ColBase／東京国立博物館（歌舞伎図屏風） | cover | 
+浮世絵 | https://colbase.nich.go.jp/media/tnm/A-9109/image/slideshow/A-9109_E0135402.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9109 | CC BY 4.0相当 | ColBase／東京国立博物館（四代目尾上松助の蝙蝠安） | cover | 

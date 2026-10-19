@@ -33,8 +33,9 @@ EP9 = "--ep9" in sys.argv   # 第9話（武士の世へ② 源頼朝）：おく
 EP10 = "--ep10" in sys.argv   # 第10話（元が せめてきた！）
 EP11 = "--ep11" in sys.argv   # 第11話（室町文化）
 EP1213 = "--ep12" in sys.argv   # 第12話・第13話（信長・秀吉）
-if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11 or EP1213:
-    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10", "--ep11", "--ep12")]
+EP1415 = "--ep14" in sys.argv   # 第14話・第15話（家光・玄白）
+if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11 or EP1213 or EP1415:
+    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10", "--ep11", "--ep12", "--ep14")]
     if args:
         SERIF = args[0]; _tt = ImageFont.truetype
         def _black(path, size, *a, **k):
@@ -44,6 +45,58 @@ if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11 or EP1213:
             return f
         ImageFont.truetype = _black
     def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    if EP1415:
+        def crop_bg2(name, card, box):
+            im = Image.open(R/"bgimg"/(name + ".webp")).convert("RGB"); w, h = im.size
+            save(im.crop((int(w * box[0]), int(h * box[1]), int(w * box[2]), int(h * box[3]))).resize((W, H), Image.LANCZOS), card)
+        def walker(d, x, y, c=(40, 34, 30)):   # 行列の 人（かさと からだ）
+            d.ellipse((x - 9, y - 30, x + 9, y - 12), fill=c); d.rectangle((x - 8, y - 12, x + 8, y + 18), fill=c); d.pieslice((x - 16, y - 42, x + 16, y - 20), 180, 360, fill=(90, 70, 50))
+        # ---- 第14話 ----
+        im = paper(101); vtext(im, ["親藩", "譜代", "外様"], 72, 420, 50, 120); save(im, "大名")
+        im = paper(102, (226, 218, 196)); d = ImageDraw.Draw(im)   # 参勤交代：行列
+        d.line((0, 300, 512, 260), fill=(160, 140, 110), width=40)
+        for k in range(9): walker(d, 30 + k * 52, 290 - k * 4)
+        d.rectangle((250, 150, 262, 250), fill=(70, 50, 30)); d.rectangle((262, 150, 300, 200), fill=(30, 30, 30))
+        vtext(im, ["参勤交代"], 40, 480, 20, 0); save(im, "参勤交代")
+        im = paper(103); vtext(im, ["三代将軍", "家光"], 70, 380, 40, 140); d = ImageDraw.Draw(im)   # 葵の 紋
+        d.ellipse((50, 230, 150, 330), outline=(40, 34, 30), width=6)
+        for a in (0, 120, 240):
+            import math; r = math.radians(a - 90); x, y = 100 + 26 * math.cos(r), 280 + 26 * math.sin(r); d.ellipse((x - 20, y - 20, x + 20, y + 20), fill=(40, 34, 30))
+        save(im, "徳川家光")
+        im = paper(104, (214, 226, 236)); d = ImageDraw.Draw(im)   # 鎖国：とざされた 港と 2せきの 船（オランダ・中国）
+        d.rectangle((0, 250, 512, 380), fill=(120, 150, 190))
+        for x, flag in ((90, (220, 80, 60)), (300, (240, 200, 60))):
+            d.polygon([(x, 230), (x + 130, 230), (x + 112, 262), (x + 18, 262)], fill=(90, 60, 40)); d.rectangle((x + 62, 140, x + 68, 230), fill=(70, 50, 30)); d.rectangle((x + 68, 146, x + 110, 176), fill=flag)
+        vtext(im, ["鎖国"], 60, 470, 20, 0); save(im, "鎖国")
+        im = paper(105, (214, 226, 236)); d = ImageDraw.Draw(im)   # 出島：おうぎ形の 島
+        d.rectangle((0, 0, 512, 380), fill=(120, 150, 190)); d.pieslice((60, 60, 460, 460), 200, 340, fill=(200, 180, 140))
+        for k in range(6): d.rectangle((140 + k * 40, 150, 168 + k * 40, 180), fill=(120, 90, 60))
+        d.line((256, 220, 256, 380), fill=(120, 90, 60), width=10); vtext(im, ["出島"], 60, 470, 20, 0); save(im, "出島")
+        im = paper(106); vtext(im, ["武士", "百姓", "町人"], 72, 420, 50, 120); seal(im); save(im, "身分")
+        im = paper(107, (226, 218, 196)).resize((480, 360)); d = ImageDraw.Draw(im)   # おくりもの：大名行列の 絵
+        d.line((0, 290, 480, 250), fill=(170, 150, 120), width=50)
+        for k in range(10): walker(d, 24 + k * 46, 282 - k * 4)
+        d.rectangle((200, 170, 280, 230), fill=(60, 40, 30)); d.rectangle((210, 230, 220, 270), fill=(60, 40, 30)); d.rectangle((260, 230, 270, 270), fill=(60, 40, 30))
+        im.save(R/"art"/"gdaimyo_normal.webp", "WEBP", quality=80)
+        # ---- 第15話 ----
+        im = paper(108); f_ = Image.open(R/"art"/"genpaku_normal.webp").convert("RGBA").resize((300, 300)); im.paste(f_, (10, 60), f_)   # 先生の 顔グラ
+        vtext(im, ["杉田玄白"], 64, 450, 40, 0); save(im, "杉田玄白")
+        im = paper(109); vtext(im, ["前野良沢"], 76, 300, 20, 0); seal(im); save(im, "前野良沢")
+        im = paper(110, (232, 222, 198)); d = ImageDraw.Draw(im)   # ターヘル・アナトミア：洋書と 体の 図
+        d.rectangle((90, 50, 420, 330), fill=(120, 70, 40)); d.rectangle((110, 70, 400, 310), fill=(236, 226, 200))
+        d.ellipse((230, 90, 280, 140), outline=(80, 60, 50), width=4); d.line((255, 140, 255, 250), fill=(80, 60, 50), width=4); d.line((205, 170, 305, 170), fill=(80, 60, 50), width=4)
+        d.line((255, 250, 220, 300), fill=(80, 60, 50), width=4); d.line((255, 250, 290, 300), fill=(80, 60, 50), width=4)
+        fe = ImageFont.truetype(SERIF, 18); d.text((255, 76), "TABULAE ANATOMICAE", font=fe, fill=(60, 40, 30), anchor="mt"); save(im, "ターヘル・アナトミア")
+        im = paper(111); d = ImageDraw.Draw(im); fb = ImageFont.truetype(SERIF, 64)
+        d.text((256, 120), "A B C", font=fb, fill=(40, 34, 30), anchor="mm"); vtext(im, ["阿蘭陀語"], 44, 470, 30, 0); d.text((240, 250), "Hollandsch", font=ImageFont.truetype(SERIF, 40), fill=(120, 60, 40), anchor="mm"); save(im, "オランダ語")
+        im = paper(112); vtext(im, ["蘭学"], 110, 300, 60, 0); seal(im); save(im, "蘭学")
+        crop_bg2("江戸の町", "江戸の町人", (.0, .25, .6, .9))
+        im = paper(113); vtext(im, ["近松門左衛門"], 54, 300, 10, 0); d = ImageDraw.Draw(im)
+        for k in range(7):   # 扇
+            import math; a = math.radians(200 + k * 20); d.line((120, 300, 120 + 110 * math.cos(a), 300 + 110 * math.sin(a)), fill=(120, 84, 48), width=4)
+        d.pieslice((10, 190, 230, 410), 200, 340, fill=(200, 60, 50)); d.pieslice((60, 240, 180, 360), 200, 340, fill=(236, 226, 200)); save(im, "近松門左衛門")
+        im = paper(114); vtext(im, ["古事記", "本居宣長"], 64, 380, 40, 150); seal(im); save(im, "本居宣長")
+        print("OK ep14・ep15"); raise SystemExit
     if EP1213:
         def crop_bg(name, card, box=(.1, .1, .9, .9)):   # 先生の 背景を 切りぬいて カードに
             im = Image.open(R/"bgimg"/(name + ".webp")).convert("RGB"); w, h = im.size

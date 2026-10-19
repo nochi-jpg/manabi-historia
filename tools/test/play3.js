@@ -13,7 +13,7 @@ const EPN = Number(process.argv[3] || 1);
   const shot = n => p.screenshot({ path: `${SHOTDIR}b${EPN}_${n}.png` });
   await p.waitForTimeout(300); await shot('00title');
   // じゅもん
-  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた',10:'はかたのいしがき',11:'すみえのやまなみ',12:'あづちのてんしゅ',13:'おおさかのしろ'}[EPN])); await p.click('text=けってい');
+  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた',10:'はかたのいしがき',11:'すみえのやまなみ',12:'あづちのてんしゅ',13:'おおさかのしろ',14:'えどのまちなみ',15:'いのうのあしあと'}[EPN])); await p.click('text=けってい');
   await p.waitForTimeout(200); await shot('01spell'); await p.click('.inbox .btn');
   await p.click('text=おはなしを えらぶ'); await p.waitForTimeout(200); await shot('02select');
   await p.evaluate(n => showSelect({no:n}), EPN); await p.waitForTimeout(200); await shot('02b_tl'); await p.click('.tp-btns .btn.red'); await p.waitForTimeout(300);
