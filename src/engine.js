@@ -126,8 +126,8 @@ const CHARS = {
   "源頼朝": { icon: "人:おとこ", side: "R", art: "yoritomo2" },   // 大人の 頼朝（第9話）。少年の 頼朝は yoritomo
   "源義経": { icon: "人:おとこ", side: "R", art: "yoshitsune" },
   "北条政子": { icon: "人:おんな", side: "L", art: "masako" },
-  "北条時宗": { icon: "人:おとこ", side: "R" },   // 第10話（先生の 絵が とどいたら art を つける）
-  "竹崎季長": { icon: "人:おとこ", side: "R" },
+  "北条時宗": { icon: "人:おとこ", side: "R", art: "tokimune" },
+  "竹崎季長": { icon: "人:おとこ", side: "R", art: "takezaki" },
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
