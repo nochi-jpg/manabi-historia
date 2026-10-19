@@ -137,7 +137,7 @@ const CHARS = {
   "織田信長": { icon: "人:おとこ", side: "R", art: "nobunaga" },
   "豊臣秀吉": { icon: "人:おとこ", side: "R", art: "hideyoshi" },   // 1590年は @変装 豊臣秀吉 old
   "千利休": { icon: "人:としより", side: "L", art: "rikyu" },
-  "徳川家康": { icon: "人:おとこ", side: "L" },   // 絵が とどいたら art: "ieyasu"
+  "徳川家康": { icon: "人:おとこ", side: "L", art: "ieyasu" },   // 1600年（第14話の はじめ）は @変装 徳川家康 old
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
