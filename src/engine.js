@@ -9,7 +9,7 @@ const FAIL = { fail: true };
 const EP_META = [
   ["時をこえて", "現代"], ["縄文のむら", "縄文"], ["弥生のくに", "弥生"], ["古墳のくに", "古墳"],
   ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "蹴鞠庭"], ["大仏をつくれ！", "平城京"], ["貴族のくらし", "平安京"],
-  ["武士の世へ① 平氏", "六波羅"], ["武士の世へ② 源頼朝", "夜"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
+  ["武士の世へ① 平氏", "六波羅"], ["武士の世へ② 源頼朝", "平安京"], ["元がせめてきた！", "夜"], ["室町文化", "夜"],
   ["戦国① 織田信長", "夜"], ["戦国② 秀吉と家康", "夜"], ["江戸幕府", "江戸"], ["町人の文化と新しい学問", "江戸"],
   ["明治① 開国と明治維新", "夜"], ["明治② 文明開化と憲法", "夜"], ["世界に歩みだした日本", "夜"],
   ["長く続いた戦争", "夜"], ["新しい日本、平和な日本へ", "現代"], ["最終回 未来へ", "時空"],
@@ -19,7 +19,7 @@ const EP_COUNT = EP_META.length;
 const EP_INFO = {
   0: ["令和", "2023年", "ユウキ"], 1: ["縄文", "約5500年前", "ミナ"], 2: ["弥生", "3世紀ごろ", "卑弥呼"], 3: ["古墳", "5世紀ごろ", "ワカタケル大王"],
   4: ["飛鳥", "600年ごろ", "聖徳太子"], 5: ["飛鳥", "645年", "中大兄皇子"], 6: ["奈良", "752年", "聖武天皇"], 7: ["平安", "1018年", "藤原道長"],
-  8: ["平安", "1167年", "平清盛"], 9: ["鎌倉", "1192年", "源頼朝"], 10: ["鎌倉", "1274年", "北条時宗"], 11: ["室町", "1400年ごろ", "足利義政"],
+  8: ["平安", "1167年", "平清盛"], 9: ["鎌倉", "1185年", "源頼朝"], 10: ["鎌倉", "1274年", "北条時宗"], 11: ["室町", "1400年ごろ", "足利義政"],
   12: ["戦国", "1575年", "織田信長"], 13: ["安土桃山", "1600年", "豊臣秀吉"], 14: ["江戸", "1635年", "徳川家光"], 15: ["江戸", "1774年", "杉田玄白"],
   16: ["明治", "1868年", "西郷隆盛"], 17: ["明治", "1889年", "福沢諭吉"], 18: ["明治", "1911年", "小村寿太郎"], 19: ["昭和", "1945年", "？"],
   20: ["昭和", "1964年", "？"], 21: ["未来", "20XX年", "ユガミ"],
@@ -123,6 +123,9 @@ const CHARS = {
   "藤式部": { icon: "人:おんな", side: "L", art: "fujishikibu" },
   "平清盛": { icon: "人:おとこ", side: "R", art: "kiyomori" },   // 1168年は @変装 平清盛 nyudo（出家後）
   "平重盛": { icon: "人:おとこ", side: "L", art: "shigemori" },
+  "源頼朝": { icon: "人:おとこ", side: "R", art: "yoritomo" },   // 第9話：大人の 頼朝の 絵が とどくまで 少年の 絵
+  "源義経": { icon: "人:おとこ", side: "R" },
+  "北条政子": { icon: "人:おんな", side: "L" },
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
@@ -1083,6 +1086,7 @@ async function runTimeJump(n) {
   if (Math.abs(n.to - n.from) > 12) {   // 年が 多いときは、はじめは ゆっくり → だんだん 大きく とぶ（さかのぼりは 季節も 逆まわり）
     const M = 26; for (let k = 0; k < M; k++) { const t = k / M; steps.push([Math.round(n.from - (n.from - n.to) * t * t), back ? SEASON[3 - k % 4] : SEASON[k % 4]]); }
     steps.push([n.to, "春"]);
+  } else if (n.from === n.to) { for (const se of ["春", "夏", "秋"]) steps.push([n.from, se]);   // 同じ 年の 中で 半年 進む（第9話）
   } else { for (let y = n.from; y < n.to; y++) for (const se of SEASON) steps.push([y, se]); steps.push([n.to, "春"]); }
   let ang = 0, spd = 2, run = true;   // 針の速さ（1フレームの角度）
   const dir = back ? -1 : 1;
@@ -1112,12 +1116,12 @@ async function runTimeJump(n) {
   bo.classList.add("out"); setTimeout(() => bo.remove(), 1300);
   await sleep(fast ? 200 : 900);
   const d = Math.abs(n.to - n.from);
-  banner("", `<div class="tj-ban"><b>${yearLabel(n.to)}</b><span>${back ? (n.to > 0 ? d + "年前" : "") : d + "年後"}</span></div>`);
+  banner("", `<div class="tj-ban"><b>${yearLabel(n.to)}</b><span>${back ? (n.to > 0 ? d + "年前" : "") : d ? d + "年後" : "半年後"}</span></div>`);
   SE.play("found");
   await sleep(fast ? 300 : 1900);
 }
 /* 話の はじまり：前の話の 最後の 年から その時代へ（むかしへは 逆まわし、先へは 順まわし） */
-const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008, 8: 1160 };
+const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008, 8: 1160, 9: 1185 };
 function epEndYear(no) { let y = epStartYear(no); const ep = EPS[no]; if (ep) for (const n of ep.nodes) if (n.t === "tjump") y = n.to; return y; }   // 話の 最後の 年（@時ワープ で 進んだ 年）
 function prevEndYear(no) { return no <= 1 ? 2023 : epEndYear(no - 1) ?? 2023; }   // 前の話の 最後の 年（第1話は プロローグの 2023年）
 function epStartYear(no) { if (EP_START[no] != null) return EP_START[no]; const m = /(\d+)/.exec(EP_INFO[no][1]); return m ? Number(m[1]) : null; }
@@ -1143,7 +1147,9 @@ function runTesti(n) {
     const draw = async (first) => {
       clearLayer(); hideTalk(); hidePortraits();
       layer.className = "testi"; stage.classList.add("testi-on"); stage.classList.toggle("danger", S.hearts === 1);
-      BGM.play(r === n.rounds.length - 1 && n.rounds.length > 1 ? "最後の証言" : "証言");
+      // 最後の証言：議論の さいごの 証言。議論を いくつかに 分けたとき（第9話）は、あとに 議論が ない ものの さいご
+      const later = S.ep.nodes.slice(S.idx + 1).some(x => x.t === "testi"), before = S.ep.nodes.slice(0, S.idx).some(x => x.t === "testi");
+      BGM.play(r === n.rounds.length - 1 && !later && (n.rounds.length > 1 || before) ? "最後の証言" : "証言");
       const aura = S.aura.includes(who);
       const wit = h("div", "witness" + (aura ? " aura" : ""), (aura ? AURA_HTML : "") + `<div class="w-face">${faceHTML(c, "ふつう", who)}</div><div class="w-name">${esc(who)}</div>`);
       layer.appendChild(wit);

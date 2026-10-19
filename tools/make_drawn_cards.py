@@ -29,8 +29,9 @@ def save(im, name):
 #   curl -L -o NotoSerifJP.ttf "https://raw.githubusercontent.com/google/fonts/main/ofl/notoserifjp/NotoSerifJP%5Bwght%5D.ttf"
 import sys
 EP8 = "--ep8" in sys.argv   # 第8話（武士の世へ① 平氏）の絵だけ作る： python3 tools/make_drawn_cards.py --ep8 [明朝フォント]
-if "--ep7" in sys.argv or EP8:
-    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8")]
+EP9 = "--ep9" in sys.argv   # 第9話（武士の世へ② 源頼朝）：おくりもの「義経の手紙」
+if "--ep7" in sys.argv or EP8 or EP9:
+    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9")]
     if args:
         SERIF = args[0]; _tt = ImageFont.truetype
         def _black(path, size, *a, **k):
@@ -40,6 +41,45 @@ if "--ep7" in sys.argv or EP8:
             return f
         ImageFont.truetype = _black
     def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    if EP9:
+        # おくりもの：義経の手紙（腰越状のはじめ「左衛門少尉源義経 恐れながら申し上げ候」）。たたんだ あとの 折り目つき
+        im = paper(51, (238, 230, 208)).resize((480, 360)); d = ImageDraw.Draw(im)
+        for x in (120, 240, 360): d.line((x, 0, x, 360), fill=(214, 202, 172), width=2)
+        f = ImageFont.truetype(SERIF, 30); t = Image.new("L", im.size, 0); dt = ImageDraw.Draw(t); random.seed(9)
+        cols = ["左衛門少尉源義経", "乍恐申上候", "意趣者被撰御代官", "其一為勅宣之御使", "傾朝敵…"]
+        for c, col in enumerate(cols):
+            x = 440 - c * 60; y = 24 + (c > 0) * 30
+            for ch in col:
+                dt.text((x + random.uniform(-1.5, 1.5), y), ch, font=f, fill=255, anchor="mt"); y += 34
+        t = t.filter(ImageFilter.GaussianBlur(.7)); im.paste((30, 24, 20), (0, 0), t)
+        im.save(R/"art"/"gkoshigoe_normal.webp", "WEBP", quality=80)
+        # 壇ノ浦の戦い：海の 上の 船。平氏の 赤い 旗と 源氏の 白い 旗
+        im = paper(52, (214, 226, 232)); d = ImageDraw.Draw(im)
+        for k in range(7): d.arc((-60 + k * 90, 270, 40 + k * 90, 350), 180, 360, fill=(40, 80, 140), width=6)
+        for x0, flag in ((60, (200, 40, 30)), (300, (250, 250, 245))):
+            d.polygon([(x0, 230), (x0 + 160, 230), (x0 + 140, 268), (x0 + 20, 268)], fill=(90, 60, 40))
+            d.rectangle((x0 + 78, 90, x0 + 84, 230), fill=(70, 50, 30)); d.rectangle((x0 + 84, 96, x0 + 134, 176), fill=flag, outline=(60, 40, 30))
+        vtext(im, ["壇ノ浦"], 40, 470, 20, 0); save(im, "壇ノ浦の戦い")
+        # 平氏の世：平氏の 赤い 旗と「平家にあらずんば人にあらず」
+        im = paper(53); d = ImageDraw.Draw(im)
+        d.rectangle((60, 30, 66, 350), fill=(70, 50, 30)); d.rectangle((66, 40, 170, 220), fill=(196, 36, 28))
+        vtext(im, ["平家にあらずんば", "人にあらず"], 34, 420, 30, 60); save(im, "平氏の世")
+        # 御恩と奉公：将軍 ⇄ 御家人
+        im = paper(54); d = ImageDraw.Draw(im); fb = ImageFont.truetype(SERIF, 46); fs = ImageFont.truetype(SERIF, 28)
+        for x, t in ((110, "将軍"), (400, "御家人")): d.text((x, 190), t, font=fb, fill=(28, 22, 18), anchor="mm")
+        d.line((170, 140, 330, 140), fill=(170, 60, 40), width=6); d.polygon([(330, 128), (352, 140), (330, 152)], fill=(170, 60, 40))
+        d.line((180, 240, 340, 240), fill=(40, 70, 130), width=6); d.polygon([(180, 228), (158, 240), (180, 252)], fill=(40, 70, 130))
+        d.text((255, 105), "御恩（土地）", font=fs, fill=(170, 60, 40), anchor="mm"); d.text((255, 280), "奉公（いざ鎌倉）", font=fs, fill=(40, 70, 130), anchor="mm")
+        save(im, "御恩と奉公")
+        # 守護・地頭
+        im = paper(55); vtext(im, ["守護", "地頭"], 96, 360, 50, 170); seal(im); save(im, "守護・地頭")
+        # 征夷大将軍
+        im = paper(56); vtext(im, ["征夷大将軍"], 64, 300, 20, 0); seal(im, 40, 300, 46); save(im, "征夷大将軍")
+        # 北条政子：北条氏の 家紋（三つ鱗）と 名
+        im = paper(57); d = ImageDraw.Draw(im)
+        for (x, y) in ((150, 110), (100, 200), (200, 200)): d.polygon([(x, y - 70), (x - 60, y + 30), (x + 60, y + 30)], fill=(40, 34, 30))
+        vtext(im, ["北条政子"], 64, 420, 50, 0); save(im, "北条政子")
+        print("OK ep9"); raise SystemExit
     if EP8:
         # 太政大臣：位の 名と 笏（しゃく）
         im = paper(41); vtext(im, ["太政大臣"], 84, 330, 24, 0); d = ImageDraw.Draw(im)

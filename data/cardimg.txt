@@ -87,3 +87,9 @@
 宋銭 | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.15,0.95,0.9
 厳島神社 | https://colbase.nich.go.jp/media/tnm/A-1421/image/slideshow_s/A-1421_C0068496.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-1421 | CC BY 4.0相当 | ColBase／東京国立博物館（宮島祭礼図屏風） | cover | 0.08,0.1,0.98,0.85
 平家納経 | https://colbase.nich.go.jp/media/tnm/B-2406-2/image/slideshow/B-2406-2_E0039106.jpg | https://colbase.nich.go.jp/collection_items/tnm/B-2406-2 | CC BY 4.0相当 | ColBase／東京国立博物館（平家納経 模本） | cover | 0.3,0,0.97,1
+源義経 | https://colbase.nich.go.jp/media/tnm/A-10569-3184/image/slideshow/A-10569-3184_E0165539.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-10569-3184 | CC BY 4.0相当 | ColBase／東京国立博物館（義經一代記之内・義経智略一の谷鵯越逆落し） | cover | 0.42,0.5,0.95,0.98
+源頼朝 | https://colbase.nich.go.jp/media/tnm/A-9266/image/slideshow/A-9266_E0037638.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9266 | CC BY 4.0相当 | ColBase／東京国立博物館（源頼朝像 模本） | cover | 0.1,0.12,0.9,0.7
+源氏の挙兵 | https://colbase.nich.go.jp/media/tnm/A-884/image/slideshow/A-884_C0058783.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-884 | CC BY 4.0相当 | ColBase／東京国立博物館（石橋山・江島・箱根図） | cover | 0,0.62,1,0.98
+後白河法皇 | https://colbase.nich.go.jp/media/tnm/A-9207/image/slideshow_s/A-9207_E0104999.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9207 | CC BY 4.0相当 | ColBase／東京国立博物館（後白河法皇影） | cover | 0.05,0.3,0.95,0.85
+御家人 | https://colbase.nich.go.jp/media/tnm/A-1646/image/slideshow/A-1646_E0062012.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-1646 | CC BY 4.0相当 | ColBase／東京国立博物館（一遍上人絵伝 模本・武士の館） | cover | 0.3,0.05,0.75,0.8
+鎌倉幕府 | https://colbase.nich.go.jp/media/tnm/A-10569-4640/image/slideshow/A-10569-4640_C0056520.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-10569-4640 | CC BY 4.0相当 | ColBase／東京国立博物館（鎌倉の里） | cover | 0.35,0.2,1,0.95
