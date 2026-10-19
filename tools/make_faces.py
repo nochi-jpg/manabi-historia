@@ -9,6 +9,7 @@ from PIL import Image
 from scipy import ndimage
 
 SRC = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(".")
+SET9 = "--set9" in sys.argv   # 9まいめ（1.png に 2人：足利義政（若い）・足利義政（年を とった）。下に 名前の 文字）
 SET8 = "--set8" in sys.argv   # 8まいめ（1〜2.png=北条時宗・竹崎季長）
 SET7 = "--set7" in sys.argv   # 7まいめ（1〜3.png=源義経・源頼朝（大人）・北条政子。右に 名前の 文字）
 SET6 = "--set6" in sys.argv   # 6まいめ（1.png に 4人：清盛（若）・清盛（出家後）・重盛・頼朝（少年））
@@ -51,10 +52,13 @@ if SET7:
     SHEETS = {"1.png": [("yoshitsune", "normal")], "2.png": [("yoritomo2", "normal")], "3.png": [("masako", "normal")]}
 if SET8:
     SHEETS = {"1.png": [("tokimune", "normal")], "2.png": [("takezaki", "normal")]}
+if SET9:
+    SHEETS = {"1.png": [("yoshimasa", "normal"), ("yoshimasa", "old")]}
 crops = {}
 for f, names in SHEETS.items():
     ps = parts(SRC / f)
-    if SET6: ps = sorted([q for q in ps if q[1][1] < 560], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
+    if SET9: ps = sorted([q for q in ps if q[1][3] < 800], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
+    elif SET6: ps = sorted([q for q in ps if q[1][1] < 560], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
     elif SET2: ps = [max(ps, key=lambda t: (t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))]   # いちばん大きい絵だけ
     assert len(ps) == len(names), (f, len(ps))
     for (ch, ex), (im, b) in zip(names, ps):

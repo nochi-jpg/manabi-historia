@@ -31,8 +31,9 @@ import sys
 EP8 = "--ep8" in sys.argv   # 第8話（武士の世へ① 平氏）の絵だけ作る： python3 tools/make_drawn_cards.py --ep8 [明朝フォント]
 EP9 = "--ep9" in sys.argv   # 第9話（武士の世へ② 源頼朝）：おくりもの「義経の手紙」
 EP10 = "--ep10" in sys.argv   # 第10話（元が せめてきた！）
-if "--ep7" in sys.argv or EP8 or EP9 or EP10:
-    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10")]
+EP11 = "--ep11" in sys.argv   # 第11話（室町文化）
+if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11:
+    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10", "--ep11")]
     if args:
         SERIF = args[0]; _tt = ImageFont.truetype
         def _black(path, size, *a, **k):
@@ -42,6 +43,22 @@ if "--ep7" in sys.argv or EP8 or EP9 or EP10:
             return f
         ImageFont.truetype = _black
     def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    if EP11:
+        # 応仁の乱：焼ける 町の けむりと「東軍・西軍」
+        im = paper(71, (226, 206, 178)); sm = Image.new("L", im.size, 0); ds = ImageDraw.Draw(sm); random.seed(11)
+        for k in range(40):   # 立ちのぼる けむり
+            x = random.choice((90, 200, 300)) + random.randint(-30, 30) + k; y = 260 - k * 6
+            ds.ellipse((x - 30, y - 22, x + 30, y + 22), fill=150)
+        im.paste((90, 84, 80), (0, 0), sm.filter(ImageFilter.GaussianBlur(10)))
+        d = ImageDraw.Draw(im)
+        for x in range(0, 380, 76):   # 町の 屋根と 炎
+            d.polygon([(x, 300), (x + 38, 262), (x + 76, 300)], fill=(60, 44, 34)); d.rectangle((x + 8, 300, x + 68, 380), fill=(80, 60, 44))
+            d.polygon([(x + 20, 300), (x + 38, 240), (x + 56, 300)], fill=(222, 96, 40))
+        vtext(im, ["東軍", "西軍"], 56, 470, 40, 70); save(im, "応仁の乱")
+        # 書院造：先生の 背景「書院」を 切りぬく
+        im = Image.open(R/"bgimg"/"書院.webp").convert("RGB"); w, h = im.size
+        im = im.crop((int(w * .1), int(h * .12), int(w * .9), int(h * .88))).resize((W, H), Image.LANCZOS); save(im, "書院造")
+        print("OK ep11"); raise SystemExit
     if EP10:
         im = paper(61); vtext(im, ["大元"], 110, 300, 40, 0); seal(im); save(im, "元")
         im = paper(62); vtext(im, ["大元皇帝", "忽必烈"], 56, 330, 40, 120); seal(im, 40, 300, 46); save(im, "フビライ・ハン")

@@ -7,3 +7,4 @@ gmari | https://colbase.nich.go.jp/media/tnm/I-2128/image/slideshow/I-2128_C0065
 gsousen | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.1,0.65,0.9 | おくりもの（宋銭）
 gsousen | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.1,0.65,0.9 | おくりもの（宋銭）
 gtetsuhau | https://colbase.nich.go.jp/media/tnm/G-3308/image/slideshow/G-3308_E0121631.jpg | https://colbase.nich.go.jp/collection_items/tnm/G-3308 | CC BY 4.0相当 | ColBase／東京国立博物館（てつはう） | pad |
+gchawan | https://colbase.nich.go.jp/media/tnm/G-5121/image/slideshow/G-5121_E0183078.jpg | https://colbase.nich.go.jp/collection_items/tnm/G-5121 | CC BY 4.0相当 | ColBase／東京国立博物館（黒釉天目茶碗） | pad |  | おくりもの：茶わん（第11話）
