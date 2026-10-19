@@ -6,3 +6,4 @@ gkatana | https://ibmuseum.mapps.ne.jp/files/9355/media_files/mid/1528.jpg | htt
 gmari | https://colbase.nich.go.jp/media/tnm/I-2128/image/slideshow/I-2128_C0065846.jpg | https://colbase.nich.go.jp/collection_items/tnm/I-2128 | CC BY 4.0相当 | ColBase／東京国立博物館 | pad | 0.20,0.09,0.45,0.60 | おくりもの：蹴鞠の鞠（第5話）
 gsousen | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.1,0.65,0.9 | おくりもの（宋銭）
 gsousen | https://colbase.nich.go.jp/media/tnm/E-15165/image/slideshow/E-15165_E0079111.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-15165 | CC BY 4.0相当 | ColBase／東京国立博物館（宋銭） | cover | 0.05,0.1,0.65,0.9 | おくりもの（宋銭）
+gtetsuhau | https://colbase.nich.go.jp/media/tnm/G-3308/image/slideshow/G-3308_E0121631.jpg | https://colbase.nich.go.jp/collection_items/tnm/G-3308 | CC BY 4.0相当 | ColBase／東京国立博物館（てつはう） | pad |

@@ -30,8 +30,9 @@ def save(im, name):
 import sys
 EP8 = "--ep8" in sys.argv   # 第8話（武士の世へ① 平氏）の絵だけ作る： python3 tools/make_drawn_cards.py --ep8 [明朝フォント]
 EP9 = "--ep9" in sys.argv   # 第9話（武士の世へ② 源頼朝）：おくりもの「義経の手紙」
-if "--ep7" in sys.argv or EP8 or EP9:
-    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9")]
+EP10 = "--ep10" in sys.argv   # 第10話（元が せめてきた！）
+if "--ep7" in sys.argv or EP8 or EP9 or EP10:
+    args = [a for a in sys.argv[1:] if a not in ("--ep7", "--ep8", "--ep9", "--ep10")]
     if args:
         SERIF = args[0]; _tt = ImageFont.truetype
         def _black(path, size, *a, **k):
@@ -41,6 +42,19 @@ if "--ep7" in sys.argv or EP8 or EP9:
             return f
         ImageFont.truetype = _black
     def seal(im, x=40, y=290, s=52): ImageDraw.Draw(im).rectangle((x, y, x + s, y + s), fill=(188, 40, 30))
+    if EP10:
+        im = paper(61); vtext(im, ["大元"], 110, 300, 40, 0); seal(im); save(im, "元")
+        im = paper(62); vtext(im, ["大元皇帝", "忽必烈"], 56, 330, 40, 120); seal(im, 40, 300, 46); save(im, "フビライ・ハン")
+        im = paper(63); vtext(im, ["執権"], 110, 300, 60, 0); d = ImageDraw.Draw(im)
+        for (x, y) in ((110, 90), (80, 140), (140, 140)): d.polygon([(x, y - 34), (x - 30, y + 16), (x + 30, y + 16)], fill=(40, 34, 30))
+        save(im, "執権")
+        # 元の国書（蒙古国牒状の はじめ「上天眷命 大蒙古國皇帝 奉書 日本國王」）
+        im = paper(64, (240, 232, 210)); vtext(im, ["上天眷命", "大蒙古國皇帝", "奉書", "日本國王"], 40, 440, 30, 90); save(im, "元の国書")
+        im = paper(65); vtext(im, ["恩賞"], 110, 330, 60, 0); d = ImageDraw.Draw(im)
+        d.rectangle((70, 230, 190, 300), outline=(120, 84, 48), width=6); d.line((70, 250, 190, 250), fill=(120, 84, 48), width=4); save(im, "恩賞")
+        im = paper(66); vtext(im, ["承久三年"], 70, 300, 30, 0); d = ImageDraw.Draw(im)
+        d.rectangle((60, 40, 66, 340), fill=(70, 50, 30)); d.rectangle((66, 50, 150, 190), fill=(250, 250, 245), outline=(60, 40, 30)); save(im, "承久の乱")
+        print("OK ep10"); raise SystemExit
     if EP9:
         # おくりもの：義経の手紙（腰越状のはじめ「左衛門少尉源義経 恐れながら申し上げ候」）。たたんだ あとの 折り目つき
         im = paper(51, (238, 230, 208)).resize((480, 360)); d = ImageDraw.Draw(im)

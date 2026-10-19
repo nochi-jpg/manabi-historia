@@ -13,7 +13,7 @@ const EPN = Number(process.argv[3] || 1);
   const shot = n => p.screenshot({ path: `${SHOTDIR}b${EPN}_${n}.png` });
   await p.waitForTimeout(300); await shot('00title');
   // じゅもん
-  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた'}[EPN])); await p.click('text=けってい');
+  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた',10:'はかたのいしがき'}[EPN])); await p.click('text=けってい');
   await p.waitForTimeout(200); await shot('01spell'); await p.click('.inbox .btn');
   await p.click('text=おはなしを えらぶ'); await p.waitForTimeout(200); await shot('02select');
   await p.evaluate(n => showSelect({no:n}), EPN); await p.waitForTimeout(200); await shot('02b_tl'); await p.click('.tp-btns .btn.red'); await p.waitForTimeout(300);
@@ -92,8 +92,8 @@ const EPN = Number(process.argv[3] || 1);
       const node = await p.evaluate(() => S.node);
       // 今のラウンドのウソを探す
       const texts = await Promise.all(claims.map(c => c.evaluate(e => { const x = e.cloneNode(true); x.querySelectorAll('rt').forEach(r => r.remove()); return x.textContent; })));
-      for (const r of node.rounds) for (let i = 0; i < r.length; i++) if (r[i].lie && texts.some(t => t.includes(r[i].text))) {
-        const idx = texts.findIndex(t => t.includes(r[i].text));
+      for (const r of node.rounds) for (let i = 0; i < r.length; i++) if (r[i].lie && texts.some(t => t.includes(r[i].text.replace(/《[^》]*》/g, '')))) {
+        const idx = texts.findIndex(t => t.includes(r[i].text.replace(/《[^》]*》/g, '')));
         if (idx >= 0) { await p.evaluate(a => window.__ans = a, r[i].card); await tap(claims[idx]); }
       }
       continue;
