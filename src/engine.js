@@ -123,9 +123,9 @@ const CHARS = {
   "藤式部": { icon: "人:おんな", side: "L", art: "fujishikibu" },
   "平清盛": { icon: "人:おとこ", side: "R", art: "kiyomori" },   // 1168年は @変装 平清盛 nyudo（出家後）
   "平重盛": { icon: "人:おとこ", side: "L", art: "shigemori" },
-  "源頼朝": { icon: "人:おとこ", side: "R", art: "yoritomo" },   // 第9話：大人の 頼朝の 絵が とどくまで 少年の 絵
-  "源義経": { icon: "人:おとこ", side: "R" },
-  "北条政子": { icon: "人:おんな", side: "L" },
+  "源頼朝": { icon: "人:おとこ", side: "R", art: "yoritomo2" },   // 大人の 頼朝（第9話）。少年の 頼朝は yoritomo
+  "源義経": { icon: "人:おとこ", side: "R", art: "yoshitsune" },
+  "北条政子": { icon: "人:おんな", side: "L", art: "masako" },
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
@@ -178,6 +178,7 @@ function parseScript(no, src) {
         case "ゆがみ": ep.nodes.push({ t: "warp", text: arg || "歴史が ゆがみはじめる……！" }); break;
         case "ゆがめる": ep.nodes.push({ t: "warp", text: "歴史が ゆがみはじめる……！", who: arg }); break;
         case "きざし": ep.nodes.push({ t: "omen" }); break;
+        case "ホワイトアウト": ep.nodes.push({ t: "white" }); break;   // 画面が まっ白に なり、うしろで 場面が かわって 明ける（回想の 出入り）
         case "退場": ep.nodes.push({ t: "exit", who: arg }); break;
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
@@ -1035,6 +1036,13 @@ async function runWarp(n) {
   if (pe) pe.classList.remove("glitch");
   banner(n.text); await sleep(1900);
 }
+/* @ホワイトアウト：まっ白に なる → つぎの @背景・@画像 は 白の うしろで かわり、ゆっくり 明ける */
+async function runWhite() {
+  hideTalk(); SE.play("restore");
+  const w = FX.add("wfade", ""); await sleep(30); w.classList.add("on");
+  await sleep(SKIP ? 100 : 700);
+  setTimeout(() => { w.classList.remove("on"); setTimeout(() => w.remove(), 800); }, SKIP ? 50 : 400);
+}
 async function runRestore(n) {
   const pe = n.who ? $(charOf(n.who, S.ep).side === "L" ? "#portL" : "#portR") : null;
   S.aura = S.aura.filter(x => x !== n.who);
@@ -1301,6 +1309,7 @@ async function playEpisode(no, resume) {
         case "bg": hidePortraits(true); setBg(n.bg, true, n.tint); showPic(""); break;
         case "tjump": await runTimeJump(n); break;
         case "omen": await runOmen(); break;
+        case "white": await runWhite(); break;
         case "exit": await runExit(n); break;
         case "depart": await runDepart(); break;
         case "pic": showPic(n.key, n.fx); break;
