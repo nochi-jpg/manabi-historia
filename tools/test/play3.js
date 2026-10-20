@@ -13,7 +13,7 @@ const EPN = Number(process.argv[3] || 1);
   const shot = n => p.screenshot({ path: `${SHOTDIR}b${EPN}_${n}.png` });
   await p.waitForTimeout(300); await shot('00title');
   // じゅもん
-  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた',10:'はかたのいしがき',11:'すみえのやまなみ',12:'あづちのてんしゅ',13:'おおさかのしろ',14:'えどのまちなみ',15:'いのうのあしあと'}[EPN])); await p.click('text=けってい');
+  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた',10:'はかたのいしがき',11:'すみえのやまなみ',12:'あづちのてんしゅ',13:'おおさかのしろ',14:'えどのまちなみ',15:'いのうのあしあと',16:'くろふねのけむり',17:'れんがのまち',18:'れんがのまち',19:'せかいへのふなで',20:'せかいへのふなで',21:'そかいのよぞら',22:'あたらしいけんぽう'}[EPN])); await p.click('text=けってい');
   await p.waitForTimeout(200); await shot('01spell'); await p.click('.inbox .btn');
   await p.click('text=おはなしを えらぶ'); await p.waitForTimeout(200); await shot('02select');
   await p.evaluate(n => showSelect({no:n}), EPN); await p.waitForTimeout(200); await shot('02b_tl'); await p.click('.tp-btns .btn.red'); await p.waitForTimeout(300);
@@ -96,6 +96,12 @@ const EPN = Number(process.argv[3] || 1);
         const idx = texts.findIndex(t => t.includes(r[i].text.replace(/《[^》]*》/g, '')));
         if (idx >= 0) { await p.evaluate(a => window.__ans = a, r[i].card); await tap(claims[idx]); }
       }
+      continue;
+    }
+    if (st.node === 'guard') {   // 記録を守る：まだ 守っていない 記録に 正解の カード
+      const recs = await p.$$('.record'); const node = await p.evaluate(() => S.node);
+      for (let i = 0; i < recs.length; i++) { const cls = await recs[i].getAttribute('class'); if (cls.includes('safe')) continue;
+        await p.evaluate(a => window.__ans = a, node.items[i].card); await tap(recs[i]); break; }
       continue;
     }
     if (st.node === 'sum') { const el = await p.$('.slot:not(.ok)'); if (el) { const a = await el.getAttribute('data-ans'); await p.evaluate(a => window.__ans = a, a); await tap(el); } continue; }

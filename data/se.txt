@@ -29,3 +29,7 @@ taiko | taiko_src | 0 | 2.4 | 1 | 太鼓（第3話 大王のおなり。@SE taik
 kansei | kansei_src | 0 | 0 | 1 | 歓声（第3話 大王の演説）
 bomb | 爆発1 | 0 | 0 | 0.8 | てつはう（第10話 博多の 浜）
 teppou | 狙撃銃発射 | 0 | 0 | 0.8 | 鉄砲（第12話 長篠の 陣）
+kiteki | locomotive-whistle1 | 0 | 4 | 0.7 | 汽車の 汽笛（第17話前編 新橋の駅）
+funebue | ship-big-whistle1 | 0 | 5 | 0.6 | 汽船の 汽笛（第18話後編 横浜の港）
+semi | minminzemi-cry1 | 0 | 6 | 0.5 | セミの 声（第19話 疎開先の寺）
+radio | snow-noise1 | 0 | 3 | 0.5 | ラジオの 雑音（第19話 玉音放送）

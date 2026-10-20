@@ -24,7 +24,7 @@ eps = sys.argv[1:] or [p.stem[2:] for p in sorted((R/"scenarios").glob("ep*.txt"
 SKIP = ("//", "@人物", "@BGM", "@SE", "@変装", "@画像", "@背景", "@時ワープ", "@たいせつ g")
 bad = {}; none = {}; one = {}
 for e in eps:
-    f = R/"scenarios"/f"ep{int(e):02d}.txt"
+    f = R/"scenarios"/(f"ep{int(e):02d}.txt" if e.isdigit() else f"ep{e}.txt")
     for ln, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
         if line.startswith(SKIP): continue
         s = line; i = 0
@@ -38,10 +38,10 @@ for e in eps:
                 h = next((x for x in Y.get(s[k], []) if s.startswith(x[0], k)), None)
                 if h and "|" in h[2]: segs = [f"{h[0]}({h[2]})"]; j = max(j, k + len(h[0])); k += len(h[0]); continue   # かなを はさむ ことば（読みは「|」で 区切る）
                 if h and h[1] > 0: segs.append(f"{s[k:k+h[1]]}({h[2]})"); k += h[1]
-                else: none.setdefault(s[k], f"ep{int(e):02d}:{ln}"); k += 1
+                else: none.setdefault(s[k], f"ep{e}:{ln}"); k += 1
             w = s[i:j]
             if SINGLE and len(segs) == 1 and len(w) == 1: one.setdefault(w + s[j:j+2], segs[0])
-            if len(segs) > 1 and w not in OK: bad.setdefault(w, (" ".join(segs), f"ep{int(e):02d}:{ln}"))
+            if len(segs) > 1 and w not in OK: bad.setdefault(w, (" ".join(segs), f"ep{e}:{ln}"))
             i = j
 for c, at in none.items(): print(f"✕ {c}  （{at}）")
 for w, (sg, at) in sorted(bad.items(), key=lambda t: t[1][1]): print(f"？ {w} → {sg}  （{at}）")

@@ -11,9 +11,16 @@ const EP_META = [
   ["聖徳太子の国づくり", "飛鳥"], ["大化の改新", "蹴鞠庭"], ["大仏をつくれ！", "平城京"], ["貴族のくらし", "平安京"],
   ["武士の世へ① 平氏", "六波羅"], ["武士の世へ② 源頼朝", "平安京"], ["元がせめてきた！", "博多の浜"], ["室町文化", "花の御所"],
   ["戦国① 織田信長", "安土"], ["戦国② 秀吉と家康", "大阪城"], ["江戸幕府", "江戸城"], ["町人の文化と新しい学問", "江戸の町"],
-  ["明治① 開国と明治維新", "夜"], ["明治② 文明開化と憲法", "夜"], ["世界に歩みだした日本", "夜"],
-  ["長く続いた戦争", "夜"], ["新しい日本、平和な日本へ", "現代"], ["最終回 未来へ", "時空"],
+  ["明治① 開国と明治維新", "浦賀の海"], ["明治② 文明開化", "慶應義塾"], ["明治② 憲法と国会", "演説会の会場"],
+  ["世界に歩みだした日本①", "鹿鳴館"], ["世界に歩みだした日本②", "横浜の港"],
+  ["長く続いた戦争", "疎開先の寺"], ["新しい日本、平和な日本へ", "青空教室"], ["最終回 未来へ", "時空"],
 ];
+/* 第17話・第18話は 前編・後編。中の 番号（no）は 0〜23 の 通し番号で、画面に 出す 話数は epNum・epName で 作る */
+const EP_PART = { 17: "前編", 18: "後編", 19: "前編", 20: "後編" };
+const epNum = no => no <= 16 ? no : no <= 18 ? 17 : no <= 20 ? 18 : no - 2;
+const epName = no => no === 0 ? "プロローグ" : "第" + epNum(no) + "話" + (EP_PART[no] ? " " + EP_PART[no] : "");
+const epsOfNum = n => EP_META.map((_, no) => no).filter(no => no > 0 && epNum(no) === n);   // 同じ 話数の 中の 番号（前編・後編）
+const fragKey = no => "frag" + epNum(no) + (EP_PART[no] ? (EP_PART[no] === "前編" ? "a" : "b") : "");
 const EP_COUNT = EP_META.length;
 // 年表：[時代, 年代, キーマン]
 const EP_INFO = {
@@ -21,16 +28,17 @@ const EP_INFO = {
   4: ["飛鳥", "600年ごろ", "聖徳太子"], 5: ["飛鳥", "645年", "中大兄皇子"], 6: ["奈良", "752年", "聖武天皇"], 7: ["平安", "1018年", "藤原道長"],
   8: ["平安", "1167年", "平清盛"], 9: ["鎌倉", "1185年", "源頼朝"], 10: ["鎌倉", "1274年", "北条時宗"], 11: ["室町", "1489年", "足利義政"],
   12: ["戦国", "1575年", "織田信長"], 13: ["安土桃山", "1590年", "豊臣秀吉"], 14: ["江戸", "1635年", "徳川家光"], 15: ["江戸", "1774年", "杉田玄白"],
-  16: ["明治", "1868年", "西郷隆盛"], 17: ["明治", "1889年", "福沢諭吉"], 18: ["明治", "1911年", "小村寿太郎"], 19: ["昭和", "1945年", "？"],
-  20: ["昭和", "1964年", "？"], 21: ["未来", "20XX年", "ユガミ"],
+  16: ["明治", "1868年", "西郷隆盛"], 17: ["明治", "1873年", "福沢諭吉"], 18: ["明治", "1889年", "伊藤博文"], 19: ["明治", "1895年", "陸奥宗光"],
+  20: ["明治", "1911年", "小村寿太郎"], 21: ["昭和", "1945年", "？"], 22: ["昭和", "1964年", "？"], 23: ["未来", "20XX年", "ユガミ"],
 };
 const PAGES = [
   { name: "むかし", sub: "縄文・弥生・古墳", eps: [1, 2, 3] },
   { name: "天皇と貴族", sub: "飛鳥・奈良・平安", eps: [4, 5, 6, 7] },
   { name: "武士の世", sub: "平安の終わり・鎌倉・室町", eps: [8, 9, 10, 11] },
   { name: "天下統一と江戸", sub: "戦国・安土桃山・江戸", eps: [12, 13, 14, 15] },
-  { name: "近代・現代", sub: "明治・大正・昭和・令和", eps: [16, 17, 18, 19, 20, 0] },
-  { name: "未来", sub: "ユガミが 来た 時代", eps: [21], future: true },
+  { name: "明治", sub: "開国・文明開化・世界へ", eps: [16, 17, 18, 19, 20] },
+  { name: "昭和・令和", sub: "戦争・平和な日本へ・今", eps: [21, 22, 0] },
+  { name: "未来", sub: "ユガミが 来た 時代", eps: [23], future: true },
 ];
 const FUTURE_AFTER = 15;   // この話をクリアすると「未来」があらわれる
 const pageOf = no => PAGES.findIndex(p => p.eps.includes(no));
@@ -141,6 +149,15 @@ const CHARS = {
   "徳川家光": { icon: "人:おとこ", side: "R", art: "iemitsu" },
   "杉田玄白": { icon: "人:おとこ", side: "R", art: "genpaku" },   // 1800年は @変装 杉田玄白 old
   "前野良沢": { icon: "人:おとこ", side: "L", art: "ryotaku" },   // 1600年（第14話の はじめ）は @変装 徳川家康 old
+  "西郷隆盛": { icon: "人:おとこ", side: "R", art: "saigo" },   // 1868年は @変装 西郷隆盛 old
+  "勝海舟": { icon: "人:おとこ", side: "L", art: "katsu" },
+  "福沢諭吉": { icon: "人:おとこ", side: "R", art: "fukuzawa" },
+  "伊藤博文": { icon: "人:おとこ", side: "R", art: "ito" },   // 1889年は @変装 伊藤博文 old
+  "板垣退助": { icon: "人:おとこ", side: "R", art: "itagaki" },
+  "陸奥宗光": { icon: "人:おとこ", side: "R", art: "mutsu" },   // 1895年は @変装 陸奥宗光 old
+  "小村寿太郎": { icon: "人:おとこ", side: "R", art: "komura" },   // 1911年は @変装 小村寿太郎 old
+  "与謝野晶子": { icon: "人:おんな", side: "R", art: "akiko" },
+  "ハナ": { icon: "人:こども", side: "R", art: "hana" },   // 第20話の 1964年は @変装 ハナ old
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
@@ -185,8 +202,9 @@ function parseScript(no, src) {
         case "カード": block = { t: "cards" }; break;
         case "調査": add({ t: "inv", items: [], hint: "" }); break;
         case "まちがい探し": add({ t: "spot", items: [], hint: "" }); break;
-        case "論破バトル": add({ t: "battle", rounds: [[]], hint: "" }); break;
+        case "論破バトル": add({ t: "battle", rounds: [[]], hint: "", foe: rest[0] || "ユガミ" }); break;   // @論破バトル レキシクイ → 紫の 文字（レキシクイの 思念）
         case "まとめ": add({ t: "sum", lines: [], hint: "" }); break;
+        case "記録を守る": add({ t: "guard", items: [], hint: "" }); break;   // 第19話：消えかける 記録に 合う カードを つきつける
         case "記憶のかけら": add({ t: "frag", title: arg, lines: [] }); break;
         case "クリア": ep.nodes.push({ t: "clear" }); break;
         case "画像": ep.nodes.push({ t: "pic", key: rest[0] || "", fx: rest[1] || "" }); break;
@@ -224,6 +242,11 @@ function parseScript(no, src) {
           const [kind, text, card, retort, reaction, nearS] = p;   // 6つめ：おしいカード「カード名＝本じいのセリフ」（♡はへらない）
           const near = {}; (nearS || "").split(/\s*；\s*/).forEach(x => { const m = x.match(/^(.+?)[＝=](.+)$/); if (m) near[m[1].trim()] = m[2].trim(); });
           block.rounds[block.rounds.length - 1].lines.push({ lie: /矛盾|ウソ/.test(kind), text, card, retort, reaction, near });
+        }
+        else if (block.t === "guard") {   // - 記録の 名前 | 記録の 文 | 正解カード | 守った ときの ユウキの ことば | おしいカード
+          const [name, text, card, reply, nearS] = p;
+          const near = {}; (nearS || "").split(/\s*；\s*/).forEach(x => { const m = x.match(/^(.+?)[＝=](.+)$/); if (m) near[m[1].trim()] = m[2].trim(); });
+          block.items.push({ name, text, card, reply, near });
         }
         else if (block.t === "battle") {   // 6つめ：おしいカード（議論と同じ書き方。♡は へらない）
           const [kind, text, card, reply, foeLine, nearS] = p;
@@ -701,10 +724,10 @@ function renderHud() {
   if (!S) return;
   const hv = on => `<svg class="heart" viewBox="0 0 24 22"><path d="M12 21C-6 9 4-4 12 4C20-4 30 9 12 21Z" fill="${on ? "#d8392f" : "#3a322c"}" stroke="${on ? "#f4ead2" : "#6b5a45"}" stroke-width="1.6"/></svg>`;
   $("#hearts").innerHTML = Array.from({ length: MAX_HEARTS }, (_, i) => hv(i < S.hearts)).join("");
-  $("#tagNo").textContent = S.no === 0 ? "プロローグ" : `第${S.no}話`;
-  $("#tagTitle").textContent = S.ep.title.replace(/^(第\d+話|プロローグ)\s*/, "");
+  $("#tagNo").textContent = epName(S.no);
+  $("#tagTitle").textContent = S.ep.title.replace(/^(第\d+話(\s*[前後]編)?|プロローグ)\s*/, "");
   const hb = $("#hintBtn"), n = S.node;
-  const interactive = n && ["inv", "spot", "testi", "battle", "sum"].includes(n.t);
+  const interactive = n && ["inv", "spot", "testi", "battle", "sum", "guard"].includes(n.t);
   hb.hidden = !interactive;
   const canJump = !!(S.hintCtx && S.hintCtx.jump);
   let label = "ヒント", cost = "", dis = false;
@@ -715,7 +738,7 @@ function renderHud() {
   }
   hb.innerHTML = `<span class="hb-main${[...label].length > 4 ? " s" : ""}">${label}</span>${cost ? `<span class="hb-cost">${cost}</span>` : ""}`; hb.disabled = dis;
   $("#cardBtn").hidden = !S.hand.length;
-  stage.classList.toggle("danger", S.hearts === 1 && !!S.node && ["testi", "battle"].includes(S.node.t));   // 赤い ふちは 証言・論破バトルの 間だけ
+  stage.classList.toggle("danger", S.hearts === 1 && !!S.node && ["testi", "battle", "guard"].includes(S.node.t));   // 赤い ふちは 証言・論破バトルの 間だけ
 }
 /* ♡を1つへらす演出（赤いフラッシュ・揺れ・ハートが割れて落ちる） */
 function spendHeart() {
@@ -893,6 +916,9 @@ function battleBg(split, opt = {}) {
 // ユガミのセリフ（台本の5つ目の欄で、話ごとに変えられる）
 const FOE_HIT = ["……ほう。少しは やるようだな。だが、次は どうだ！", "くっ……！ まだだ、まだ 終わらない！", "ちっ……生意気な やつめ……！"];
 const FOE_TAUNT = ["ハハハ！ そんな カードで オレの 歴史は くずせないぞ！", "見当ちがいだな。よく 考えて みろ。", "フン、それが 証拠の つもりか？"];
+// レキシクイの 思念（@論破バトル レキシクイ）：ことばを 話さず、紫の 文字と うなり声だけ
+const LEXI_HIT = ["ギュルル……ッ！", "ギュ……ルル……！", "ギュルルル……！"];
+const LEXI_TAUNT = ["ギュルルル……（紫の 文字が、あざ笑うように ゆれた）", "ギュル……（紫の 文字は、びくとも しない）"];
 let tauntN = 0;
 function runBattle(n) {
   return new Promise((res, rej) => {
@@ -900,37 +926,38 @@ function runBattle(n) {
     let r = subStart();
     const total = n.rounds.length;
     const splitOf = k => 42 + (100 - 42) * k / total * .8;
+    const LX = n.foe === "レキシクイ", FOE = LX ? "レキシクイ" : "ユガミ", BASE = LX ? "ふつう" : "笑顔";
     const draw = () => {
       clearLayer(); hideTalk(); hidePortraits();
       layer.className = "battle"; stage.classList.add("battle-on"); stage.classList.toggle("danger", S.hearts === 1);
       battleBg(splitOf(r));
-      const foe = h("div", "foe mist" + (total - r), `<div class="foe-face">${faceHTML(charOf("ユガミ"), "笑顔")}</div><div class="foe-name">ユガミ</div>`);
+      const foe = h("div", "foe mist" + (total - r) + (LX ? " lexi" : ""), `<div class="foe-face">${faceHTML(charOf(FOE), BASE)}</div><div class="foe-name">${LX ? "レキシクイの 思念" : "ユガミ"}</div>`);
       const gauge = h("div", "gauge", Array.from({ length: total }, (_, i) => `<span class="seg${i < total - r ? "" : " off"}"></span>`).join(""));
       foe.prepend(gauge); layer.appendChild(foe);
       const face = foe.querySelector(".foe-face");
       const foeSay = async (expr, text) => {   // 左に顔を出さず、右のユガミの表情だけかえて話す
-        face.innerHTML = faceHTML(charOf("ユガミ"), expr);
-        await say("ユガミ", expr, text, S.ep, { noPort: true });
-        face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
+        face.innerHTML = faceHTML(charOf(FOE), expr); if (LX) SE.play("growl");
+        await say(FOE, expr, text, S.ep, { noPort: true });
+        face.innerHTML = faceHTML(charOf(FOE), BASE);
       };
-      const taunt = () => FOE_TAUNT[(tauntN++) % FOE_TAUNT.length];
-      layer.appendChild(h("div", "guide", `ユガミの ウソを 見やぶれ（${r + 1} / ${total}）`));
+      const taunt = () => (LX ? LEXI_TAUNT : FOE_TAUNT)[(tauntN++) % (LX ? LEXI_TAUNT : FOE_TAUNT).length];
+      layer.appendChild(h("div", "guide", `${LX ? "紫の 文字" : "ユガミ"}の ウソを 見やぶれ（${r + 1} / ${total}）`));
       const list = h("div", "claims");
       const claimEls = [];
       const lie = n.rounds[r].find(x => x.lie);
       newRound({ correct: lie && lie.card, jump: () => { const k = n.rounds[r].findIndex(x => x.lie); if (claimEls[k]) { claimEls[k].classList.add("suspect"); SE.play("doku"); } } });
       n.rounds[r].forEach((c, i) => {
-        logPush("ユガミ", c.text);
-        const e = h("button", "claim", `<span class="q">「</span>${fmt(c.text)}<span class="q">」</span>`);
+        logPush(FOE, c.text);
+        const e = h("button", "claim" + (LX ? " lexi" : ""), `<span class="q">「</span>${fmt(c.text)}<span class="q">」</span>`);
         e.style.animationDelay = (i * 220) + "ms"; setTimeout(() => SE.play("thud"), i * 220 + 150);   // 1つずつ降ってくる
         e.onclick = async () => {
           if (S.busy) return; S.busy = true;
           try {
-            const pick = await chooseCard("ウソだと 思ったら、矛盾する カードを つきつけろ！", c.lie ? c.card : null, { who: "ユガミ", text: c.text });
+            const pick = await chooseCard("ウソだと 思ったら、矛盾する カードを つきつけろ！", c.lie ? c.card : null, { who: FOE, text: c.text });
             if (pick && !c.lie) {
               await throwCard(pick, e, false);
-              face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
-              await loseHeart("ユガミ", "笑顔", "フフ……それは ほんとうの ことだ。", { noPort: true });
+              face.innerHTML = faceHTML(charOf(FOE), BASE);
+              await loseHeart(FOE, BASE, LX ? "……（紫の 文字は、ゆらぎも しない。ほんとうの ことの ようだ）" : "フフ……それは ほんとうの ことだ。", { noPort: true });
             } else if (pick) {
               if (pick === c.card) {
                 await throwCard(pick, e, true);
@@ -953,14 +980,14 @@ function runBattle(n) {
                 if (c.reply) await say("ユウキ", "怒り", c.reply, S.ep);
                 r++; subSave(r);
                 if (r >= total) { S.busy = false; hideTalk(); const bb = bgEl.querySelector(".bbg"); if (bb) bb.remove(); return res(); }
-                await foeSay(r === 1 ? "おどろき" : "怒り", c.foeLine || FOE_HIT[(r - 1) % FOE_HIT.length]);
+                await foeSay(LX ? "怒り" : r === 1 ? "おどろき" : "怒り", (c.foeLine && !(LX && /^…+$/.test(c.foeLine)) ? c.foeLine : "") || (LX ? LEXI_HIT : FOE_HIT)[(r - 1) % 3]);
                 S.busy = false; return draw();
               } else if (c.near && c.near[pick]) {   // おしい：♡は へらさず、本じいが ヒント
                 for (const seg of c.near[pick].split(/\s*／\s*/)) await say("本じい", "ふつう", seg, S.ep);
               } else {
                 await throwCard(pick, e, false);
-                face.innerHTML = faceHTML(charOf("ユガミ"), "笑顔");
-                await loseHeart("ユガミ", "笑顔", taunt(), { noPort: true });
+                face.innerHTML = faceHTML(charOf(FOE), BASE);
+                await loseHeart(FOE, BASE, taunt(), { noPort: true });
               }
             }
             hideTalk(); hidePortraits();
@@ -970,6 +997,56 @@ function runBattle(n) {
         claimEls.push(e); list.appendChild(e);
       });
       layer.appendChild(list);
+    };
+    draw();
+  });
+}
+/* ---------- 場面：記録を 守る（@記録を守る。第19話） ---------- */
+/* 紫に のまれて 消えかけて いる 記録（手紙・日記・ラジオ）。合う カードを つきつけると、文字が もどる。じゅんばんは 自由 */
+function runGuard(n) {
+  return new Promise((res, rej) => {
+    S.rej = rej;
+    let done = subStart();   // 守った 記録（ビット）
+    const total = n.items.length, all = (1 << total) - 1;
+    const cnt = () => n.items.filter((_, i) => done & (1 << i)).length;
+    const draw = () => {
+      clearLayer(); hideTalk(); hidePortraits();
+      layer.className = "guard"; stage.classList.add("battle-on"); stage.classList.toggle("danger", S.hearts === 1);
+      layer.appendChild(h("div", "guide", `消えかけて いる 記録を 守れ（${cnt()} / ${total}）`));
+      const grid = h("div", "records"), els = [];
+      const left = n.items.map((it, i) => i).filter(i => !(done & (1 << i)));
+      newRound({ correct: left.length ? n.items[left[0]].card : null, jump: () => { const e = els[left[0]]; if (e) { e.classList.add("suspect"); SE.play("doku"); } } });
+      n.items.forEach((it, i) => {
+        const safe = !!(done & (1 << i));
+        const e = h("button", "record" + (safe ? " safe" : " fading"), `<div class="rec-name">${esc(it.name)}</div><div class="rec-text">${fmt(it.text)}</div>`);
+        e.style.animationDelay = (i * 160) + "ms";
+        e.onclick = async () => {
+          if (S.busy || safe) return; S.busy = true;
+          try {
+            const pick = await chooseCard("この 記録と 合う カードを つきつけろ！", it.card, { who: it.name, text: it.text });
+            if (pick === it.card) {
+              await throwCard(pick, e, true);
+              e.classList.remove("fading"); e.classList.add("safe", "saved");
+              FX.flash("rgba(255,240,200,.6)", 260); SE.play("found");
+              await sleep(700);
+              if (it.reply) await say("ユウキ", "怒り", it.reply, S.ep);
+              done |= 1 << i; subSave(done);
+              if (done === all) { S.busy = false; hideTalk(); return res(); }
+              S.busy = false; return draw();
+            } else if (pick && it.near && it.near[pick]) {
+              for (const seg of it.near[pick].split(/\s*／\s*/)) await say("本じい", "ふつう", seg, S.ep);
+            } else if (pick) {
+              await throwCard(pick, e, false);
+              e.classList.remove("shake"); void e.offsetWidth; e.classList.add("shake");
+              await loseHeart("レキシクイ", "怒り", "ギュルル……（記録の 文字が、また 少し うすく なった）", { noPort: true });
+            }
+            hideTalk(); hidePortraits();
+          } catch (er) { S.busy = false; return rej(er); }
+          S.busy = false;
+        };
+        els.push(e); grid.appendChild(e);
+      });
+      layer.appendChild(grid);
     };
     draw();
   });
@@ -1146,7 +1223,7 @@ async function runTimeJump(n) {
   await sleep(fast ? 300 : 1900);
 }
 /* 話の はじまり：前の話の 最後の 年から その時代へ（むかしへは 逆まわし、先へは 順まわし） */
-const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008, 8: 1160, 9: 1185, 10: 1274, 11: 1467, 12: 1575, 13: 1588, 14: 1600, 15: 1771 };
+const EP_START = { 1: -3500, 2: 239, 3: 470, 4: 600, 5: 643, 6: 745, 7: 1008, 8: 1160, 9: 1185, 10: 1274, 11: 1467, 12: 1575, 13: 1588, 14: 1600, 15: 1771, 16: 1854, 17: 1871, 18: 1881, 19: 1886, 20: 1905, 21: 1944, 22: 1947 };
 function epEndYear(no) { let y = epStartYear(no); const ep = EPS[no]; if (ep) for (const n of ep.nodes) if (n.t === "tjump") y = n.to; return y; }   // 話の 最後の 年（@時ワープ で 進んだ 年）
 function prevEndYear(no) { return no <= 1 ? 2023 : epEndYear(no - 1) ?? 2023; }   // 前の話の 最後の 年（第1話は プロローグの 2023年）
 function epStartYear(no) { if (EP_START[no] != null) return EP_START[no]; const m = /(\d+)/.exec(EP_INFO[no][1]); return m ? Number(m[1]) : null; }
@@ -1258,7 +1335,7 @@ async function runFrag(n) {
   layer.className = "frag";
   const t = h("div", "frag-head", "一方 そのころ……");
   layer.appendChild(t); await sleep(1400);
-  const fa = window.ART && window.ART["frag" + S.no];   // 記憶のかけらの絵：art/frag話数_normal.webp
+  const fa = window.ART && window.ART[fragKey(S.no)];   // 記憶のかけらの絵：art/frag話数_normal.webp
   layer.appendChild(h("div", "frag-pic" + (fa ? " has" : ""), `${fa ? `<img src="${fa.normal}" alt="">` : "<div>🖼️</div>"}<div class="frag-cap">記憶のかけら「${esc(n.title)}」</div>`));
   layer.appendChild(h("div", "film"));
   for (const l of n.lines) await say(l.who, l.expr, l.text, S.ep, { dark: true });
@@ -1296,7 +1373,7 @@ async function playEpisode(no, resume) {
   LOG = [];
   if (!resume) {
     BGM.stop(.6);
-    const y0 = no > 0 && no < 21 ? epStartYear(no) : null, yp = prevEndYear(no);
+    const y0 = no > 0 && no < 23 ? epStartYear(no) : null, yp = prevEndYear(no);
     if (y0 != null && y0 !== yp) { await sleep(500); await runTimeJump({ from: yp, to: y0, opening: true }); }
     await titleCard(no);
     curtain.classList.add("out"); setTimeout(() => curtain.remove(), 1300);
@@ -1311,9 +1388,9 @@ async function playEpisode(no, resume) {
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
     S.node = n; S.hintLv = 0; S.rej = null; newRound(null);
-    stage.classList.toggle("danger", S.hearts === 1 && ["testi", "battle"].includes(n.t));
-    const interactive = ["inv", "spot", "testi", "battle", "sum", "frag"].includes(n.t);
-    S.noSkip = ["inv", "spot", "testi", "battle", "sum"].includes(n.t); if (S.noSkip) setSkip(false);
+    stage.classList.toggle("danger", S.hearts === 1 && ["testi", "battle", "guard"].includes(n.t));
+    const interactive = ["inv", "spot", "testi", "battle", "sum", "frag", "guard"].includes(n.t);
+    S.noSkip = ["inv", "spot", "testi", "battle", "sum", "guard"].includes(n.t); if (S.noSkip) setSkip(false);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
     autoBgm(n);
@@ -1340,6 +1417,7 @@ async function playEpisode(no, resume) {
         case "warp": await runWarp(n); break;
         case "restore": await runRestore(n); break;
         case "testi": await runTesti(n); break;
+        case "guard": await runGuard(n); break;
         case "clear": return finishEpisode();
       }
     } catch (e) {
@@ -1373,7 +1451,7 @@ function autoBgm(n) {
 /* 話のはじまり：タイトルと、年がスロットのように巻きもどる */
 async function titleCard(no) {
   const era = EP_INFO[no][0], eraName = /^(令和|未来)$/.test(era) ? era : era + "時代";   // 副題に 年号は 出さない（年は このあとの 帯で）
-  const tc = FX.add("titlecard", `<div class="tc-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tc-year">${esc(eraName)}</div><div class="tc-tt">${esc(EP_META[no][0])}</div>`);
+  const tc = FX.add("titlecard", `<div class="tc-no">${epName(no)}</div><div class="tc-year">${esc(eraName)}</div><div class="tc-tt">${esc(EP_META[no][0])}</div>`);
   await sleep(600);
   SE.play("drum"); tc.querySelector(".tc-year").classList.add("land"); FX.shake("s");
   await sleep(1500);
@@ -1456,7 +1534,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
     const [era, year] = EP_INFO[no];
     const open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
     const nd = h("button", "tl-node" + (no === sel ? " sel" : "") + (open ? "" : " locked") + (st ? " done" : "") + (page.future ? " future" : "") + (fx2.flick && fx2.flick.includes(no) ? " flick" : ""),
-      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${no === 0 ? "プロローグ" : "第" + no + "話"}</div><div class="tl-tt">${open && ready ? phr(EP_META[no][0]) : "？？？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
+      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${epName(no)}</div><div class="tl-tt">${open && ready ? phr(EP_META[no][0]) : "？？？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
     nd.style.left = xs[i] + "px";
     nd.onclick = () => { SEL = { page: pi, no }; SEL_TOUCHED = true; drawTimeline(pi, no); };
     layer.appendChild(nd);
@@ -1473,7 +1551,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   // 下のパネル
   const no = sel, [era, year, key] = EP_INFO[no], open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
   const panel = h("div", "tl-panel");
-  panel.innerHTML = `<div class="tp-l"><div class="tp-no">${no === 0 ? "プロローグ" : "第" + no + "話"}　<span>${esc(era)}・${esc(year)}</span></div>
+  panel.innerHTML = `<div class="tp-l"><div class="tp-no">${epName(no)}　<span>${esc(era)}・${esc(year)}</span></div>
     <div class="tp-tt">${open && ready ? esc(EP_META[no][0]) : "？？？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
     <div class="tp-r"><div class="tp-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : ""}</div></div>`;
   const br = h("div", "tp-btns");
@@ -1514,20 +1592,20 @@ async function playFuture() {
   banner("時の 霧が 晴れていく……");
   await sleep(1900);
   SAVE.flags = Object.assign({}, SAVE.flags, { future: true }); persist();
-  drawTimeline(PAGES.length - 1, 21, { noPanel: true });
+  drawTimeline(PAGES.length - 1, 23, { noPanel: true });
   layer.classList.add("future-in");
   bigText("20XX年", "ronpa");
   await sleep(1600);
   banner("ユガミが 来た 時代");
   await sleep(1900);
-  SEL = { page: PAGES.length - 1, no: 21 };
-  drawTimeline(SEL.page, 21);
+  SEL = { page: PAGES.length - 1, no: 23 };
+  drawTimeline(SEL.page, 23);
 }
 
 /* ---------- 画面：クリア一覧（先生に見せる） ---------- */
 function showClearList() {
   const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
-  const rows = EP_META.map(([t], no) => SAVE.stars[no] ? `<tr><td>${no === 0 ? "プロローグ" : "第" + no + "話"}</td><td>${esc(t)}</td><td class="st">${"★".repeat(SAVE.stars[no])}</td></tr>` : "").join("");
+  const rows = EP_META.map(([t], no) => SAVE.stars[no] ? `<tr><td>${epName(no)}</td><td>${esc(t)}</td><td class="st">${"★".repeat(SAVE.stars[no])}</td></tr>` : "").join("");
   alertBox(`<div class="cl-title">クリア一覧</div><table class="cl">${rows || "<tr><td>まだ クリアした おはなしは ありません</td></tr>"}</table><div class="cl-total">★の 合計　${total}</div>`);
 }
 
@@ -1536,7 +1614,7 @@ async function showResult(no, ep, star) {
   setBg("夜"); clearLayer(); layer.className = "menu";
   const box = h("div", "result");
   BGM.play("図書館");
-  box.appendChild(h("div", "res-title", no === 0 ? "プロローグ クリア！" : `第${no}話 クリア！`));
+  box.appendChild(h("div", "res-title", epName(no) + " クリア！"));
   const stars = h("div", "res-star", Array.from({ length: MAX_HEARTS }, () => `<span class="rs">☆</span>`).join(""));
   box.appendChild(stars);
   const note = h("div", "res-note", "");
@@ -1556,6 +1634,7 @@ async function showResult(no, ep, star) {
     note.textContent = "パーフェクト！";
     const w = aikotobaOf(no);
     if (w) { await sleep(600); ak.innerHTML = `<div class="ak-label">あいことば</div><div class="ak-word">${esc(w)}</div><div class="ak-note">メモしておこう！ この話の ★5を もどすときに 使えるよ</div>`; ak.classList.add("rise"); SE.play("found"); }
+    else if (EP_PART[no]) note.textContent = "パーフェクト！ 前編と 後編の 両方を ★5に すると、あいことばが 出るよ";
   } else note.textContent = "クリアした ときの ♡の 数が ★に なるよ（ゲームオーバーに なると ★1）。★5で あいことばが 出るよ";
   row.style.visibility = "";
 }
@@ -1603,8 +1682,8 @@ function showZukan(tab) {
     eps.forEach(no => {
       const g = EPS[no].gift; if (!g) return;
       const got = (SAVE.stars[no] || 0) > 0, A = window.ART && window.ART[g.key];
-      const e = h("button", "card large gift" + (got ? "" : " unknown"), got ? `<div class="cicon ph">${A ? `<img src="${A.normal}" alt="" style="object-fit:contain">` : "🎁"}</div><div class="cname${[...g.name].length > 6 ? " long" : ""}">${phr(g.name)}</div>` : `<div class="cicon">？</div><div class="cname">第${no}話</div>`);
-      e.onclick = () => { grid.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel"); zd.innerHTML = got ? `<b>${esc(g.name)}</b>　${fmt(g.desc)}` : `第${no}話を クリアすると 手に入るよ`; };
+      const e = h("button", "card large gift" + (got ? "" : " unknown"), got ? `<div class="cicon ph">${A ? `<img src="${A.normal}" alt="" style="object-fit:contain">` : "🎁"}</div><div class="cname${[...g.name].length > 6 ? " long" : ""}">${phr(g.name)}</div>` : `<div class="cicon">？</div><div class="cname">${epName(no)}</div>`);
+      e.onclick = () => { grid.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel"); zd.innerHTML = got ? `<b>${esc(g.name)}</b>　${fmt(g.desc)}` : `${epName(no)}を クリアすると 手に入るよ`; };
       grid.appendChild(e);
     });
     zb.appendChild(grid);
@@ -1718,26 +1797,30 @@ async function enterSpell() {
   const v = await inputBox("かいほうの じゅもんを 入れてね", "ひらがなで 入力");
   if (v == null) return;
   const hs = fnv(normKana(v));
-  const no = (window.UNLOCK_HASHES || []).indexOf(hs);
-  if (no > 0) {
+  const n = (window.UNLOCK_HASHES || []).indexOf(hs);
+  if (n > 0) {
+    const no = Math.max(...epsOfNum(n), 0) || Math.min(n, EP_COUNT - 1);
     SAVE.unlocked = Math.max(SAVE.unlocked, no); persist();
-    await alertBox(`じゅもんが ひかった！<br><b>第${no}話</b>まで ひらいたよ！`);
+    await alertBox(`じゅもんが ひかった！<br><b>${epName(no).replace(" 後編", "")}</b>まで ひらいたよ！`);
   } else await alertBox("じゅもんが ちがうようだ……");
 }
 
 /* ---------- あいことば（★5の話を もどす） ---------- */
 const AK = (window.AIKOTOBA || []).map(x => { try { return [...decodeURIComponent(escape(atob(x)))].reverse().join(""); } catch (e) { return ""; } });
-const aikotobaOf = no => AK[no - 1] || "";
+const aikotobaOf = no => epsOfNum(epNum(no)).every(k => k === no || SAVE.stars[k] === MAX_HEARTS) ? AK[epNum(no) - 1] || "" : "";
 async function enterAikotoba() {
   const v = await inputBox("あいことばを 入れてね", "ひらがなで 入力");
   if (v == null) return;
   const w = normKana(v).replace(/[・･]/g, "");
-  const no = AK.indexOf(w) + 1;
-  if (no > 0) {
-    SAVE.stars[no] = MAX_HEARTS; SAVE.unlocked = Math.max(SAVE.unlocked, Math.min(no, EP_COUNT - 1));
-    if (EPS[no]) EPS[no].cards.forEach(c => SAVE.cards[c] = 1);
+  const n = AK.indexOf(w) + 1;
+  if (n > 0) {
+    const nos = epsOfNum(n);
+    for (const no of nos) {
+      SAVE.stars[no] = MAX_HEARTS; SAVE.unlocked = Math.max(SAVE.unlocked, no);
+      if (EPS[no]) EPS[no].cards.forEach(c => SAVE.cards[c] = 1);
+    }
     persist();
-    await alertBox(`あいことばが ひかった！<br><b>第${no}話</b>を ★5に もどしたよ！`);
+    await alertBox(`あいことばが ひかった！<br><b>第${n}話</b>${nos.length > 1 ? "（前編・後編）" : ""}を ★5に もどしたよ！`);
   } else await alertBox("あいことばが ちがうようだ……<br>もう一度 たしかめてね。");
 }
 

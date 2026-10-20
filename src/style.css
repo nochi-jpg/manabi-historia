@@ -774,3 +774,27 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .ep-curtain.out{opacity:0;transition:opacity 1.2s}
 .tj.solid{background:radial-gradient(ellipse at 50% 45%,#6a4bb0,#2a1660 55%,#0b0620)}
 
+/* @論破バトル レキシクイ：紫の 文字（レキシクイの 思念） */
+.claim.lexi{color:#e2c8ff;background:rgba(40,14,70,.82);border-color:rgba(170,110,255,.75);text-shadow:0 0 12px rgba(170,90,255,.9),0 0 2px #b070ff;font-style:italic}
+.claim.lexi .q{color:#b070ff}
+.claim.lexi:hover{background:rgba(60,22,100,.9);border-color:#d0a8ff}
+.foe.lexi .foe-face{background:radial-gradient(circle,rgba(110,40,190,.85),rgba(20,6,40,.92));border-color:#a060ff}
+.foe.lexi .foe-name{color:#d6b4ff;text-shadow:0 0 10px rgba(160,80,255,.9)}
+/* ---------- 記録を 守る（@記録を守る） ---------- */
+.records{position:absolute;left:var(--m);right:var(--m);top:200px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.record{position:relative;min-height:190px;text-align:left;padding:18px 34px 22px;background:rgba(232,220,196,.95);color:#2a2018;border:2px solid #b9a27a;border-radius:6px;animation:recIn .5s both;overflow:hidden}
+.record .rec-name{font-size:24px;font-weight:700;color:#6b4e2e;margin-bottom:6px;letter-spacing:.06em}
+.record .rec-text{font-size:30px;line-height:1.55;font-weight:700}
+.record.fading::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 85% 80%,rgba(120,40,200,.45),rgba(60,20,110,.12) 55%,transparent 75%);animation:recFade 2.4s ease-in-out infinite alternate;pointer-events:none}
+.record.fading .rec-text{animation:recBlur 2.4s ease-in-out infinite alternate}
+.record.fading:hover{border-color:#fff}
+.record.safe{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,209,102,.6),0 0 24px rgba(255,220,140,.5);cursor:default}
+.record.saved{animation:recSave .9s ease-out}
+.record.suspect{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold)}
+.record.shake{animation:recShake .4s}
+@keyframes recIn{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:none}}
+@keyframes recFade{from{opacity:.55}to{opacity:1}}
+@keyframes recBlur{from{opacity:1}to{opacity:.62}}
+@keyframes recSave{0%{filter:brightness(2.2)}100%{filter:none}}
+@keyframes recShake{0%,100%{transform:none}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.record .tq{color:#7a1f12;background:linear-gradient(transparent 62%,rgba(255,200,80,.55) 62%)}

@@ -17,7 +17,10 @@ keys = [l.strip() for l in (R/"teacher/keys.txt").read_text(encoding="utf-8").sp
 hashes = [""] + [fnv(k) for k in keys]
 scen = {}
 for f in sorted((R/"scenarios").glob("ep*.txt")):
-    scen[int(re.search(r"\d+", f.stem).group())] = f.read_text(encoding="utf-8")
+    m = re.fullmatch(r"ep(\d+)([ab]?)", f.stem); n = int(m.group(1))
+    # 中の 番号は 通し番号：17a=17・17b=18・18a=19・18b=20・19=21・20=22 …（第17・18話は 前編・後編）
+    no = n if n <= 16 else 17 + (n - 17) * 2 + (m.group(2) == "b") if n <= 18 else n + 2
+    scen[no] = f.read_text(encoding="utf-8")
 # 2行チェック：セリフ・証言が セリフ枠2行（約37字×2）を こえていないか
 def width(t):
     t = re.sub(r"《[^》]+》", "", t).replace("【", "").replace("】", "").replace("｛", "").replace("｝", "")
