@@ -836,3 +836,10 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .cl-wrap .cl tbody{display:contents}
 .cl-wrap .cl tr{display:grid;grid-template-columns:180px 1fr 130px;align-items:center}
 img.picon-img{width:110px;height:110px;object-fit:contain}
+/* ★一覧：ウインドウの 中に おさめる */
+.cl-wrap{width:1080px;max-width:100%;box-sizing:border-box}
+.cl-wrap .cl{font-size:22px;column-gap:20px}
+.cl-wrap .cl tr{grid-template-columns:120px 1fr 96px;min-width:0}
+.cl-wrap table.cl td{padding:6px 8px;line-height:1.3;min-width:0;overflow-wrap:anywhere}
+.cl-wrap .cl tr{grid-template-columns:150px 1fr 96px}
+.cl-wrap table.cl td:first-child{white-space:nowrap;overflow-wrap:normal}
