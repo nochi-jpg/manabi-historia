@@ -9,6 +9,7 @@ from PIL import Image
 from scipy import ndimage
 
 SRC = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(".")
+SET14 = "--set14" in sys.argv   # 14まいめ（1.png=板垣・陸奥 2・小村 2、2.png=福沢・伊藤 ひげ・伊藤 若、3.png=ハナ 10才・12才・31才・31才 聖火）。下に 名前の 文字
 SET13 = "--set13" in sys.argv   # 13まいめ（1.png に 3人：西郷隆盛 若・老・勝海舟。下に 名前の 文字）
 SET12 = "--set12" in sys.argv   # 12まいめ（1.png=徳川家光、2.png=杉田玄白 若・老、3.png=前野良沢。名前の 文字つき）
 SET11 = "--set11" in sys.argv   # 11まいめ（1.png に 2人：徳川家康 若・老。下に 名前の 文字）
@@ -20,7 +21,7 @@ SET6 = "--set6" in sys.argv   # 6まいめ（1.png に 4人：清盛（若）・
 SET5 = "--set5" in sys.argv or SET6   # 5まいめ（1〜3.png=藤式部・藤原道長・年をとった道長）
 SET4 = "--set4" in sys.argv or SET5   # 4まいめ（1〜3.png=光明皇后・行基・聖武天皇）
 SET3 = "--set3" in sys.argv or SET4   # 3まいめ（1〜2.png=中大兄皇子・中臣鎌足）
-SET2 = "--set2" in sys.argv or SET3 or SET7 or SET8 or SET10 or SET12 or SET13   # 2まいめの素材（1〜4.png=卑弥呼・弟・ワカタケル・太子、6.png=顔なしトケイ）
+SET2 = "--set2" in sys.argv or SET3 or SET7 or SET8 or SET10 or SET12 or SET13 or SET14   # 2まいめの素材（1〜4.png=卑弥呼・弟・ワカタケル・太子、6.png=顔なしトケイ）
 OUT = pathlib.Path(__file__).resolve().parent.parent / "art"
 # ファイル: [(キャラ, 表情)]（並び順＝上の段から、左から）
 SHEETS = {
@@ -30,8 +31,10 @@ SHEETS = {
   "4.png": [("honjii", "normal"), ("tokei", "normal"), ("honjii", "angry"), ("honjii", "smile")],
 }
 
-def parts(path):
+def parts(path, cut=None):
     im = Image.open(path).convert("RGBA")
+    if cut:   # 名前の 文字（下の ほう）を 消してから 切りわける
+        m = np.asarray(im).copy(); m[cut:, :, 3] = 0; im = Image.fromarray(m, "RGBA")
     a = np.asarray(im)[:, :, 3] > 20
     lab, n = ndimage.label(ndimage.binary_dilation(a, iterations=6))
     objs = [(s, k + 1) for k, s in enumerate(ndimage.find_objects(lab)) if (s[0].stop - s[0].start) * (s[1].stop - s[1].start) > 20000]
@@ -66,10 +69,14 @@ if SET10:
     SHEETS = {"1.png": [("nobunaga", "normal")], "2.png": [("hideyoshi", "normal"), ("hideyoshi", "old")], "3.png": [("rikyu", "normal")]}
 if SET13:
     SHEETS = {"1.png": [("saigo", "normal"), ("saigo", "old"), ("katsu", "normal")]}
+if SET14:
+    SHEETS = {"1.png": [("itagaki", "normal"), ("mutsu", "normal"), ("mutsu", "old"), ("komura", "normal"), ("komura", "old")], "2.png": [("fukuzawa", "normal"), ("ito", "old"), ("ito", "normal")], "3.png": [("hana", "normal"), ("hana", "teen"), ("hana", "old"), ("hanatorch", "normal")]}
+    CUT = {"1.png": 636, "2.png": 905}   # hanatorch は 大きさが ちがうので 別の 名前で 作り、あとで hana_torch に する
 crops = {}
 for f, names in SHEETS.items():
-    ps = parts(SRC / f)
-    if SET9 or SET11: ps = sorted([q for q in ps if q[1][3] < 860], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
+    ps = parts(SRC / f, CUT.get(f) if SET14 else None)
+    if SET14: ps = sorted(ps, key=lambda t: t[1][0])   # 左から
+    elif SET9 or SET11: ps = sorted([q for q in ps if q[1][3] < 860], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
     elif SET6: ps = sorted([q for q in ps if q[1][1] < 560], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
     elif (SET10 or SET12 or SET13) and len(names) > 1: ps = sorted(sorted(ps, key=lambda t: -(t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))[:len(names)], key=lambda t: t[1][0])   # 大きい 絵を 左から
     elif SET2: ps = [max(ps, key=lambda t: (t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))]   # いちばん大きい絵だけ
