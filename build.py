@@ -107,8 +107,10 @@ for line in (R/"teacher/aikotoba.md").read_text(encoding="utf-8").splitlines():
     if m and int(m.group(1)) > 0: ak[int(m.group(1))] = m.group(2)
 data += "\nwindow.AIKOTOBA=" + json.dumps([base64.b64encode(ak.get(i, "")[::-1].encode()).decode() for i in range(1, max(ak) + 1)]) + ";"
 # BGM：data/bgm.txt の一覧どおり audio/bgm/〇〇.ogg を埋めこむ（ファイルがない曲は、音なしになる）
-bgm, bgm_list = {}, []
+bgm, bgm_list, bgm_list2 = {}, [], []
+bgm_list_all = bgm_list
 for line in (R/"data/bgm.txt").read_text(encoding="utf-8").splitlines():
+    if "Wingless Seraph" in line: bgm_list = bgm_list2   # ここから下は Wingless Seraph の 曲（スタッフロールで 分けて 出す）
     if not line.strip() or line.startswith("#"): continue
     key, f, title, ls, ll, use = [x.strip() for x in line.split("|")]
     bgm_list.append(title)
@@ -116,7 +118,7 @@ for line in (R/"data/bgm.txt").read_text(encoding="utf-8").splitlines():
     if fp.exists(): bgm[key] = {"ls": int(ls) / 44100, "le": (int(ls) + int(ll)) / 44100, "d": base64.b64encode(fp.read_bytes()).decode()}
     elif key in OLD.get("BGM_DATA", {}): bgm[key] = OLD["BGM_DATA"][key]   # audio/ がないときは前の index.html から
     else: print("⚠ BGMなし:", key, f)
-data += "\nwindow.BGM_DATA=" + json.dumps(bgm, ensure_ascii=False) + ";\nwindow.BGM_TITLES=" + json.dumps(bgm_list, ensure_ascii=False) + ";"
+data += "\nwindow.BGM_DATA=" + json.dumps(bgm, ensure_ascii=False) + ";\nwindow.BGM_TITLES=" + json.dumps([t for t in bgm_list_all if t not in bgm_list2], ensure_ascii=False) + ";\nwindow.BGM_TITLES2=" + json.dumps(bgm_list2, ensure_ascii=False) + ";"
 # 効果音：data/se.txt の一覧どおり audio/se/呼び名.ogg を埋めこむ（ないものは合成の音）
 se = {}
 for line in (R/"data/se.txt").read_text(encoding="utf-8").splitlines():

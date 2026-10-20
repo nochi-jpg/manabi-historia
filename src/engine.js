@@ -1730,6 +1730,9 @@ const STAFF = [
   ["音楽", "ユーフルカ"],
   ["", "__SONGS__"],
   ["", "https://youfulca.com/music_assets/?scene=dungeon_stage", "url"],
+  ["", "Wingless Seraph（ルーファス）"],
+  ["", "__SONGS2__"],
+  ["", "https://wingless-seraph.net/", "url"],
   ["シルエット素材", "イラスト緑花　https://illust-ryokka.jp/"],
   ["", "イラストカット　https://illustcut.com/"],
   ["効果音", "効果音ラボ　https://soundeffect-lab.info/"],
@@ -1744,7 +1747,7 @@ function runStaffRoll(key) {
     if (key) BGM.play(key);
     const songs = (window.BGM_TITLES || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("");
     const cards = (window.CARDIMG_CREDITS || []).map(([n, by, lic]) => `<div class="sr-song small">${esc(n)}：${esc(by)}（${esc(lic)}）</div>`).join("");
-    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` : name === "__CARDS__" ? `<div class="sr-songs">${cards}</div>` :
+    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` : name === "__SONGS2__" ? `<div class="sr-songs">${(window.BGM_TITLES2 || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("")}</div>` : name === "__CARDS__" ? `<div class="sr-songs">${cards}</div>` :
       `<div class="sr-item ${cls || ""}">${role ? `<div class="sr-role">${esc(role)}</div>` : ""}<div class="sr-name">${esc(name)}</div></div>`).join("");
     const el = h("div", "staffroll", `<div class="sr-inner">${inner}</div><div class="sr-skip">タップで とばす</div>`);
     stage.appendChild(el);
