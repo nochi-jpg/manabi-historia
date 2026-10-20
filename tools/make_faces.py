@@ -9,7 +9,8 @@ from PIL import Image
 from scipy import ndimage
 
 SRC = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(".")
-SET14 = "--set14" in sys.argv   # 14まいめ（1.png=板垣・陸奥 2・小村 2、2.png=福沢・伊藤 ひげ・伊藤 若、3.png=ハナ 10才・12才・31才・31才 聖火）。下に 名前の 文字
+SET15 = "--set15" in sys.argv   # 15まいめ（1.png=大人の 遥。下に 名前の 文字）
+SET14 = "--set14" in sys.argv or SET15   # 14まいめ（1.png=板垣・陸奥 2・小村 2、2.png=福沢・伊藤 ひげ・伊藤 若、3.png=ハナ 10才・12才・31才・31才 聖火）。下に 名前の 文字
 SET13 = "--set13" in sys.argv   # 13まいめ（1.png に 3人：西郷隆盛 若・老・勝海舟。下に 名前の 文字）
 SET12 = "--set12" in sys.argv   # 12まいめ（1.png=徳川家光、2.png=杉田玄白 若・老、3.png=前野良沢。名前の 文字つき）
 SET11 = "--set11" in sys.argv   # 11まいめ（1.png に 2人：徳川家康 若・老。下に 名前の 文字）
@@ -72,6 +73,9 @@ if SET13:
 if SET14:
     SHEETS = {"1.png": [("itagaki", "normal"), ("mutsu", "normal"), ("mutsu", "old"), ("komura", "normal"), ("komura", "old")], "2.png": [("fukuzawa", "normal"), ("ito", "old"), ("ito", "normal")], "3.png": [("hana", "normal"), ("hana", "teen"), ("hana", "old"), ("hanatorch", "normal")]}
     CUT = {"1.png": 636, "2.png": 905}   # hanatorch は 大きさが ちがうので 別の 名前で 作り、あとで hana_torch に する
+if SET15:
+    SHEETS = {"1.png": [("haruka", "normal")]}
+    CUT = {"1.png": 870}
 crops = {}
 for f, names in SHEETS.items():
     ps = parts(SRC / f, CUT.get(f) if SET14 else None)
