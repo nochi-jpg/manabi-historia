@@ -161,7 +161,7 @@ const CHARS = {
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
-const ART_EXP = { "ふつう": "normal", "おどろき": "surprise", "笑顔": "smile", "怒り": "angry", "泣き": "cry" };
+const ART_EXP = { "ふつう": "normal", "おどろき": "surprise", "笑顔": "smile", "怒り": "angry", "泣き": "cry", "泣き笑い": "tearsmile" };   // 泣き笑い＝ユガミの ラスト用
 /* 顔グラ：画像があれば画像（表情がなければ「ふつう」）、人間はシルエット、それ以外は絵文字 */
 function faceHTML(c, expr, key) {
   const A = window.ART || {};
