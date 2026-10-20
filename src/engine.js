@@ -20,7 +20,7 @@ const EP_META = [
 const EP_PART = { 17: "前編", 18: "後編", 19: "前編", 20: "後編" };
 const epNum = no => no <= 16 ? no : no <= 18 ? 17 : no <= 20 ? 18 : no - 2;
 const epName = no => no === 0 ? "プロローグ" : "第" + epNum(no) + "話" + (EP_PART[no] ? " " + EP_PART[no] : "");
-const epsOfNum = n => EP_META.map((_, no) => no).filter(no => no > 0 && (epNum(no) === n || (n === 22 && no === 25)));   // 第22話の あいことばは 第23話と いっしょ   // 同じ 話数の 中の 番号（前編・後編）
+const epsOfNum = n => EP_META.map((_, no) => no).filter(no => no > 0 && epNum(no) === n);   // 同じ 話数の 中の 番号（前編・後編）
 const fragKey = no => "frag" + epNum(no) + (EP_PART[no] ? (EP_PART[no] === "前編" ? "a" : "b") : "");
 const EP_COUNT = EP_META.length;
 // 年表：[時代, 年代, キーマン]
@@ -45,10 +45,11 @@ const PAGES = [
 const FUTURE_AFTER = 15;   // この話をクリアすると「未来」があらわれる
 const pageOf = no => PAGES.findIndex(p => p.eps.includes(no));
 /* ★デバッグ用：true のあいだは、すべての話がひらく。公開するときは false にもどす */
-const DEBUG_UNLOCK_ALL = true;
+const DEBUG_UNLOCK_ALL = false;
 const TRUE_END = 26;
 const trueEndOk = () => Array.from({ length: TRUE_END - 1 }, (_, k) => k + 1).every(k => SAVE.stars[k] === MAX_HEARTS);
-const isOpen = no => DEBUG_UNLOCK_ALL || no === 0 || (no === TRUE_END ? trueEndOk() : no <= SAVE.unlocked);
+/* エピソードロック：前の 話を クリアすると 次の 話が ひらく（第24話は 第23話の クリアで 見えるが、★5が そろうまで はじめられない） */
+const isOpen = no => DEBUG_UNLOCK_ALL || no === 0 || !!SAVE.stars[no] || !!SAVE.stars[no - 1];
 
 /* ---------- 保存 ---------- */
 const SKEY = "manabi-historia-v1";
@@ -1574,20 +1575,20 @@ function showTitle() {
   const logo = window.ART && window.ART.title && window.ART.title.logo;
   layer.appendChild(h("div", "tlogo", logo ? `<img src="${logo}" alt="まなびヒストリア">` : `<div class="logo-main">まなびヒストリア</div>`));
   const col = h("div", "tmenu");
-  [["おはなしを えらぶ", () => showSelect()], ["カードずかん", () => showZukan()], ["じゅもんを 入れる", enterSpell], ["せってい", showSettings]]
+  [["おはなしを えらぶ", () => showSelect()], ["カードずかん", () => showZukan()], ["あいことばを 入れる", enterAikotoba], ["せってい", showSettings]]
     .forEach(([t, f]) => { const b = h("button", "titem", esc(t)); b.onclick = f; col.appendChild(b); });
   layer.appendChild(col);
   layer.appendChild(h("div", "credit", "企画・ゲームデザイン・キャラクターデザイン　のち（まなび堂）"));
 }
 
 /* ---------- 画面：話をえらぶ（年表） ---------- */
-const futureOpen = () => !!(SAVE.flags && SAVE.flags.future);
-let SEL = { page: 4, no: 0 }, SEL_TOUCHED = false;
+const futureOpen = () => !!(SAVE.flags && SAVE.flags.future) && isOpen(23);   // 第21話まで 進むと「未来」が あらわれる
+let SEL = { page: 5, no: 0 }, SEL_TOUCHED = false;
 function showSelect(opt = {}) {
   if (opt.no != null) SEL = { page: pageOf(opt.no), no: opt.no };
-  else if (!SAVE.stars[0]) SEL = { page: 4, no: 0 };
+  else if (!SAVE.stars[0]) SEL = { page: pageOf(0), no: 0 };
   else if (!SEL_TOUCHED && SAVE.last != null && pageOf(SAVE.last) >= 0) SEL = { page: pageOf(SAVE.last), no: SAVE.last };   // 起動したては、直前にクリアした話から
-  if (SAVE.stars[FUTURE_AFTER] && !futureOpen() && !opt.noFuture) return playFuture();
+  if (isOpen(23) && !(SAVE.flags && SAVE.flags.future) && !opt.noFuture) return playFuture();
   drawTimeline(SEL.page, SEL.no);
 }
 let TL_LAST = null;
@@ -1618,10 +1619,11 @@ function drawTimeline(pi, sel, fx2 = {}) {
   if (nextLit) litTo = n - 1;
   if (litTo >= 0) { const lit = h("div", "tl-lit"); lit.style.width = ((nextLit ? X1 : xs[litTo]) - X0 + 2) + "px"; layer.appendChild(lit); }
   page.eps.forEach((no, i) => {
-    const [era, year] = EP_INFO[no];
     const open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
+    const hide = !open || (no === TRUE_END && !trueEndOk());   // まだの 話・★5が そろって いない トゥルーエンドは ？？？
+    const [era, year] = hide ? ["？？？", "？？？"] : EP_INFO[no];
     const nd = h("button", "tl-node" + (no === sel ? " sel" : "") + (open ? "" : " locked") + (st ? " done" : "") + (page.future ? " future" : "") + (fx2.flick && fx2.flick.includes(no) ? " flick" : ""),
-      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${epName(no)}</div><div class="tl-tt">${open && ready ? phr(EP_META[no][0]) : "？？？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
+      `<div class="tl-era">${esc(era)}</div><div class="tl-year">${esc(year)}</div><div class="tl-dot"></div><div class="tl-no">${epName(no)}</div><div class="tl-tt">${!hide && ready ? phr(EP_META[no][0]) : "？？？？？"}</div><div class="tl-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : open ? "じゅんび中" : "🔒"}</div>`);
     nd.style.left = xs[i] + "px";
     nd.onclick = () => { SEL = { page: pi, no }; SEL_TOUCHED = true; drawTimeline(pi, no); };
     layer.appendChild(nd);
@@ -1636,19 +1638,22 @@ function drawTimeline(pi, sel, fx2 = {}) {
   if (pi === PAGES.length - 2 && !futureOpen()) { R.hidden = true; layer.appendChild(h("div", "tl-fog", "？？？")); }
   if (fx2.noPanel) return;
   // 下のパネル
-  const no = sel, [era, year, key] = EP_INFO[no], open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
+  const no = sel, open = isOpen(no), ready = !!EPS[no], st = SAVE.stars[no] || 0;
+  const hide = !open || (no === TRUE_END && !trueEndOk());
+  const [era, year, key] = hide ? ["？？？", "？？？", "？"] : EP_INFO[no];
   const panel = h("div", "tl-panel");
   panel.innerHTML = `<div class="tp-l"><div class="tp-no">${epName(no)}　<span>${esc(era)}・${esc(year)}</span></div>
-    <div class="tp-tt">${open && ready ? esc(EP_META[no][0]) : "？？？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
+    <div class="tp-tt">${!hide && ready ? esc(EP_META[no][0]) : "？？？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
     <div class="tp-r"><div class="tp-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : ""}</div></div>`;
   const br = h("div", "tp-btns");
-  if (!open) br.appendChild(btn("じゅもんを 入れる", "", enterSpell));
+  if (!open) br.appendChild(h("div", "tp-lock", "🔒 前の おはなしを クリアすると ひらくよ"));
+  else if (no === TRUE_END && !trueEndOk()) br.appendChild(btn("はじめる", "red", () => alertBox("すべての エピソードを ★5に すると……")));
   else if (!ready) br.appendChild(btn("じゅんび中", "", () => { }));
   else {
     if (SAVE.resume && SAVE.resume.no === no) br.appendChild(btn("つづきから", "red startbtn", () => playEpisode(no, true)));
     br.appendChild(btn(SAVE.resume && SAVE.resume.no === no ? "はじめから" : "はじめる", (SAVE.resume && SAVE.resume.no === no ? "" : "red") + " startbtn", () => playEpisode(no, false)));
   }
-  if (!ready && open) br.firstChild.disabled = true;
+  if (!ready && open && br.firstChild.tagName === "BUTTON") br.firstChild.disabled = true;
   panel.querySelector(".tp-r").appendChild(br);
   layer.appendChild(panel);
 }
@@ -1908,8 +1913,8 @@ async function enterSpell() {
 /* ---------- あいことば（★5の話を もどす） ---------- */
 const AK = (window.AIKOTOBA || []).map(x => { try { return [...decodeURIComponent(escape(atob(x)))].reverse().join(""); } catch (e) { return ""; } });
 const aikotobaOf = no => {
-  if (no === 24) return "";   // 第22話（読む 回）は 出さない → 第23話の ★5 で 出す
-  const n = no === 25 ? 22 : epNum(no);
+  if (no === 24) return "";   // 第22話（読む 回）では 出さない → 第24話（トゥルーエンド）の クリアで 出す
+  const n = no === TRUE_END ? 22 : epNum(no);
   return epsOfNum(n).every(k => k === no || SAVE.stars[k] === MAX_HEARTS) ? AK[n - 1] || "" : "";
 };
 async function enterAikotoba() {
@@ -1919,10 +1924,9 @@ async function enterAikotoba() {
   const n = AK.indexOf(w) + 1;
   if (n > 0) {
     const nos = epsOfNum(n);
-    for (const no of nos) {
-      SAVE.stars[no] = MAX_HEARTS; SAVE.unlocked = Math.max(SAVE.unlocked, no);
-      if (EPS[no]) EPS[no].cards.forEach(c => SAVE.cards[c] = 1);
-    }
+    const give = (no, st) => { SAVE.stars[no] = Math.max(SAVE.stars[no] || 0, st); if (EPS[no]) EPS[no].cards.forEach(c => SAVE.cards[c] = 1); };
+    for (const no of nos) give(no, MAX_HEARTS);
+    for (let k = 0; k < Math.min(...nos); k++) if (!SAVE.stars[k]) give(k, k === 0 ? MAX_HEARTS : 1);   // まだの 前の 話は ★1で クリアした ことに する（プロローグは クリア）
     persist();
     await alertBox(`あいことばが ひかった！<br><b>第${n}話</b>${nos.length > 1 ? "（前編・後編）" : ""}を ★5に もどしたよ！`);
   } else await alertBox("あいことばが ちがうようだ……<br>もう一度 たしかめてね。");

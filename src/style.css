@@ -819,3 +819,4 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .foe.dark .foe-face{background:radial-gradient(circle,rgba(70,30,120,.85),rgba(15,6,30,.95));border-color:#a060ff;filter:saturate(.7)}
 .foe.dark .foe-face img{filter:drop-shadow(0 0 18px rgba(160,80,255,.9))}
 .sr-on .modal{z-index:95}
+.tp-lock{font-size:22px;color:#c9c3d8;padding:10px 6px}

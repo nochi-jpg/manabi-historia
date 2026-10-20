@@ -15,8 +15,8 @@ const EPN = Number(process.argv[3] || 1);
   if (await p.$('.inbox input')) { await shot('00name'); await p.fill('.inbox input', 'てすと'); await p.click('text=けってい'); await p.waitForTimeout(300); }   // はじめての 起動：名前
   await shot('00title');
   // じゅもん
-  await p.click('text=じゅもんを 入れる'); await p.fill('.inbox input', ({1:'なわめのつぼ',2:'たかゆかのくら',3:'はにわのまもり',4:'いかるがのとう',5:'たいかのよあけ',6:'てんぴょうのはな',7:'じゅうにひとえ',8:'へいけのあかはた',9:'かまくらのやかた',10:'はかたのいしがき',11:'すみえのやまなみ',12:'あづちのてんしゅ',13:'おおさかのしろ',14:'えどのまちなみ',15:'いのうのあしあと',16:'くろふねのけむり',17:'れんがのまち',18:'れんがのまち',19:'せかいへのふなで',20:'せかいへのふなで',21:'そかいのよぞら',22:'あたらしいけんぽう',23:'ときのきりのむこう',24:'えんのとびら',25:'ぎんのとけい',26:'ぎんのとけい'}[EPN])); await p.click('text=けってい');
-  await p.waitForTimeout(200); await shot('01spell'); await p.click('.inbox .btn');
+  await p.evaluate(n => { for (let k = 0; k < n; k++) SAVE.stars[k] = 5; persist(); }, EPN);   // 前の 話を ぜんぶ クリアした ことに（エピソードロック）
+  await p.waitForTimeout(200);
   await p.click('text=おはなしを えらぶ'); await p.waitForTimeout(200); await shot('02select');
   await p.evaluate(n => showSelect({no:n}), EPN); await p.waitForTimeout(200); await shot('02b_tl'); await p.click('.tp-btns .btn.red'); await p.waitForTimeout(300);
   const ep = await p.evaluate(n => EPS[n], EPN);
