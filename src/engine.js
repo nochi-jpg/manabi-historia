@@ -296,8 +296,8 @@ function silPick(type, key) {
   return S2[list[hsh % list.length]];
 }
 function iconHTML(icon, key, cls = "") {
-  const g = /^画[:：](.+)$/.exec(icon || "");   // 「画:iconflag」＝ art の絵（白いシルエット）
-  if (g && window.ART && window.ART[g[1]]) return `<img class="sil silimg picon-img ${cls}" src="${window.ART[g[1]].normal}" alt="">`;
+  const g = /^画[:：](.+)$/.exec(icon || "");   // 「画:radio」＝ art の絵（色の まま）
+  if (g && window.ART && window.ART[g[1]]) return `<img class="picon-img ${cls}" src="${window.ART[g[1]].normal}" alt="">`;
   const m = /^人[:：](.+)$/.exec(icon || "");
   if (!m) return `<div class="picon">${icon}</div>`;
   const src = silPick(m[1], key);
