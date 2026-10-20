@@ -337,11 +337,11 @@ if "--ep7" in sys.argv or EP8 or EP9 or EP10 or EP11 or EP1213 or EP1415 or EP17
         d.rectangle((0, 300, 512, 380), fill=(196, 160, 112))
         for x in range(0, 512, 64): d.line((x, 300, x - 30, 380), fill=(176, 140, 96), width=3)   # 教室の ゆか
         d.rectangle((326, 40, 486, 300), fill=(150, 110, 70)); d.rectangle((340, 54, 472, 300), fill=(176, 214, 240)); d.rectangle((340, 200, 472, 300), fill=(130, 180, 90))   # 出口の むこうの 校庭
-        d.rectangle((420, 150, 426, 200), fill=(120, 120, 120)); d.line((396, 160, 450, 160), fill=(120, 120, 120), width=4)   # 鉄棒
+        d.rectangle((424, 150, 434, 204), fill=(110, 80, 50)); d.ellipse((398, 104, 460, 166), fill=(70, 140, 70))   # 校庭の 木
         d.rectangle((60, 196, 256, 214), fill=(200, 160, 100), outline=(120, 84, 48), width=2); d.rectangle((80, 214, 236, 244), fill=(150, 150, 156))   # つくえ
         for x in (84, 230): d.rectangle((x, 244, x + 8, 314), fill=(130, 130, 136))
-        d.chord((104, 108, 212, 220), 180, 360, fill=(250, 210, 50), outline=(170, 130, 20), width=3); d.rectangle((150, 112, 166, 164), fill=(255, 230, 120))   # ヘルメット
-        d.ellipse((92, 154, 224, 178), fill=(240, 196, 40), outline=(170, 130, 20), width=3)
+        d.chord((104, 128, 212, 240), 180, 360, fill=(250, 210, 50), outline=(170, 130, 20), width=3); d.rectangle((150, 132, 166, 184), fill=(255, 230, 120))   # ヘルメット
+        d.ellipse((92, 174, 224, 198), fill=(240, 196, 40), outline=(170, 130, 20), width=3)
         d.polygon([(220, 110), (300, 110), (300, 82), (350, 130), (300, 178), (300, 150), (220, 150)], fill=(40, 150, 80), outline=(255, 255, 255))   # みどりの 矢印（非常口の 色）
         save(im, "避難訓練")
         print("OK ep17〜ep23"); raise SystemExit
