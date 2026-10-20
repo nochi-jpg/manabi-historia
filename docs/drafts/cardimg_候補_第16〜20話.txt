@@ -1,0 +1,202 @@
+# 第16〜20話 カード／おくりもの 画像候補（調査メモ。data/cardimg.txt・data/giftimg.txt にはまだ入れていない）
+# カード行の形式: カード名 | 画像URL | 出典ページ | ライセンス | 作者・所蔵 | fit(cover/pad) | crop
+# おくりもの行の形式（giftimg.txt 用）: gID | 画像URL | 出典ページ | ライセンス | 作者・所蔵 | fit | crop | ラベル
+# 画像URLはすべて curl -L で画像が返ることを確認ずみ（2026-10-20）。Wikimedia Commons は 500px サムネイル（元画像が小さいものは原寸URL）。
+# 確認用の一覧画像: /tmp/claude-0/-home-user-manabi-historia/3ebfa92c-2976-58c8-86ed-eb022ed87fbc/scratchpad/cards_sheet.jpg（番号と名前の対応は末尾の「一覧画像の番号」）
+
+## 第16話（カード）
+ペリー | https://colbase.nich.go.jp/media/tnm/A-9953/image/slideshow/A-9953_C0073085.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9953 | CC BY 4.0相当 | ColBase／東京国立博物館（ペリー肖像 模本） | cover | 
+黒船 | https://colbase.nich.go.jp/media/tnm/A-9469/image/slideshow/A-9469_C0072706.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-9469 | CC BY 4.0相当 | ColBase／東京国立博物館（本国蒸気船之図） | cover | 
+日米和親条約 | https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Ratification_of_the_Japan_USA_Treaty_of_Peace_and_Amity_21_February_1855.jpg/500px-Ratification_of_the_Japan_USA_Treaty_of_Peace_and_Amity_21_February_1855.jpg | https://commons.wikimedia.org/wiki/File:Ratification_of_the_Japan_USA_Treaty_of_Peace_and_Amity_21_February_1855.jpg | CC BY-SA 3.0 | World Imaging（日米和親条約 批准書 外務省外交史料館） | cover | 
+開国 | https://thumb.wikimedia.org/wikipedia/commons/thumb/6/63/Commodore_Perry_expedition_LOC_LC-USZ62-3319.jpg/500px-Commodore_Perry_expedition_LOC_LC-USZ62-3319.jpg | https://commons.wikimedia.org/wiki/File:Commodore_Perry_expedition_LOC_LC-USZ62-3319.jpg | Public domain | Wilhelm Heine／Library of Congress（ペリー横浜上陸図 1854年） | cover | 
+西郷隆盛 | https://www.ndl.go.jp/portrait/img/portrait/0085_1.jpg | https://www.ndl.go.jp/portrait/datas/85/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+勝海舟 | https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Kaishu_Katsu_2.jpg/500px-Kaishu_Katsu_2.jpg | https://commons.wikimedia.org/wiki/File:Kaishu_Katsu_2.jpg | Public domain | Wikimedia Commons（『幕末・明治・大正 回顧八十年史』東洋文化協会） | cover | 
+日米修好通商条約 | https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Treaty_of_Amity_and_Commerce_between_Japan_and_the_United_States_29_July_1858.jpg/500px-Treaty_of_Amity_and_Commerce_between_Japan_and_the_United_States_29_July_1858.jpg | https://commons.wikimedia.org/wiki/File:Treaty_of_Amity_and_Commerce_between_Japan_and_the_United_States_29_July_1858.jpg | CC BY-SA 3.0 | World Imaging（外務省外交史料館展示の条約書） | cover | 
+薩長同盟 | https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/%E8%96%A9%E9%95%B7%E5%90%8C%E7%9B%9F%E8%A3%8F%E6%9B%B8_%28Satch%C5%8D_Alliance_uragaki%29_by_Ryoma_Sakamoto.jpg/500px-%E8%96%A9%E9%95%B7%E5%90%8C%E7%9B%9F%E8%A3%8F%E6%9B%B8_%28Satch%C5%8D_Alliance_uragaki%29_by_Ryoma_Sakamoto.jpg | https://commons.wikimedia.org/wiki/File:%E8%96%A9%E9%95%B7%E5%90%8C%E7%9B%9F%E8%A3%8F%E6%9B%B8_%28Satch%C5%8D_Alliance_uragaki%29_by_Ryoma_Sakamoto.jpg | CC BY 4.0 | 人事院／Wikimedia Commons（坂本龍馬による薩長同盟の裏書） | cover | 
+坂本竜馬 | https://www.ndl.go.jp/portrait/img/portrait/0089_1.jpg | https://www.ndl.go.jp/portrait/datas/89/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+大政奉還 | https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Taisei_H%C5%8Dkan.jpg/500px-Taisei_H%C5%8Dkan.jpg | https://commons.wikimedia.org/wiki/File:Taisei_H%C5%8Dkan.jpg | Public domain | 邨田丹陵「大政奉還」（明治神宮聖徳記念絵画館） | cover | 
+江戸城の明けわたし | https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4b/Surrender_of_Edo_Castle_%28Meiji_Memorial_Picture_Gallery%29.jpg/500px-Surrender_of_Edo_Castle_%28Meiji_Memorial_Picture_Gallery%29.jpg | https://commons.wikimedia.org/wiki/File:Surrender_of_Edo_Castle_%28Meiji_Memorial_Picture_Gallery%29.jpg | Public domain | 結城素明「江戸開城談判」（明治神宮聖徳記念絵画館） | cover | 
+五箇条の御誓文 | https://thumb.wikimedia.org/wikipedia/commons/thumb/6/67/5jo1.gif/500px-5jo1.gif | https://commons.wikimedia.org/wiki/File:5jo1.gif | Public domain | Wikimedia Commons（五箇条の御誓文 太政官日誌） | cover | 
+
+## 第17話a（カード）
+明治維新 | https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Emperor_Arriving_in_Tokyo_by_Kobori_Tomoto_%28Meiji_Memorial_Picture_Gallery%29.jpg/500px-Emperor_Arriving_in_Tokyo_by_Kobori_Tomoto_%28Meiji_Memorial_Picture_Gallery%29.jpg | https://commons.wikimedia.org/wiki/File:Emperor_Arriving_in_Tokyo_by_Kobori_Tomoto_%28Meiji_Memorial_Picture_Gallery%29.jpg | Public domain | 小堀鞆音「東京御着輦」（明治神宮聖徳記念絵画館） | cover | 
+廃藩置県 | https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bb/Modern_Japan_prefectures_map_in_1872.jpg/500px-Modern_Japan_prefectures_map_in_1872.jpg | https://commons.wikimedia.org/wiki/File:Modern_Japan_prefectures_map_in_1872.jpg | Public domain | 吉田東伍ほか『大日本読史地図』（1872年の府県） | cover | 
+岩倉使節団 | https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7a/Iwakura_mission.jpg/500px-Iwakura_mission.jpg | https://commons.wikimedia.org/wiki/File:Iwakura_mission.jpg | Public domain | Wikimedia Commons（岩倉使節団 1872年 ロンドン） | cover | 
+大久保利通 | https://www.ndl.go.jp/portrait/img/portrait/0032_1.jpg | https://www.ndl.go.jp/portrait/datas/32/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+福沢諭吉 | https://www.ndl.go.jp/portrait/img/portrait/0185_1.jpg | https://www.ndl.go.jp/portrait/datas/185/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+学問のすゝめ | https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Gakumon-no-susume.jpg/500px-Gakumon-no-susume.jpg | https://commons.wikimedia.org/wiki/File:Gakumon-no-susume.jpg | Public domain | 福沢諭吉・小幡篤次郎『学問のすゝめ』初編 | cover | 
+文明開化 | https://thumb.wikimedia.org/wikipedia/commons/thumb/2/25/M15GinzaStreet_Tokyo.jpg/500px-M15GinzaStreet_Tokyo.jpg | https://commons.wikimedia.org/wiki/File:M15GinzaStreet_Tokyo.jpg | Public domain | Wikimedia Commons（銀座通りの錦絵 明治15年ごろ） | cover | 
+鉄道 | https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Hiroshige_III_-_%E6%9D%B1%E4%BA%AC%E9%AB%98%E8%BC%AA%E6%B5%B7%E5%B2%B8%E8%92%B8%E6%B0%A3%E8%BB%8A%E9%90%B5%E9%81%93%E5%9C%96_%28Steam_Train_on_the_Railway_along_the_Tokyo-Takanawa_Coastline%29_%281871%29.jpg/500px-Hiroshige_III_-_%E6%9D%B1%E4%BA%AC%E9%AB%98%E8%BC%AA%E6%B5%B7%E5%B2%B8%E8%92%B8%E6%B0%A3%E8%BB%8A%E9%90%B5%E9%81%93%E5%9C%96_%28Steam_Train_on_the_Railway_along_the_Tokyo-Takanawa_Coastline%29_%281871%29.jpg | https://commons.wikimedia.org/wiki/File:Hiroshige_III_-_%E6%9D%B1%E4%BA%AC%E9%AB%98%E8%BC%AA%E6%B5%B7%E5%B2%B8%E8%92%B8%E6%B0%A3%E8%BB%8A%E9%90%B5%E9%81%93%E5%9C%96_%28Steam_Train_on_the_Railway_along_the_Tokyo-Takanawa_Coastline%29_%281871%29.jpg | Public domain | 三代歌川広重「東京高輪海岸蒸気車鉄道図」 | cover | 
+学制 | https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d4/Former_Kaichi_School_2009.jpg/500px-Former_Kaichi_School_2009.jpg | https://commons.wikimedia.org/wiki/File:Former_Kaichi_School_2009.jpg | CC BY-SA 3.0 | Wiiii（旧開智学校） | cover | 
+富岡製糸場 | https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/NDL-DC_1312610-Utagawa_Kuniteru-%E4%B8%8A%E5%B7%9E%E5%AF%8C%E5%B2%A1%E8%A3%BD%E7%B3%B8%E5%A0%B4-%E6%98%8E%E6%B2%BB5-cmb.jpg/500px-NDL-DC_1312610-Utagawa_Kuniteru-%E4%B8%8A%E5%B7%9E%E5%AF%8C%E5%B2%A1%E8%A3%BD%E7%B3%B8%E5%A0%B4-%E6%98%8E%E6%B2%BB5-cmb.jpg | https://commons.wikimedia.org/wiki/File:NDL-DC_1312610-Utagawa_Kuniteru-%E4%B8%8A%E5%B7%9E%E5%AF%8C%E5%B2%A1%E8%A3%BD%E7%B3%B8%E5%A0%B4-%E6%98%8E%E6%B2%BB5-cmb.jpg | Public domain | 歌川国輝「上州富岡製糸場」（国立国会図書館） | cover | 
+地租改正 | https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Chiken_akita_face.jpg/500px-Chiken_akita_face.jpg | https://commons.wikimedia.org/wiki/File:Chiken_akita_face.jpg | Public domain | 秋田県発行の地券（Mbdnoob 撮影） | pad | 
+
+## 第17話b（カード）
+西南戦争 | https://colbase.nich.go.jp/media/tnm/A-8814/image/slideshow/A-8814_E0065363.jpg | https://colbase.nich.go.jp/collection_items/tnm/A-8814 | CC BY 4.0相当 | ColBase／東京国立博物館（鹿児島征討） | cover | 
+板垣退助 | https://www.ndl.go.jp/portrait/img/portrait/0010_1.jpg | https://www.ndl.go.jp/portrait/datas/10/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+国会開設の約束 | https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a0/Imperial_rescript_of_the_Diet_establishment.jpg/500px-Imperial_rescript_of_the_Diet_establishment.jpg | https://commons.wikimedia.org/wiki/File:Imperial_rescript_of_the_Diet_establishment.jpg | Public domain | Wikimedia Commons（国会開設の勅諭 1881年） | cover | 
+大隈重信 | https://www.ndl.go.jp/portrait/img/portrait/0033_1.jpg | https://www.ndl.go.jp/portrait/datas/33/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+伊藤博文 | https://www.ndl.go.jp/portrait/img/portrait/0012_1.jpg | https://www.ndl.go.jp/portrait/datas/12/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+大日本帝国憲法 | https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Constitution_of_the_Japanese_Empire_1889.png/500px-Constitution_of_the_Japanese_Empire_1889.png | https://commons.wikimedia.org/wiki/File:Constitution_of_the_Japanese_Empire_1889.png | CC BY-SA 4.0 | Lwlvlad931（大日本帝国憲法 原本 上諭） | cover | 
+天皇主権 | https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Emperor_Meiji_in_1888.jpg/500px-Emperor_Meiji_in_1888.jpg | https://commons.wikimedia.org/wiki/File:Emperor_Meiji_in_1888.jpg | Public domain | エドアルド・キヨッソーネ「明治天皇御真影」1888年 | cover | 
+帝国議会 | https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Inauguration_of_the_First_Imperial_Diet_by_Kosugi_Misei_%28Meiji_Memorial_Picture_Gallery%29.jpg/500px-Inauguration_of_the_First_Imperial_Diet_by_Kosugi_Misei_%28Meiji_Memorial_Picture_Gallery%29.jpg | https://commons.wikimedia.org/wiki/File:Inauguration_of_the_First_Imperial_Diet_by_Kosugi_Misei_%28Meiji_Memorial_Picture_Gallery%29.jpg | Public domain | 小杉未醒「帝国議会開院式臨御」（明治神宮聖徳記念絵画館） | cover | 
+選挙 | https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Caricature_of_1890_Japanese_elections%2C_Georges_Bigot.jpg/500px-Caricature_of_1890_Japanese_elections%2C_Georges_Bigot.jpg | https://commons.wikimedia.org/wiki/File:Caricature_of_1890_Japanese_elections%2C_Georges_Bigot.jpg | Public domain | ジョルジュ・ビゴー（1890年の選挙の風刺画） | cover | 
+
+## 第18話a（カード）
+不平等条約 | https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b7/Treaties_of_Amity_and_Commerce_between_Japan_and_Holland_England_France_Russia_and_the_United_States_1858.jpg/500px-Treaties_of_Amity_and_Commerce_between_Japan_and_Holland_England_France_Russia_and_the_United_States_1858.jpg | https://commons.wikimedia.org/wiki/File:Treaties_of_Amity_and_Commerce_between_Japan_and_Holland_England_France_Russia_and_the_United_States_1858.jpg | CC BY-SA 3.0 | World Imaging（安政の五か国条約 外務省外交史料館） | cover | 
+ノルマントン号事件 | https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Normanton_Incident%281886%29.jpg/500px-Normanton_Incident%281886%29.jpg | https://commons.wikimedia.org/wiki/File:Normanton_Incident%281886%29.jpg | Public domain | ジョルジュ・ビゴー（ノルマントン号事件の風刺画） | cover | 
+鹿鳴館 | https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Rokumeikan.jpg/500px-Rokumeikan.jpg | https://commons.wikimedia.org/wiki/File:Rokumeikan.jpg | Public domain | Wikimedia Commons（鹿鳴館 古写真） | cover | 
+陸奥宗光 | https://www.ndl.go.jp/portrait/img/portrait/0199_1.jpg | https://www.ndl.go.jp/portrait/datas/199/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+日清戦争 | https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Une-Partie-De-Peche-Rus-Jpn-Qing-Dispute-Korea-Feb-15-1887.png/500px-Une-Partie-De-Peche-Rus-Jpn-Qing-Dispute-Korea-Feb-15-1887.png | https://commons.wikimedia.org/wiki/File:Une-Partie-De-Peche-Rus-Jpn-Qing-Dispute-Korea-Feb-15-1887.png | Public domain | ジョルジュ・ビゴー「魚釣り遊び」1887年 | cover | 
+朝鮮 | https://thumb.wikimedia.org/wikipedia/commons/thumb/7/70/Hauptstrasse_und_Palasttor_in_Seoul.jpg/500px-Hauptstrasse_und_Palasttor_in_Seoul.jpg | https://commons.wikimedia.org/wiki/File:Hauptstrasse_und_Palasttor_in_Seoul.jpg | Public domain | Otto Ehrenfried Ehlers（ソウルの大通りと光化門 1890年代） | cover | 
+下関条約 | https://thumb.wikimedia.org/wikipedia/commons/thumb/3/37/Peace_Conference_at_Shimonoseki_by_Nagatochi_Hideta_%28Meiji_Memorial_Picture_Gallery%29.jpg/500px-Peace_Conference_at_Shimonoseki_by_Nagatochi_Hideta_%28Meiji_Memorial_Picture_Gallery%29.jpg | https://commons.wikimedia.org/wiki/File:Peace_Conference_at_Shimonoseki_by_Nagatochi_Hideta_%28Meiji_Memorial_Picture_Gallery%29.jpg | Public domain | 永地秀太「下関講和談判」（明治神宮聖徳記念絵画館） | cover | 
+台湾 | https://thumb.wikimedia.org/wikipedia/commons/thumb/9/99/1895_Meiji_28_Japanese_Map_of_Imperial_Japan_with_Taiwan_-_Geographicus_-_ImperialJapan-meiji28-1895.jpg/500px-1895_Meiji_28_Japanese_Map_of_Imperial_Japan_with_Taiwan_-_Geographicus_-_ImperialJapan-meiji28-1895.jpg | https://commons.wikimedia.org/wiki/File:1895_Meiji_28_Japanese_Map_of_Imperial_Japan_with_Taiwan_-_Geographicus_-_ImperialJapan-meiji28-1895.jpg | Public domain | Geographicus（台湾をふくむ大日本帝国地図 1895年） | cover | 
+
+## 第18話b（カード）
+日露戦争 | https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Brooklyn_Museum_-_Triptych_Naval_Battle.jpg/500px-Brooklyn_Museum_-_Triptych_Naval_Battle.jpg | https://commons.wikimedia.org/wiki/File:Brooklyn_Museum_-_Triptych_Naval_Battle.jpg | Public domain（No known restrictions） | Brooklyn Museum（日露戦争 海戦の錦絵） | cover | 
+東郷平八郎 | https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c5/Togo_Heihachiro%2C1907.jpg/500px-Togo_Heihachiro%2C1907.jpg | https://commons.wikimedia.org/wiki/File:Togo_Heihachiro%2C1907.jpg | Public domain | Wikimedia Commons（東郷平八郎 1907年ごろ） | cover | 
+与謝野晶子 | https://www.ndl.go.jp/portrait/img/portrait/0347_1.jpg | https://www.ndl.go.jp/portrait/datas/347/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+ポーツマス条約 | https://thumb.wikimedia.org/wikipedia/commons/thumb/9/92/Japan_Russia_Treaty_of_Peace_5_September_1905.jpg/500px-Japan_Russia_Treaty_of_Peace_5_September_1905.jpg | https://commons.wikimedia.org/wiki/File:Japan_Russia_Treaty_of_Peace_5_September_1905.jpg | CC BY-SA 3.0 | World Imaging（ポーツマス条約 外務省外交史料館） | cover | 
+小村寿太郎 | https://www.ndl.go.jp/portrait/img/portrait/0083_1.jpg | https://www.ndl.go.jp/portrait/datas/83/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+韓国併合 | https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Japan%E2%80%93Korea_Annexation_Treaty_1.jpg/500px-Japan%E2%80%93Korea_Annexation_Treaty_1.jpg | https://commons.wikimedia.org/wiki/File:Japan%E2%80%93Korea_Annexation_Treaty_1.jpg | Public domain | Wikimedia Commons（韓国併合に関する条約 1910年） | cover | 
+八幡製鉄所 | https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d2/Governmental_Yawata_Iron_%26_Steel_Works.JPG/500px-Governmental_Yawata_Iron_%26_Steel_Works.JPG | https://commons.wikimedia.org/wiki/File:Governmental_Yawata_Iron_%26_Steel_Works.JPG | Public domain | Wikimedia Commons（官営八幡製鉄所 1901年ごろ） | cover | 
+田中正造 | https://www.ndl.go.jp/portrait/img/portrait/0290_1.jpg | https://www.ndl.go.jp/portrait/datas/290/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+野口英世 | https://www.ndl.go.jp/portrait/img/portrait/0312_1.jpg | https://www.ndl.go.jp/portrait/datas/312/ | パブリックドメイン（保護期間満了） | 国立国会図書館「近代日本人の肖像」 | cover | 
+平塚らいてう | https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f3/Raicho_Hiratsuka.jpg/500px-Raicho_Hiratsuka.jpg | https://commons.wikimedia.org/wiki/File:Raicho_Hiratsuka.jpg | Public domain | Wikimedia Commons（平塚らいてう） | cover | 
+
+## 第19話（カード）
+学童疎開 | https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Children_in_Temple_lodging%2C_Miyamae_primary_school%2C_1944.jpg/500px-Children_in_Temple_lodging%2C_Miyamae_primary_school%2C_1944.jpg | https://commons.wikimedia.org/wiki/File:Children_in_Temple_lodging%2C_Miyamae_primary_school%2C_1944.jpg | Public domain | 中村立行（宮前国民学校の集団疎開 寺の宿舎 1944年） | cover | 
+国民学校 | https://thumb.wikimedia.org/wikipedia/commons/thumb/b/ba/Outdoor_Class%2C_Okuyama_villege%2C_1944.jpg/500px-Outdoor_Class%2C_Okuyama_villege%2C_1944.jpg | https://commons.wikimedia.org/wiki/File:Outdoor_Class%2C_Okuyama_villege%2C_1944.jpg | Public domain | 中村立行（奥山村での野外授業 1944年） | cover | 
+防空ずきん | https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/%E9%98%B2%E7%A9%BA%E9%A0%AD%E5%B7%BE_%2815376268860%29.jpg/500px-%E9%98%B2%E7%A9%BA%E9%A0%AD%E5%B7%BE_%2815376268860%29.jpg | https://commons.wikimedia.org/wiki/File:%E9%98%B2%E7%A9%BA%E9%A0%AD%E5%B7%BE_%2815376268860%29.jpg | CC BY 2.0 | MGdesigner（防空頭巾 展示品） | pad | 
+空襲 | https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/B-29s-japan-1945.jpg/500px-B-29s-japan-1945.jpg | https://commons.wikimedia.org/wiki/File:B-29s-japan-1945.jpg | Public domain | USAAF（富士山上空のB-29 1945年） | cover | 
+勤労動員 | https://thumb.wikimedia.org/wikipedia/commons/thumb/8/83/Women%27s_volunteer_corps_at_Tokyo.jpg/500px-Women%27s_volunteer_corps_at_Tokyo.jpg | https://commons.wikimedia.org/wiki/File:Women%27s_volunteer_corps_at_Tokyo.jpg | Public domain | Wikimedia Commons（工場ではたらく女子挺身隊 東京） | cover | 
+原子爆弾 | https://thumb.wikimedia.org/wikipedia/commons/thumb/7/77/Genbaku_Dome04-r.JPG/500px-Genbaku_Dome04-r.JPG | https://commons.wikimedia.org/wiki/File:Genbaku_Dome04-r.JPG | CC BY 2.5 | Oilstreet（原爆ドーム） | cover | 
+終戦 | https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Imperial_Rescript_on_the_Termination_of_the_War1.jpg/500px-Imperial_Rescript_on_the_Termination_of_the_War1.jpg | https://commons.wikimedia.org/wiki/File:Imperial_Rescript_on_the_Termination_of_the_War1.jpg | Public domain | Wikimedia Commons（終戦の詔書 1945年） | cover | 
+
+## 第20話（カード）
+日本国憲法 | https://thumb.wikimedia.org/wikipedia/commons/thumb/0/03/Nihon_Kenpo01.jpg/500px-Nihon_Kenpo01.jpg | https://commons.wikimedia.org/wiki/File:Nihon_Kenpo01.jpg | Public domain | Wikimedia Commons（日本国憲法 原本 上諭） | cover | 
+平和主義 | https://thumb.wikimedia.org/wikipedia/commons/thumb/4/4c/%E3%81%82%E3%81%9F%E3%82%89%E3%81%97%E3%81%84%E6%86%B2%E6%B3%95%E3%81%AE%E3%81%AF%E3%81%AA%E3%81%97_%E6%88%A6%E4%BA%89%E6%94%BE%E6%A3%84.png/500px-%E3%81%82%E3%81%9F%E3%82%89%E3%81%97%E3%81%84%E6%86%B2%E6%B3%95%E3%81%AE%E3%81%AF%E3%81%AA%E3%81%97_%E6%88%A6%E4%BA%89%E6%94%BE%E6%A3%84.png | https://commons.wikimedia.org/wiki/File:%E3%81%82%E3%81%9F%E3%82%89%E3%81%97%E3%81%84%E6%86%B2%E6%B3%95%E3%81%AE%E3%81%AF%E3%81%AA%E3%81%97_%E6%88%A6%E4%BA%89%E6%94%BE%E6%A3%84.png | Public domain | 文部省『あたらしい憲法のはなし』1947年（戦争放棄） | pad | 
+女性の参政権 | https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/1946posterJapan.jpg/500px-1946posterJapan.jpg | https://commons.wikimedia.org/wiki/File:1946posterJapan.jpg | Public domain | 文部省（1946年 女性に投票をよびかけるポスター） | cover | 
+サンフランシスコ平和条約 | https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Yoshida_signs_San_Francisco_Peace_Treaty.jpg/500px-Yoshida_signs_San_Francisco_Peace_Treaty.jpg | https://commons.wikimedia.org/wiki/File:Yoshida_signs_San_Francisco_Peace_Treaty.jpg | Public domain | Wikimedia Commons（吉田茂の署名 1951年） | cover | 
+国際連合への加盟 | https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6b/Japan_joins_the_United_Nations.jpg/500px-Japan_joins_the_United_Nations.jpg | https://commons.wikimedia.org/wiki/File:Japan_joins_the_United_Nations.jpg | Public domain | United Nations（日本の国連加盟 1956年） | cover | 
+東海道新幹線 | https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/Shinkansen_Series0_R67_JNRcolor.jpg/500px-Shinkansen_Series0_R67_JNRcolor.jpg | https://commons.wikimedia.org/wiki/File:Shinkansen_Series0_R67_JNRcolor.jpg | CC BY 3.0 | ナダテ（新幹線0系） | cover | 
+
+## おくりもの（data/giftimg.txt 形式）
+gkurofune | https://ibmuseum.mapps.ne.jp/files/8818/media_files/mid/485.jpg | https://kanazawa-mplus.jp/collection/page-minzoku5424.html | パブリックドメイン（PDM） | 金沢くらしの博物館（かわら版「蒸気船の図」1853年） | pad |  | おくりもの：黒船のかわら版（第16話）
+ggakumon | https://thumb.wikimedia.org/wikipedia/commons/thumb/1/10/Gakumon-no-susume.jpg/500px-Gakumon-no-susume.jpg | https://commons.wikimedia.org/wiki/File:Gakumon-no-susume.jpg | Public domain | 福沢諭吉・小幡篤次郎『学問のすゝめ』初編 | cover |  | おくりもの：学問のすゝめ（第17話）
+gkenpou | https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Promulgation_of_the_Constitution_of_Great_Japan.jpg/500px-Promulgation_of_the_Constitution_of_Great_Japan.jpg | https://commons.wikimedia.org/wiki/File:Promulgation_of_the_Constitution_of_Great_Japan.jpg | Public domain | Wikimedia Commons（憲法発布式の錦絵 1889年） | cover |  | おくりもの：憲法発布の錦絵（第17話）
+gnormanton | https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f7/Normanton_Incident%281886%29.jpg/500px-Normanton_Incident%281886%29.jpg | https://commons.wikimedia.org/wiki/File:Normanton_Incident%281886%29.jpg | Public domain | ジョルジュ・ビゴー（ノルマントン号事件の風刺画） | cover |  | おくりもの：ノルマントン号事件の風刺画（第18話）
+gkagi | https://colbase.nich.go.jp/media/tnm/E-19123/image/slideshow/E-19123_E0127858.jpg | https://colbase.nich.go.jp/collection_items/tnm/E-19123 | CC BY 4.0相当 | ColBase／東京国立博物館（錠鍵） | pad |  | おくりもの：鍵（第18話）
+gzukin | https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/%E9%98%B2%E7%A9%BA%E9%A0%AD%E5%B7%BE_%2815376268860%29.jpg/500px-%E9%98%B2%E7%A9%BA%E9%A0%AD%E5%B7%BE_%2815376268860%29.jpg | https://commons.wikimedia.org/wiki/File:%E9%98%B2%E7%A9%BA%E9%A0%AD%E5%B7%BE_%2815376268860%29.jpg | CC BY 2.0 | MGdesigner（防空頭巾 展示品） | pad |  | おくりもの：防空ずきん（第19話）
+gkenpouhanashi | https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c6/%E3%81%82%E3%81%9F%E3%82%89%E3%81%97%E3%81%84%E6%86%B2%E6%B3%95%E3%81%AE%E8%A9%B1_%E4%B8%89%E5%8E%9F%E5%89%87.png/500px-%E3%81%82%E3%81%9F%E3%82%89%E3%81%97%E3%81%84%E6%86%B2%E6%B3%95%E3%81%AE%E8%A9%B1_%E4%B8%89%E5%8E%9F%E5%89%87.png | https://commons.wikimedia.org/wiki/File:%E3%81%82%E3%81%9F%E3%82%89%E3%81%97%E3%81%84%E6%86%B2%E6%B3%95%E3%81%AE%E8%A9%B1_%E4%B8%89%E5%8E%9F%E5%89%87.png | Public domain | 文部省『あたらしい憲法のはなし』1947年 | pad |  | おくりもの：あたらしい憲法のはなし（第20話）
+
+## 描く（よい公開画像が見つからない・権利が不明・戦争の生々しい写真を避けたいもの）
+# カード名 | 絵のアイデア（6語）
+徴兵令 | 軍服の 若者と 徴兵の 通知書   （第17話a）
+自由民権運動 | 演説会で 熱く 語る 弁士と 聴衆   （第17話b）
+ドイツの憲法 | ドイツ国旗と 憲法の 本を 読む伊藤   （第17話b）
+内閣 | 長い 机を 囲む 大臣たち 明治   （第17話b）
+治外法権 | 外国人を さばけず 困る 日本の役人   （第18話a）
+関税自主権 | 輸入品の 箱と 税率の 札   （第18話a）
+条約改正 | 対等に 握手する 日本と 英国   （第18話a）
+賠償金 | 積み上げた 金貨と 製鉄所の 煙突   （第18話a）
+戦争の負担 | 重い 税の 袋を 背負う 家族   （第18話b）
+関税自主権の回復 | 古い 鍵で 開く 税関の 扉   （第18話b）
+日中戦争 | 地図上の 日本と 中国 戦火   （第19話）
+太平洋戦争 | 太平洋の 地図と 軍艦の 影   （第19話）
+配給 | 配給切符と 少しの 米袋   （第19話）
+沖縄戦 | 沖縄の 海と ひめゆりの 花   （第19話）
+戦争の記録 | 古い 手紙と 日記と 写真   （第19話）
+国民主権 | 投票箱に 一票を 入れる 人   （第20話）
+基本的人権の尊重 | 手を つなぐ いろいろな 人々   （第20話）
+6・3制 | 小学校と 中学校の 校舎 九年   （第20話）
+高度経済成長 | テレビ 冷蔵庫 洗濯機の 三種   （第20話）
+東京オリンピック | 聖火と 五輪の 輪 1964   （第20話）
+公害 | 工場の けむりと よごれた 海   （第20話）
+
+## 要確認（あやしい・重複など）
+# 勝海舟: Commons の古写真（PD）。若いころの有名な写真。
+# 薩長同盟: 坂本龍馬の裏書（朱書き）。所蔵は宮内庁、画像は人事院の資料で CC BY 4.0。文字だけなので子どもには地味。
+# 学問のすゝめ と ggakumon、ノルマントン号事件 と gnormanton、防空ずきん と gzukin は同じ画像（おくりもの自体が同じ物なので）。カード側だけ「描く」にする案もあり。
+# 日清戦争: ビゴー「魚釣り遊び」（1887年。戦争の7年前の風刺画だが、教科書で日清戦争の説明によく使われる絵）。
+# 国民学校: 1944年の野外授業の写真（中村立行）。国民学校そのものの写真ではない。Commons では PD-Japan-oldphoto（日本の古い写真）扱い。
+# 学童疎開: 寺の宿舎の子ども（1944年、中村立行）。暗めの写真。
+# 勤労動員: 東京の工場ではたらく女子挺身隊の写真（作者不明、PD）。写真が暗く、見て分かりにくい。
+# gkagi: ColBase の琉球の錠と鍵（19世紀）。「外務省の古い鍵」とは別物。描く案もあり。
+# gkenpouhanashi: 『あたらしい憲法のはなし』の三原則のさし絵（元画像が 327px と小さい）。表紙の公開画像は見つからなかった。
+# 原子爆弾: 原爆ドームの今の写真（CC BY 2.5。GFDL / CC BY-SA 3.0 とのマルチライセンスから選んだ）。被害の写真は避けた。
+# 空襲: 富士山の上を飛ぶ B-29 の写真（米軍撮影、PD）。被害の写真は避けた。
+# CC BY-SA の画像: 日米和親条約・日米修好通商条約・不平等条約・ポーツマス条約（World Imaging 撮影の外交史料館展示）、大日本帝国憲法（CC BY-SA 4.0）、学制（旧開智学校）。表示（と継承）が必要。
+# 東京オリンピック: Commons に1964年開会式の写真（Keystone、「PD」扱い）はあるが根拠があいまいなので「描く」にした。
+
+## 一覧画像の番号（cards_sheet.jpg）
+# 01 ep16 gkurofune
+# 02 ep16 ペリー
+# 03 ep16 黒船
+# 04 ep16 日米和親条約
+# 05 ep16 開国
+# 06 ep16 西郷隆盛
+# 07 ep16 勝海舟
+# 08 ep16 日米修好通商条約
+# 09 ep16 薩長同盟
+# 10 ep16 坂本竜馬
+# 11 ep16 大政奉還
+# 12 ep16 江戸城の明けわたし
+# 13 ep16 五箇条の御誓文
+# 14 ep17a ggakumon
+# 15 ep17a 明治維新
+# 16 ep17a 廃藩置県
+# 17 ep17a 岩倉使節団
+# 18 ep17a 大久保利通
+# 19 ep17a 福沢諭吉
+# 20 ep17a 学問のすゝめ
+# 21 ep17a 文明開化
+# 22 ep17a 鉄道
+# 23 ep17a 学制
+# 24 ep17a 富岡製糸場
+# 25 ep17a 地租改正
+# 26 ep17b gkenpou
+# 27 ep17b 西南戦争
+# 28 ep17b 板垣退助
+# 29 ep17b 国会開設の約束
+# 30 ep17b 大隈重信
+# 31 ep17b 伊藤博文
+# 32 ep17b 大日本帝国憲法
+# 33 ep17b 天皇主権
+# 34 ep17b 帝国議会
+# 35 ep17b 選挙
+# 36 ep18a gnormanton
+# 37 ep18a 不平等条約
+# 38 ep18a ノルマントン号事件
+# 39 ep18a 鹿鳴館
+# 40 ep18a 陸奥宗光
+# 41 ep18a 日清戦争
+# 42 ep18a 朝鮮
+# 43 ep18a 下関条約
+# 44 ep18a 台湾
+# 45 ep18b gkagi
+# 46 ep18b 日露戦争
+# 47 ep18b 東郷平八郎
+# 48 ep18b 与謝野晶子
+# 49 ep18b ポーツマス条約
+# 50 ep18b 小村寿太郎
+# 51 ep18b 韓国併合
+# 52 ep18b 八幡製鉄所
+# 53 ep18b 田中正造
+# 54 ep18b 野口英世
+# 55 ep18b 平塚らいてう
+# 56 ep19 gzukin
+# 57 ep19 学童疎開
+# 58 ep19 国民学校
+# 59 ep19 防空ずきん
+# 60 ep19 空襲
+# 61 ep19 勤労動員
+# 62 ep19 原子爆弾
+# 63 ep19 終戦
+# 64 ep20 gkenpouhanashi
+# 65 ep20 日本国憲法
+# 66 ep20 平和主義
+# 67 ep20 女性の参政権
+# 68 ep20 サンフランシスコ平和条約
+# 69 ep20 国際連合への加盟
+# 70 ep20 東海道新幹線
