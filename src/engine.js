@@ -300,6 +300,7 @@ function iconHTML(icon, key, cls = "") {
   if (g && window.ART && window.ART[g[1]]) return `<img class="picon-img ${cls}" src="${window.ART[g[1]].normal}" alt="">`;
   const m = /^人[:：](.+)$/.exec(icon || "");
   if (!m) return `<div class="picon">${icon}</div>`;
+  if (/^mob\d\d$/.test(m[1]) && window.ART && window.ART[m[1]]) return `<img class="sil mobimg ${cls}" src="${window.ART[m[1]].normal}" alt="">`;   // 先生の モブの 絵（人:mob13 など。一覧は data/mob_icons.txt）
   const src = silPick(m[1], key);
   if (src) return `<img class="sil silimg ${cls}" src="${src}" alt="">`;
   const t = SIL[m[1]] ? m[1] : "おとこ", [x1, x2, y] = SIL_EYES[t];

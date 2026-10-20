@@ -843,3 +843,6 @@ img.picon-img{width:110px;height:110px;object-fit:contain}
 .cl-wrap table.cl td{padding:6px 8px;line-height:1.3;min-width:0;overflow-wrap:anywhere}
 .cl-wrap .cl tr{grid-template-columns:150px 1fr 96px}
 .cl-wrap table.cl td:first-child{white-space:nowrap;overflow-wrap:normal}
+/* 先生の モブの 絵（人:mob13 など）：暗い 絵なので 白い ふちを つける */
+img.mobimg{width:100px;height:100px;object-fit:contain;color:inherit;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.95)) drop-shadow(0 0 8px rgba(180,200,255,.3))}
+img.mobimg.silface{width:100%;height:100%;margin:0}
