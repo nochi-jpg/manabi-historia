@@ -820,3 +820,18 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .foe.dark .foe-face img{filter:drop-shadow(0 0 18px rgba(160,80,255,.9))}
 .sr-on .modal{z-index:95}
 .tp-lock{font-size:22px;color:#c9c3d8;padding:10px 6px}
+.settings{display:grid;grid-template-columns:620px 620px;gap:16px 28px}   /* 2列で 全部の ボタンが 見える */
+.titlecard>.tc-hid{visibility:hidden;animation:none}
+.titlecard>.land{animation:land .5s ease-out}
+.tc-year.land{color:#fff}
+/* デバッグ：場面ワープ */
+.dbgwarp{width:1400px;max-width:95%}
+.dw-list{max-height:640px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.dw-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dw-name{width:420px;font-size:22px;text-align:left}
+.dw-row .btn{min-width:0;padding:6px 14px;font-size:20px;height:auto}
+.flashback .fb-face{right:auto;bottom:auto;left:50%;top:70px;transform:translateX(-50%)}   /* 顔は 中央の 上 */
+.cl-wrap{max-height:600px;overflow-y:auto;width:1300px;max-width:90vw}
+.cl-wrap .cl{display:grid;grid-template-columns:1fr 1fr;column-gap:30px;width:100%}
+.cl-wrap .cl tbody{display:contents}
+.cl-wrap .cl tr{display:grid;grid-template-columns:180px 1fr 130px;align-items:center}

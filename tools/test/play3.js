@@ -15,7 +15,7 @@ const EPN = Number(process.argv[3] || 1);
   if (await p.$('.inbox input')) { await shot('00name'); await p.fill('.inbox input', 'てすと'); await p.click('text=けってい'); await p.waitForTimeout(300); }   // はじめての 起動：名前
   await shot('00title');
   // じゅもん
-  await p.evaluate(n => { for (let k = 0; k < n; k++) SAVE.stars[k] = 5; persist(); }, EPN);   // 前の 話を ぜんぶ クリアした ことに（エピソードロック）
+  await p.evaluate(n => { for (let k = 0; k < n; k++) SAVE.stars[k] = 5; SAVE.flags = { future: true }; persist(); }, EPN);   // 前の 話を ぜんぶ クリアした ことに（エピソードロック）
   await p.waitForTimeout(200);
   await p.click('text=おはなしを えらぶ'); await p.waitForTimeout(200); await shot('02select');
   await p.evaluate(n => showSelect({no:n}), EPN); await p.waitForTimeout(200); await shot('02b_tl'); await p.click('.tp-btns .btn.red'); await p.waitForTimeout(300);

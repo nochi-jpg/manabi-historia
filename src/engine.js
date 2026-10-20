@@ -14,7 +14,7 @@ const EP_META = [
   ["明治① 開国と明治維新", "浦賀の海"], ["明治② 文明開化", "慶應義塾"], ["明治② 憲法と国会", "演説会の会場"],
   ["世界に歩みだした日本①", "鹿鳴館"], ["世界に歩みだした日本②", "横浜の港"],
   ["長く続いた戦争", "疎開先の寺"], ["新しい日本、平和な日本へ", "青空教室"],
-  ["最終回 前編 収束", "20XX年の東京"], ["最終回 縁の扉", "白い世界"], ["最終回 後編 おかえり、かなた", "レキシクイの中"], ["トゥルーエンド 防災都市", "防災都市"],
+  ["最終回 前編 収束", "20XX年の東京"], ["最終回 縁の扉", "白い世界"], ["最終回 後編 おかえり、かなた", "レキシクイの中"], ["トゥルーエンド 防災都市", "夕神家のリビング"],
 ];
 /* 第17話・第18話は 前編・後編。中の 番号（no）は 0〜23 の 通し番号で、画面に 出す 話数は epNum・epName で 作る */
 const EP_PART = { 17: "前編", 18: "後編", 19: "前編", 20: "後編" };
@@ -234,6 +234,7 @@ function parseScript(no, src) {
         case "フラッシュ": ep.nodes.push({ t: "flash", key: rest[0] || "" }); break;
         case "手札": ep.nodes.push({ t: "hand", cards: arg === "なし" ? [] : split(arg.replace(/・/g, "|")) }); break;
         case "顔なし": ep.nodes.push({ t: "face", on: false }); break;
+        case "ゆれ": ep.nodes.push({ t: "quake", sec: Number(rest[0]) || 3 }); break;   // 地震：画面が ゆれる
         case "顔あり": ep.nodes.push({ t: "face", on: true }); break;
         default: console.warn("不明な命令", cmd);
       }
@@ -1446,7 +1447,7 @@ async function playEpisode(no, resume) {
   let bg = EP_META[no][1];
   let tint = ""; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "bg" || (ep.nodes[i].t === "tjump" && ep.nodes[i].bg)) { bg = ep.nodes[i].bg; tint = ep.nodes[i].tint; }
   if (!resume) {   // はじめから：最初のセリフより前に @背景 があれば、それを最初から出す（別の背景が一瞬見えないように）
-    for (const n of ep.nodes) { if (n.t === "bg") { bg = n.bg; break; } if (!["bgm", "se", "pic", "disguise"].includes(n.t)) break; }
+    for (const n of ep.nodes) { if (n.t === "bg") { bg = n.bg; break; } if (!["bgm", "se", "pic", "disguise", "face"].includes(n.t)) break; }
   }
   S.disguise = {}; for (let i = 0; i < S.idx; i++) if (ep.nodes[i].t === "disguise") S.disguise[ep.nodes[i].who] = ep.nodes[i].look || null;
   // はじめから：黒い幕 → トケイ（前の話の 最後の年 → この話の年）→ 黒い幕 → 副題 → 背景と 年代の帯（背景を 1コマも 先に 見せない）
@@ -1464,7 +1465,8 @@ async function playEpisode(no, resume) {
       banner("", `<div class="tj-ban"><b>${yearLabel(y0)}</b><span>${y0 > 0 ? `（2023年より ${2023 - y0}年前）` : ""}</span></div>`);
       SE.play("found"); await sleep(1900);
     }
-    BGM.play(no === 0 ? "学校" : no >= 23 ? null : "町");   // 最終回は 台本の @BGM に まかせる
+    const k1 = ep.nodes.findIndex(x => x.t === "say"), early = ep.nodes.slice(0, k1 < 0 ? 0 : k1).some(x => x.t === "bgm");   // 最初の セリフより 前に @BGM が あれば それに まかせる
+    if (!early) BGM.play(no === 0 ? "学校" : no >= 23 ? null : "町");   // 最終回は 台本の @BGM に まかせる
   }
   else { const k = prevBgm(ep, S.idx); BGM.play(k && k !== "なし" ? k : null); }
   while (S.idx < ep.nodes.length) {
@@ -1495,6 +1497,7 @@ async function playEpisode(no, resume) {
         case "allwhite": await runAllWhite(n); break;
         case "flash": await runFlash(n.key); break;
         case "hand": S.hand = n.cards.slice(); renderHud(); break;
+        case "quake": { const t0 = Date.now(); while (Date.now() - t0 < n.sec * 1000 && !SKIP) { FX.shake("l"); await sleep(180); } break; }
         case "face": S.noFace = !n.on; if (S.noFace) hidePortraits(true); break;
         case "say": await say(n.who, n.expr, n.text, ep); break;
         case "inv": await runInv(n); break;
@@ -1537,12 +1540,16 @@ function autoBgm(n) {
   if (AUTO_BGM[n.t]) BGM.play(AUTO_BGM[n.t]); else BGM.stop(1.5);
 }
 /* 話のはじまり：タイトルと、年がスロットのように巻きもどる */
-async function titleCard(no) {
+async function titleCard(no) {   // 黒い 画面 → 第〇話（どん！）→ 〇〇時代（どん！）→ 題名（どん！）の じゅんに 出す
   const era = EP_INFO[no][0], eraName = /^(令和|未来)$/.test(era) ? era : era + "時代";   // 副題に 年号は 出さない（年は このあとの 帯で）
-  const tc = FX.add("titlecard", `<div class="tc-no">${epName(no)}</div><div class="tc-year">${esc(eraName)}</div><div class="tc-tt">${esc(EP_META[no][0])}</div>`);
-  await sleep(600);
-  SE.play("drum"); tc.querySelector(".tc-year").classList.add("land"); FX.shake("s");
-  await sleep(1500);
+  const tc = FX.add("titlecard", `<div class="tc-no tc-hid">${epName(no)}</div><div class="tc-year tc-hid">${esc(eraName)}</div><div class="tc-tt tc-hid">${esc(EP_META[no][0])}</div>`);
+  await sleep(SKIP ? 100 : 700);
+  for (const el of tc.querySelectorAll(".tc-hid")) {
+    el.classList.remove("tc-hid"); el.classList.add("land");
+    SE.play("drum"); FX.shake("s");
+    await sleep(SKIP ? 150 : 850);
+  }
+  await sleep(SKIP ? 200 : 900);
   tc.classList.add("out"); await sleep(500); tc.remove();
 }
 function finishEpisode() {
@@ -1698,7 +1705,7 @@ async function playFuture() {
 function showClearList() {
   const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
   const rows = EP_META.map(([t], no) => SAVE.stars[no] ? `<tr><td>${epName(no)}</td><td>${esc(t)}</td><td class="st">${"★".repeat(SAVE.stars[no])}</td></tr>` : "").join("");
-  alertBox(`<div class="cl-title">クリア一覧</div><table class="cl">${rows || "<tr><td>まだ クリアした おはなしは ありません</td></tr>"}</table><div class="cl-total">★の 合計　${total}</div>`);
+  alertBox(`<div class="cl-title">クリア一覧</div><div class="cl-wrap"><table class="cl">${rows || "<tr><td>まだ クリアした おはなしは ありません</td></tr>"}</table></div><div class="cl-total">★の 合計　${total}</div>`);   // 2列・はみ出したら スクロール
 }
 
 /* ---------- 画面：けっか ---------- */
@@ -1791,20 +1798,55 @@ function showZukan(tab) {
 }
 
 /* ---------- 画面：せってい ---------- */
+/* ---------- デバッグ：場面ワープ（せってい の「せ」を 20回） ---------- */
+/* 話ごとに オープニング・調査①・調査②・議論・論破・エピローグ へ とべる。議論・論破は 必要な カードを 最初から もつ */
+function debugPoints(ep) {
+  const N = ep.nodes, idxOf = (t, k = 0) => { let c = 0; for (let i = 0; i < N.length; i++) if (N[i].t === t && c++ === k) return i; return -1; };
+  const sum = idxOf("sum"), last = N.findIndex((x, i) => i > Math.max(sum, idxOf("battle"), idxOf("testi")) && x.t === "bg");
+  return [["オープニング", 0], ["調査①", idxOf("inv")], ["調査②", idxOf("inv", 1)], ["議論", idxOf("testi")], ["論破", idxOf("battle")], ["エピローグ", sum >= 0 ? sum + 1 : last]]
+    .filter(([, i]) => i >= 0);
+}
+function debugWarp(no, idx) {
+  const ep = EPS[no]; let hand = [], aura = [];
+  for (let i = 0; i < idx; i++) {   // その 場面までに 手に 入る カードと、ゆがめられて いる 人
+    const n = ep.nodes[i];
+    if (n.t === "inv") n.items.forEach(it => { if (it.card && !hand.includes(it.card)) hand.push(it.card); });
+    if (n.t === "hand") hand = n.cards.slice();
+    if (n.t === "warp" && n.who) aura.push(n.who);
+    if (n.t === "restore") aura = aura.filter(x => x !== n.who);
+  }
+  SAVE.resume = { no, idx, hearts: MAX_HEARTS, hand, aura, hint2: false, failed: false, sub: null }; persist();
+  closeModal(); playEpisode(no, true);
+}
+function showDebugWarp() {
+  const box = h("div", "inbox dbgwarp");
+  box.appendChild(h("div", "in-msg", "デバッグ：場面ワープ"));
+  const list = h("div", "dw-list");
+  Object.keys(EPS).map(Number).sort((a, b) => a - b).forEach(no => {
+    const row = h("div", "dw-row"); row.appendChild(h("div", "dw-name", `${epName(no)}　${esc(EP_META[no][0])}`));
+    debugPoints(EPS[no]).forEach(([label, idx]) => row.appendChild(btn(label, "sub", () => debugWarp(no, idx))));
+    list.appendChild(row);
+  });
+  box.appendChild(list);
+  const r = h("div", "btnrow"); r.appendChild(btn("とじる", "", closeModal)); box.appendChild(r);
+  openModal(box);
+}
 /* プレイヤーの 名前：はじめて 起動した ときに 入れる（最終回まで 使わない） */
 async function askName(again) {
   for (;;) {
     const v = await inputBox(again ? "なまえを 入れなおしてね" : "はじめまして！ きみの なまえを おしえてね", "ひらがなで 8文字まで");
     if (v == null) { if (again || SAVE.name) return; continue; }
-    const t = v.trim().replace(/\s+/g, "").slice(0, 8);
-    if (t) { SAVE.name = t; persist(); return; }
+    const t = normKana(v).replace(/\s+/g, "").slice(0, 8);   // カタカナは ひらがなに
+    if (t && /^[ぁ-ゖー]+$/.test(t)) { SAVE.name = t; persist(); return; }
+    if (t) await alertBox("ひらがなで 入れてね");   // 漢字だと ふりがなが おかしく なるので ひらがなだけ
   }
 }
 function showSettings() {
   BGM.play("図書館"); S = null; renderHud(); setBg("夜"); clearLayer(); layer.className = "menu";
   const top = h("div", "topbar");
   top.appendChild(btn("もどる", "sub", showTitle));
-  top.appendChild(h("div", "topttl", "せってい"));
+  const ttl = h("div", "topttl", `<span class="dbg2">せ</span>ってい`); top.appendChild(ttl);
+  let dtaps = 0; ttl.querySelector(".dbg2").onclick = () => { if (++dtaps >= 20) { dtaps = 0; showDebugWarp(); } };   // デバッグ：「せ」を 20回 → 場面ワープ
   top.appendChild(h("div", "spacer"));
   layer.appendChild(top);
   const col = h("div", "settings");
@@ -1951,6 +1993,6 @@ function boot() {
   };
   addEventListener("resize", fit); setupScreen(); fit();
   showTitle();
-  if (!SAVE.name) setTimeout(() => askName(), 900);   // はじめて 起動した とき：名前を 入れて もらう
+  if (!SAVE.name || !/^[ぁ-ゖー]+$/.test(SAVE.name)) setTimeout(() => askName(), 900);   // 名前が まだ・ひらがなで ない とき   // はじめて 起動した とき：名前を 入れて もらう
 }
 addEventListener("DOMContentLoaded", boot);
