@@ -448,7 +448,7 @@ img.silimg.silface{width:100%;height:100%;margin:0;opacity:1;filter:drop-shadow(
 @keyframes aurap{0%{transform:translateY(0) scale(1);opacity:0}15%{opacity:1}100%{transform:translateY(-360px) scale(.3);opacity:0}}
 .witness{position:absolute}.witness .aura-fx{inset:-50px}
 /* 心の声・会話 */
-.ttext.inner{color:#cfc4e8;font-style:italic;animation:inner 3s ease-in-out infinite}
+.ttext.inner{color:#cfc4e8;font-style:italic}   /* ふにょふにょ 動かさない（2026-10-22） */
 @keyframes inner{50%{transform:translateX(3px) skewX(-3deg);opacity:.85}}
 /* 調査 */
 .prop{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='16' cy='16' r='11' fill='none' stroke='white' stroke-width='4'/%3E%3Cline x1='24' y1='24' x2='36' y2='36' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E") 16 16,pointer}
@@ -722,10 +722,10 @@ html.mob,html.mob body{position:fixed;inset:0;height:100dvh}
 .tq{color:#ffe04a;font-weight:700}
 
 /* ===== 時ワープ（@時ワープ）===== */
-#bg::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity 1s,background 1s}
-#bg[data-tint="夕焼け"]::after{opacity:1;background:linear-gradient(180deg,rgba(255,110,40,.55),rgba(255,70,60,.35) 55%,rgba(60,10,50,.55));mix-blend-mode:multiply}
-#bg[data-tint="朝"]::after{opacity:1;background:linear-gradient(180deg,rgba(255,170,150,.55),rgba(255,215,170,.4) 55%,rgba(200,170,190,.35));mix-blend-mode:multiply}
-#bg[data-tint="夜"]::after{opacity:1;background:linear-gradient(180deg,rgba(10,20,70,.8),rgba(20,30,80,.6));mix-blend-mode:multiply}
+#bg::after,.bg-old::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:1;opacity:0;transition:opacity 1s,background 1s}
+#bg[data-tint="夕焼け"]::after,.bg-old[data-tint="夕焼け"]::after{opacity:1;background:linear-gradient(180deg,rgba(255,110,40,.55),rgba(255,70,60,.35) 55%,rgba(60,10,50,.55));mix-blend-mode:multiply}
+#bg[data-tint="朝"]::after,.bg-old[data-tint="朝"]::after{opacity:1;background:linear-gradient(180deg,rgba(255,170,150,.55),rgba(255,215,170,.4) 55%,rgba(200,170,190,.35));mix-blend-mode:multiply}
+#bg[data-tint="夜"]::after,.bg-old[data-tint="夜"]::after{opacity:1;background:linear-gradient(180deg,rgba(10,20,70,.8),rgba(20,30,80,.6));mix-blend-mode:multiply}
 .tj{position:absolute;inset:0;overflow:hidden}
 .tj-sky{position:absolute;inset:0;opacity:0;transition:background .12s,opacity .6s;mix-blend-mode:multiply}
 .tj.on .tj-sky{opacity:1}
@@ -846,3 +846,60 @@ img.picon-img{width:110px;height:110px;object-fit:contain}
 /* 先生の モブの 絵（人:mob13 など）：暗い 絵なので 白い ふちを つける */
 img.mobimg{width:100px;height:100px;object-fit:contain;color:inherit;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.95)) drop-shadow(0 0 8px rgba(180,200,255,.3))}
 img.mobimg.silface{width:100%;height:100%;margin:0}
+/* 年表：ページの 点・背景の 小さな 絵（2026-10-22） */
+.tl-dots{position:absolute;left:0;right:0;top:614px;display:flex;justify-content:center;gap:18px;z-index:4}
+.tl-pdot{width:18px;height:18px;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.6);background:transparent;cursor:pointer}
+.tl-pdot.on{background:#fff;border-color:#fff;box-shadow:0 0 10px rgba(255,255,255,.7)}
+.tl-pdot.future{border-color:#c79bff}.tl-pdot.future.on{background:#a86bff;border-color:#c79bff;box-shadow:0 0 12px rgba(155,77,255,.9)}
+.timeline{touch-action:pan-y;overflow:hidden}
+.tp-btns{align-items:center}
+.tp-thumb{width:176px;height:98px;border:2px solid var(--line);border-radius:4px;overflow:hidden;flex:none;background:#000}
+.tp-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+/* クリア一覧：1列。話数・年・時代・題名・★の 行頭を そろえる（2026-10-22） */
+.cl-list{width:1080px;max-width:100%;max-height:560px;overflow-y:auto;margin:12px auto;text-align:left;font-size:18px}
+.cl-row{display:grid;grid-template-columns:140px 120px 120px 1fr 96px;align-items:center;column-gap:10px;padding:5px 8px;border-bottom:1px solid var(--line2);line-height:1.3}
+.cl-row span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-row .st{color:var(--gold);letter-spacing:0;font-size:17px}
+/* ずかんの「たいせつ」：小さい カードを スクロールで（はみ出さない） */
+.zbody.gift-body{display:block;overflow-y:auto;overflow-x:hidden;padding:16px 0}
+.zbody.gift-body .gift-grid{gap:16px;justify-content:center}
+.gift-grid .card.gift{--card-w:140px;--card-h:160px;gap:4px;padding:6px}
+.gift-grid .card.gift .cicon.ph{width:124px;height:92px}
+.gift-grid .card.gift .cname{font-size:16px}
+/* 2026-10-22 追加の 演出 */
+.tr{color:#ff4040;font-weight:700;text-shadow:0 0 10px rgba(255,40,40,.6)}
+.fimg.flip{transform:scaleX(-1)}
+.port.sepia .pface img{filter:sepia(1) saturate(.7) brightness(.95)}
+.port.ghost .pface{animation:ghostfl 1.6s steps(1) infinite}
+.port.ghost .pface img{opacity:.5;filter:brightness(1.2) drop-shadow(0 0 16px rgba(255,255,230,.9))}
+@keyframes ghostfl{0%{opacity:1}12%{opacity:.55}16%{opacity:1}55%{opacity:.8}60%{opacity:.35}64%{opacity:1}}
+.port.glowing .pface{animation:glowin 2s ease-out forwards}
+.port.glowing .pface img{animation:glowimg 2s ease-out forwards}
+@keyframes glowin{to{box-shadow:0 0 70px 30px rgba(255,250,220,.9)}}
+@keyframes glowimg{to{filter:brightness(1.9) saturate(.4) drop-shadow(0 0 30px #fff)}}
+.noisefx{position:absolute;inset:0;z-index:40;opacity:0;pointer-events:none}
+.noisefx.on{opacity:1}
+.noisefx img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;filter:saturate(.6) contrast(1.2)}
+.noisefx.pic img{opacity:.9}
+.noisefx .nz{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.18) 0 2px,rgba(0,0,0,.25) 2px 5px);mix-blend-mode:screen;animation:nz .12s steps(3) infinite}
+@keyframes nz{0%{transform:translateY(0)}50%{transform:translateY(-6px)}100%{transform:translateY(4px)}}
+.spark.twk{width:12px;height:12px;animation:twk 1.4s ease-in-out forwards}
+@keyframes twk{0%{opacity:0;transform:scale(.2)}40%{opacity:1;transform:scale(1.6) rotate(45deg)}100%{opacity:0;transform:scale(.3)}}
+.twinkle-glow{position:absolute;left:50%;top:42%;width:520px;height:520px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,250,220,.75),rgba(255,240,200,0) 65%);animation:twg 2.6s ease-in-out forwards;pointer-events:none}
+@keyframes twg{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+.picimg.float{animation:picin .6s ease-out,picfloat 3s ease-in-out infinite,picglow 1.2s ease-in-out infinite}
+@keyframes picfloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-26px) rotate(3deg)}}
+#bg[data-tint="紫"]::after,.bg-old[data-tint="紫"]::after{opacity:1;background:linear-gradient(180deg,rgba(120,40,200,.55),rgba(80,20,160,.5));mix-blend-mode:multiply}
+#bg.tinting::after{transition:opacity 2s ease,background 2s ease}
+.plabel.xlong{font-size:13px;letter-spacing:-.04em}
+img.mobimg.faceic{border-radius:50%;background:rgba(255,255,255,.12);filter:drop-shadow(0 0 2px rgba(255,255,255,.9))}
+.allwhite.showpic{transition:opacity .8s ease;display:flex;align-items:center;justify-content:center}
+.allwhite.showpic.out{transition:opacity 1.6s ease-out}
+.allwhite.showpic img{max-width:900px;max-height:620px;opacity:0;transition:opacity .9s ease;filter:drop-shadow(0 8px 30px rgba(0,0,0,.25))}
+.allwhite.showpic.pic img{opacity:1}
+.picimg.sepia{filter:sepia(1) saturate(.7) drop-shadow(0 8px 24px rgba(0,0,0,.6))}
+.foe.aura .foe-face{border-color:#c79bff;box-shadow:0 0 50px 12px rgba(155,77,255,.75),inset 0 0 60px rgba(140,60,255,.5);animation:auraw 2.4s ease-in-out infinite}
+.foe.aura .foe-face img{filter:sepia(.25) hue-rotate(220deg) saturate(1.3);animation:auraflick 3.2s steps(1) infinite}
+.foe .aura-fx{position:absolute;inset:0;pointer-events:none}
+.bbg.fadeaway{transition:opacity 3.8s ease;opacity:0}
+img.mobimg.faceic.flip{transform:scaleX(-1)}

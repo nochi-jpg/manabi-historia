@@ -68,6 +68,8 @@ const SE = (() => {
     star() { tone(1320, 0, .25, "triangle", .12); tone(1980, .04, .25, "triangle", .06); },
     starGold() { [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, i * .06, .6, "triangle", .1)); },
     timewarp() { noise(0, 1.4, .2, 300, "bandpass", 5000); [400, 600, 900, 1350].forEach((f, i) => tone(f, i * .25, .5, "sine", .07)); },
+    kachiri() { tone(3200, 0, .015, "square", .08); tone(1600, .05, .03, "square", .1); noise(.05, .04, .15, 4000, "highpass"); },   // トケイが かちりと 鳴る
+    hakushu() { for (let i = 0; i < 46; i++) noise(i * .07 + Math.random() * .05, .05, .12 + Math.random() * .1, 1800 + Math.random() * 1500, "bandpass"); },   // 拍手
     thud() { tone(120, 0, .2, "sine", .3, 60); },
   };
   // 素材の音（window.SE_DATA）があれば、そちらを鳴らす。最初にタップしたとき、まとめて読みこむ

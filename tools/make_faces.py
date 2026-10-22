@@ -9,6 +9,7 @@ from PIL import Image
 from scipy import ndimage
 
 SRC = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path(".")
+SET17 = "--set17" in sys.argv   # 17まいめ（歴史人物 顔グラフィック (9)=ソラ・(10)=疎開先の おしょう・(11)=与謝野晶子。右に 名前の 文字）
 SET16 = "--set16" in sys.argv   # 16まいめ（1.png=ユガミ 泣き笑い（ラスト用）、2.png=大人の 遥 きれいな 版）
 SET15 = "--set15" in sys.argv or SET16   # 15まいめ（1.png=大人の 遥。下に 名前の 文字）
 SET14 = "--set14" in sys.argv or SET15   # 14まいめ（1.png=板垣・陸奥 2・小村 2、2.png=福沢・伊藤 ひげ・伊藤 若、3.png=ハナ 10才・12才・31才・31才 聖火）。下に 名前の 文字
@@ -80,6 +81,8 @@ if SET15:
 if SET16:
     SHEETS = {"1.png": [("yugamilast", "normal")], "2.png": [("haruka", "normal")]}
     CUT = {"2.png": 870}
+if SET17:
+    SHEETS = {"歴史人物　顔グラフィック　 (9).png": [("sora", "normal")], "歴史人物　顔グラフィック　 (10).png": [("osho", "normal")], "歴史人物　顔グラフィック　 (11).png": [("akiko", "normal")]}
 crops = {}
 for f, names in SHEETS.items():
     ps = parts(SRC / f, CUT.get(f) if SET14 else None)
@@ -87,7 +90,7 @@ for f, names in SHEETS.items():
     elif SET9 or SET11: ps = sorted([q for q in ps if q[1][3] < 860], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
     elif SET6: ps = sorted([q for q in ps if q[1][1] < 560], key=lambda t: t[1][0])   # 下の 名前の 文字は のぞく
     elif (SET10 or SET12 or SET13) and len(names) > 1: ps = sorted(sorted(ps, key=lambda t: -(t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))[:len(names)], key=lambda t: t[1][0])   # 大きい 絵を 左から
-    elif SET2: ps = [max(ps, key=lambda t: (t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))]   # いちばん大きい絵だけ
+    elif SET2 or SET17: ps = [max(ps, key=lambda t: (t[1][2] - t[1][0]) * (t[1][3] - t[1][1]))]   # いちばん大きい絵だけ
     assert len(ps) == len(names), (f, len(ps))
     for (ch, ex), (im, b) in zip(names, ps):
         crops.setdefault(ch, []).append((ex, im, b))

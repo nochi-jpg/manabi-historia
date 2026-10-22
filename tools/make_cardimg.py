@@ -1,6 +1,6 @@
 """カードの写真を作る。data/cardimg.txt の一覧どおりに画像をダウンロードし、
 cardimg/カード名.webp（256×190）にする。使い方： python3 tools/make_cardimg.py [キャッシュのフォルダ]
-fit： cover＝箱いっぱいに切り抜く／pad＝全体が入るように、まわりを画像のふちの色でうめる
+fit： cover＝箱いっぱいに切り抜く／top＝coverの 上より（肖像の 顔が 切れない）／pad＝全体が入るように、まわりを画像のふちの色でうめる
 crop：左,上,右,下（0〜1の割合）で先に切り抜く（なくてもよい）"""
 import sys, pathlib, urllib.request, hashlib, io, time
 from PIL import Image
@@ -18,8 +18,10 @@ def fetch(u):
                 if k == 4: raise
                 time.sleep(30 if "429" in str(e) else 3)
     return Image.open(io.BytesIO(fp.read_bytes())).convert("RGB")
-JOBS = [(R/"data/cardimg.txt", lambda n: OUT/(n + ".webp"), (256, 190)),   # カード
+LIST = pathlib.Path(sys.argv[2]) if len(sys.argv) > 2 else None   # 2つめ：新しい 行だけの 一覧（ほかは 作りなおさない）
+JOBS = [(LIST or R/"data/cardimg.txt", lambda n: OUT/(n + ".webp"), (256, 190)),   # カード
         (R/"data/giftimg.txt", lambda n: R/"art"/(n + "_normal.webp"), (480, 360))]   # おくりもの（@画像 呼び名 で出す）
+if LIST: JOBS = JOBS[:1]   # 一覧を わたした ときは カードだけ
 for listf, dest, (W, H) in JOBS:
   for line in listf.read_text(encoding="utf-8").splitlines():
     if not line.strip() or line.startswith("#"): continue
@@ -38,6 +40,6 @@ for listf, dest, (W, H) in JOBS:
     else:
         w, h = im.size; s = max(W/w, H/h)
         im = im.resize((int(w*s+.5), int(h*s+.5)), Image.LANCZOS)
-        l, t = (im.width-W)//2, (im.height-H)//2; im = im.crop((l, t, l+W, t+H))
+        l, t = (im.width-W)//2, ((im.height-H)//2 if fit != "top" else int((im.height-H)*.04)); im = im.crop((l, t, l+W, t+H))
     im.save(dest(name), "WEBP", quality=62 if W < 300 else 75, method=6)
 print("OK", len(list(OUT.glob("*.webp"))), "枚", sum(f.stat().st_size for f in OUT.glob("*.webp"))//1024, "KB")

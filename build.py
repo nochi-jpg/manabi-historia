@@ -55,7 +55,8 @@ art = {}
 for f in sorted((R/"art").glob("*.webp")):
     nm, ex = f.stem.rsplit("_", 1)
     art.setdefault(nm, {})[ex] = "data:image/webp;base64," + __import__("base64").b64encode(f.read_bytes()).decode()
-for _nm, _ex in OLD.get("ART", {}).items():   # 手元にない絵（art/sil_*.webp など）は前の index.html から
+for _nm, _ex in OLD.get("ART", {}).items():   # 手元にない絵は前の index.html から（むかしの 影絵 sil は 使わない。2026-10-22 先生）
+    if _nm == "sil": continue
     for _e, _v in _ex.items(): art.setdefault(_nm, {}).setdefault(_e, _v)
 data += "\nwindow.ART=" + json.dumps(art) + ";"
 # 背景：bgimg/場面の名前.webp（先生の絵。台本の @背景 の名前と同じ）。ないものは src/bg.js で描く

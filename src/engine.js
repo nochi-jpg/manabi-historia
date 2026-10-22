@@ -14,12 +14,12 @@ const EP_META = [
   ["明治① 開国と明治維新", "浦賀の海"], ["明治② 文明開化", "慶應義塾"], ["明治② 憲法と国会", "演説会の会場"],
   ["世界に歩みだした日本①", "鹿鳴館"], ["世界に歩みだした日本②", "横浜の港"],
   ["長く続いた戦争", "疎開先の寺"], ["新しい日本、平和な日本へ", "青空教室"],
-  ["最終回 前編 収束", "20XX年の東京"], ["最終回 縁の扉", "白い世界"], ["最終回 後編 おかえり、かなた", "レキシクイの中"], ["トゥルーエンド 防災都市", "夕神家のリビング"],
+  ["最終章 前編 収束", "20XX年の東京"], ["最終章 中編 縁の扉", "白い世界"], ["最終章 後編 未来へ", "レキシクイの中"], ["おかえり", "夕神家のリビング"],
 ];
 /* 第17話・第18話は 前編・後編。中の 番号（no）は 0〜23 の 通し番号で、画面に 出す 話数は epNum・epName で 作る */
 const EP_PART = { 17: "前編", 18: "後編", 19: "前編", 20: "後編" };
 const epNum = no => no <= 16 ? no : no <= 18 ? 17 : no <= 20 ? 18 : no - 2;
-const epName = no => no === 0 ? "プロローグ" : "第" + epNum(no) + "話" + (EP_PART[no] ? " " + EP_PART[no] : "");
+const epName = no => no === 0 ? "プロローグ" : no === TRUE_END ? "エピローグ" : "第" + epNum(no) + "話" + (EP_PART[no] ? " " + EP_PART[no] : "");
 const epsOfNum = n => EP_META.map((_, no) => no).filter(no => no > 0 && epNum(no) === n);   // 同じ 話数の 中の 番号（前編・後編）
 const fragKey = no => "frag" + epNum(no) + (EP_PART[no] ? (EP_PART[no] === "前編" ? "a" : "b") : "");
 const EP_COUNT = EP_META.length;
@@ -97,17 +97,18 @@ function phr(t) {
   });
   return any ? `<span class="kp">${out}</span>` : out;
 }
-function fmtUI(t) { return esc(t).replace(new RegExp(`(${KANJI})《[^》]+》`, "g"), "$1").replace(/【([^】]+)】/g, '<span class="kw">$1</span>').replace(/[｛｝]/g, ""); }
+function fmtUI(t) { return esc(t).replace(new RegExp(`(${KANJI})《[^》]+》`, "g"), "$1").replace(/【([^】]+)】/g, '<span class="kw">$1</span>').replace(/[｛｝〖〗]/g, ""); }
 function fmt(t) {
   let s = esc(t);
   if (SAVE.opt.ruby) s = autoRuby(s);
   s = s.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), (m, k, r) => SAVE.opt.ruby ? `<ruby>${k}<rt>${r}</rt></ruby>` : k);
   s = s.replace(/【([^】]+)】/g, '<span class="kw">$1</span>');
   s = s.replace(/｛([^｝]+)｝/g, '<span class="tq">$1</span>');   // 証言の「カードに関係する文」（黄色）
+  s = s.replace(/〖([^〗]+)〗/g, '<span class="tr">$1</span>');   // 赤い 文字（第22話）
   return s;
 }
-const plain = t => t.replace(/《[^》]+》/g, "").replace(/[【】｛｝]/g, "");
-const forSpeech = t => t.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), "$2").replace(/[【】｛｝＊]/g, "");
+const plain = t => t.replace(/《[^》]+》/g, "").replace(/[【】｛｝〖〗]/g, "");
+const forSpeech = t => t.replace(new RegExp(`(${KANJI})《([^》]+)》`, "g"), "$2").replace(/[【】｛｝〖〗＊]/g, "");
 
 /* ---------- 読み上げ ---------- */
 function speak(t) {
@@ -162,7 +163,10 @@ const CHARS = {
   "陸奥宗光": { icon: "人:おとこ", side: "R", art: "mutsu" },   // 1895年は @変装 陸奥宗光 old
   "小村寿太郎": { icon: "人:おとこ", side: "R", art: "komura" },   // 1911年は @変装 小村寿太郎 old
   "与謝野晶子": { icon: "人:おんな", side: "R", art: "akiko" },
-  "ハナ": { icon: "人:こども", side: "R", art: "hana" },   // 第20話の 1964年は @変装 ハナ old
+  "ハナ": { icon: "人:こども", side: "R", art: "hana" },
+  "ソラ": { icon: "人:こども", side: "R", art: "sora" },   // ミナの 弟（2026-10-22 先生の 絵）
+  "おしょうさん": { icon: "人:としより", side: "R", art: "osho" },   // 疎開先の おしょう（第19話）
+  "おしょうさん2": { icon: "人:としより", side: "L", art: "osho" },   // 第20話の 1964年は @変装 ハナ old
   "レキシクイ": { icon: "🐟", side: "R", art: "lexikui" },
   "？？？": { icon: "人:おとこ", side: "R" },
 };
@@ -173,7 +177,7 @@ function faceHTML(c, expr, key) {
   if (c.art && A[c.art]) {
     const dz = S && S.disguise && S.disguise[key];   // 変装中（@変装）はその絵
     const src = (dz && A[c.art][dz]) || A[c.art][ART_EXP[expr]] || A[c.art].normal;
-    if (src) return `<img class="fimg" src="${src}" alt="">`;
+    if (src) return `<img class="fimg${c.art === "mina" ? " flip" : ""}" src="${src}" alt="">`;   // ミナは 左を むかせる
   }
   if (/^人[:：]/.test(c.icon || "")) return iconHTML(c.icon, key, "silface");
   return `<span class="femoji">${c.icon}</span>`;
@@ -217,7 +221,7 @@ function parseScript(no, src) {
         case "ゆがめる": ep.nodes.push({ t: "warp", text: "歴史が ゆがみはじめる……！", who: arg }); break;
         case "きざし": ep.nodes.push({ t: "omen" }); break;
         case "ホワイトアウト": ep.nodes.push({ t: "white" }); break;   // 画面が まっ白に なり、うしろで 場面が かわって 明ける（回想の 出入り）
-        case "ブラックアウト": ep.nodes.push({ t: "black" }); break;   // まっ暗に して 間を ためる → うしろで 場面が かわって ゆっくり 明ける（時間が たったことを 表す）
+        case "ブラックアウト": ep.nodes.push({ t: "black", sec: Number(rest[0]) || 0 }); break;   // @ブラックアウト 8 ＝ まっ暗の まま 8秒   // まっ暗に して 間を ためる → うしろで 場面が かわって ゆっくり 明ける（時間が たったことを 表す）
         case "退場": ep.nodes.push({ t: "exit", who: arg }); break;
         case "旅立ち": ep.nodes.push({ t: "depart" }); break;
         case "もどす": ep.nodes.push({ t: "restore", who: arg }); break;
@@ -236,6 +240,18 @@ function parseScript(no, src) {
         case "顔なし": ep.nodes.push({ t: "face", on: false }); break;
         case "ゆれ": ep.nodes.push({ t: "quake", sec: Number(rest[0]) || 3 }); break;   // 地震：画面が ゆれる
         case "顔あり": ep.nodes.push({ t: "face", on: true }); break;
+        case "とめる": ep.nodes.push({ t: "lock" }); break;   // 次の セリフは クリックで とばせない（文字が 出きるまで 待つ）
+        case "衝撃": ep.nodes.push({ t: "impact", se: rest[0] || "" }); break;   // おどろく 場面：フラッシュ＋ゆれ（@衝撃 bomb で 音も）
+        case "セピア": ep.nodes.push({ t: "look", cls: "sepia", who: rest }); break;   // @セピア ミナ ／ @セピア（もどす）
+        case "半透明": ep.nodes.push({ t: "look", cls: "ghost", who: rest }); break;   // 消えかけ：半分 すけて 光が ちらつく
+        case "光": ep.nodes.push({ t: "look", cls: "glowing", who: rest }); break;   // 体が 光に つつまれる
+        case "ノイズ": ep.nodes.push({ t: "noise", bgs: rest }); break;   // ざざざっと ノイズ ＋ ほかの 時代の 背景が 一しゅん うつる
+        case "きらきら": ep.nodes.push({ t: "twinkle", sec: Number(rest[0]) || 2 }); break;   // 画面の 中央で 光が きらきら
+        case "オーラ": ep.nodes.push({ t: "aura", who: arg, on: true }); break;   // 紫の オーラだけ つける（ゆがむ 演出なし。闇の ユウキ）
+        case "間": ep.nodes.push({ t: "wait", sec: Number(rest[0]) || 1.5 }); break;   // 何も しないで 待つ
+        case "見せる": ep.nodes.push({ t: "show", key: rest[0] || "", sec: Number(rest[1]) || 2 }); break;   // ホワイトアウトで UIを 消して 絵を 見せる（とばせない）
+        case "未来ワープ": ep.nodes.push({ t: "tjump", from: -3500, to: 2052, bg: rest[0] || "", tint: rest[1] || "", future: true }); break;   // 縄文から 20XX年へ
+        case "色": ep.nodes.push({ t: "tint", tint: rest[0] || "" }); break;   // 背景は そのまま 色（フィルター）だけ かえる（@色 紫 ／ @色）
         default: console.warn("不明な命令", cmd);
       }
       continue;
@@ -250,7 +266,7 @@ function parseScript(no, src) {
       if (/^[-・]\s/.test(l)) {
         const p = split(l.replace(/^[-・]\s*/, ""));
         if (block.t === "cards") { const [name, icon, desc, kw] = p; CARDS[name] = { name, icon, desc, kw: kw || name, ep: no }; ep.cards.push(name); }
-        else if (block.t === "inv") { const [icon, name, pos, line, card, rc] = p; const m = /^回想[=＝](.+?)[:：](.+)$/.exec(rc || ""); block.items.push({ icon, name, pos: pos.split(",").map(Number), line, card, recall: m ? { bg: m[1], who: m[2] } : null }); }
+        else if (block.t === "inv") { const [icon, name, pos, line, card, rc] = p; const m = /^回想[=＝](.+?)[:：]([^:：]+)(?:[:：](.+))?$/.exec(rc || ""); block.items.push({ icon, name, pos: pos.split(",").map(Number), line, card, recall: m ? { bg: m[1], who: m[2], look: m[3] || "" } : null }); }
         else if (block.t === "spot") { const [kind, icon, name, pos, item, quote, card, fixItem, explain] = p; block.items.push({ bad: /[✕×xX]/.test(kind), icon, name, pos: pos.split(",").map(Number), item, quote, card, fixItem, explain }); }
         else if (block.t === "testi") {
           const [kind, text, card, retort, reaction, nearS] = p;   // 6つめ：おしいカード「カード名＝本じいのセリフ」（♡はへらない）
@@ -376,11 +392,11 @@ function setWarpLevel(v) {
   [...c.children].forEach((pth, i) => pth.style.opacity = v > i / CRACKS.length ? 1 : 0);
 }
 let HB = null;   // 心拍音のくり返し
-function clearLayer() { layer.innerHTML = ""; layer.className = ""; stage.classList.remove("testi-on", "battle-on", "danger"); if (HB) { clearInterval(HB); HB = null; } }
+function clearLayer() { layer.innerHTML = ""; layer.className = ""; layer.onpointerdown = layer.onpointerup = null; stage.classList.remove("testi-on", "battle-on", "danger"); if (HB) { clearInterval(HB); HB = null; } }
 const btn = (label, cls, on) => { const b = h("button", "btn " + (cls || ""), label); b.onclick = on; return b; };
 
 /* 場面の中央に出す画像（@画像 名前 [光る]）。名前は art の名前（tokei など）。空なら消す */
-const PIC_FX = { "光る": "glow" };
+const PIC_FX = { "光る": "glow", "ふわふわ": "float", "セピア": "sepia" };
 function showPic(key, fx) {
   const el = $("#pic"); if (!el) return;
   const A = (window.ART || {})[key];
@@ -401,6 +417,7 @@ function showPortrait(name, expr, ep) {
   el.innerHTML = (aura ? AURA_HTML : "") + `<div class="pface">${faceHTML(c, expr, name)}</div>` + (!hasArt && EXPR[expr] ? `<div class="pexpr">${EXPR[expr]}</div>` : "");
   el.classList.toggle("aura", aura);
   el.classList.remove("leave", "jump", "tremble", "vanish", "glitch", "lexi");   // lexi（レキシクイの紫）は毎回はずす
+  for (const k of ["sepia", "ghost", "glowing"]) el.classList.toggle(k, !!(S && S.look && S.look[k] && S.look[k].includes(name)));   // @セピア・@半透明・@光
   el.hidden = false; el.classList.remove("dim"); other.classList.add("dim");
   if (entering) { el.classList.remove("enter"); void el.offsetWidth; el.classList.add("enter"); }
   else if (expr === "おどろき" || expr === "怒り") { void el.offsetWidth; el.classList.add(expr === "おどろき" ? "jump" : "tremble"); }   // 表情に合わせて動く
@@ -467,14 +484,14 @@ function setSkip(on) {
   SKIP = !!on && canSkip();
   const b = $(".skipbtn"); if (b) { b.classList.toggle("on", SKIP); b.textContent = SKIP ? "スキップ中 ■" : "スキップ ▶▶"; }
 }
-function waitAdvance(typer) {
+function waitAdvance(typer, locked) {
   return new Promise(res => {
     catcher.hidden = false;
     let timer = null;
     const done = () => { clearTimeout(timer); ADV = null; catcher.hidden = true; catcher.onclick = null; talk.onclick = null; document.removeEventListener("keydown", key); res(); };
     const go = () => {
       if (SKIP) { setSkip(false); clearTimeout(timer); return; }   // スキップ中にタップ → 早送りを止める
-      if (typer && !typer.done) { typer.finish(); return; }   // 表示中ならまず全部出す
+      if (typer && !typer.done) { if (!locked) typer.finish(); return; }   // 表示中ならまず全部出す（@とめる の ときは 待つ）
       done();
     };
     const key = e => { if (!modal.hidden) return; if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } };
@@ -488,6 +505,7 @@ async function say(who, expr, text, ep, opt = {}) {
   if (who === "トケイ") who = "";   // トケイは最終回まで話さない
   text = text.replace(/〔なまえ〕/g, SAVE.name || "キミ");   // プレイヤーの 名前（最終回だけ）
   const slow = S && S.slowNext; if (S) S.slowNext = null;   // @ゆっくり（赤）
+  const locked = !!(slow || (S && S.lockNext)); if (S) S.lockNext = false;   // @ゆっくり・@とめる：クリックで 文字を とばせない
   talk.hidden = false; talk.classList.toggle("dark", !!opt.dark);
   talk.querySelector(".tname").textContent = who && who !== "" ? who : "";
   talk.querySelector(".tname").hidden = !who;
@@ -498,7 +516,6 @@ async function say(who, expr, text, ep, opt = {}) {
   stage.classList.add("talking");
   if (opt.noPort) { $("#portL").classList.add("dim"); $("#portR").classList.add("dim"); }
   if (!opt.dark && !opt.noPort) {
-    if (who === "ユガミ" && ports.R !== "ユガミ") { FX.add("vignette", "", 1800); SE.play("drum"); FX.shake("m"); }   // ユガミ登場
     if (who === "レキシクイ") { SE.play("growl"); FX.shake("l"); FX.flash("rgba(150,60,255,.55)", 320); }
     if (S && S.noFace) hidePortraits(); else showPortrait(who, expr, ep);   // @顔なし の あいだは 立ち絵を 出さない
     if (who === "レキシクイ" && !(S && S.noFace)) { const pe = $("#portR"); pe.classList.add("lexi"); }
@@ -507,7 +524,7 @@ async function say(who, expr, text, ep, opt = {}) {
   if (SAVE.opt.autoRead && !SKIP) speak(text);
   talk.classList.add("typing");
   const typer = typeIn(tt, slow && slow.red ? `<span class="redslow">${fmt(text)}</span>` : fmt(text), () => talk.classList.remove("typing"), slow ? (slow.red ? 9 : 4) : 1);
-  await waitAdvance(typer);
+  await waitAdvance(typer, locked);
   stopSpeak();
 }
 function hideTalk() { talk.hidden = true; stage.classList.remove("talking"); if (S && S.noSkip && SKIP) setSkip(false); }   // 調査・証言・バトルの画面にもどったらスキップを止める
@@ -742,7 +759,7 @@ function renderHud() {
   const hv = on => `<svg class="heart" viewBox="0 0 24 22"><path d="M12 21C-6 9 4-4 12 4C20-4 30 9 12 21Z" fill="${on ? "#d8392f" : "#3a322c"}" stroke="${on ? "#f4ead2" : "#6b5a45"}" stroke-width="1.6"/></svg>`;
   $("#hearts").innerHTML = Array.from({ length: MAX_HEARTS }, (_, i) => hv(i < S.hearts)).join("");
   $("#tagNo").textContent = epName(S.no);
-  $("#tagTitle").textContent = S.ep.title.replace(/^(第\d+話(\s*[前後]編)?|プロローグ)\s*/, "");
+  $("#tagTitle").textContent = S.ep.title.replace(/^(第\d+話(\s*[前後]編)?|プロローグ|エピローグ)\s*/, "");
   const hb = $("#hintBtn"), n = S.node;
   const interactive = n && ["inv", "spot", "testi", "battle", "sum", "guard"].includes(n.t);
   hb.hidden = !interactive;
@@ -827,7 +844,10 @@ function runInv(n) {
       const CI = window.CARDIMG || {}, ic = it.icon || "";
       let photo = /^写真[:：]/.test(ic) ? CI[ic.replace(/^写真[:：]/, "")] : (!/^(人|絵|画)[:：]/.test(ic) && it.card && CI[it.card]);
       if (/^絵[:：]/.test(ic)) it.icon = ic.replace(/^絵[:：]/, "");
-      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : iconHTML(it.icon, it.name)}<div class="plabel${[...it.name].length > 6 ? " long" : ""}">${esc(it.name)}</div>`);
+      const pc = S.ep.chars[it.name] || CHARS[it.name], A = window.ART || {};   // 顔グラの ある 人は、マップでも 顔グラ
+      const faceIc = !photo && pc && pc.art && A[pc.art] ? `<img class="sil mobimg faceic${pc.art === "mina" ? " flip" : ""}" src="${(S.disguise && S.disguise[it.name] && A[pc.art][S.disguise[it.name]]) || A[pc.art].normal}" alt="">` : "";
+      const nl = [...it.name].length;
+      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : faceIc || iconHTML(it.icon, it.name)}<div class="plabel${nl > 8 ? " long xlong" : nl > 6 ? " long" : ""}">${esc(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       els.push(e);
       e.onclick = async () => {
@@ -951,7 +971,8 @@ function runBattle(n) {
       clearLayer(); hideTalk(); hidePortraits();
       layer.className = "battle"; stage.classList.add("battle-on"); stage.classList.toggle("danger", S.hearts === 1);
       battleBg(splitOf(r));
-      const foe = h("div", "foe mist" + (total - r) + (LX ? " lexi" : DARK ? " dark" : ""), `<div class="foe-face">${faceHTML(charOf(FOE, S.ep), BASE, FOE)}</div><div class="foe-name">${LX ? "レキシクイの 思念" : esc(FOE)}</div>`);
+      const foeAura = S.aura.includes(FOE);
+      const foe = h("div", "foe mist" + (total - r) + (LX ? " lexi" : DARK ? " dark" : "") + (foeAura ? " aura" : ""), (foeAura ? AURA_HTML : "") + `<div class="foe-face">${faceHTML(charOf(FOE, S.ep), BASE, FOE)}</div><div class="foe-name">${LX ? "レキシクイの 思念" : esc(FOE)}</div>`);
       const gauge = h("div", "gauge", Array.from({ length: total }, (_, i) => `<span class="seg${i < total - r ? "" : " off"}"></span>`).join(""));
       foe.prepend(gauge); layer.appendChild(foe);
       const face = foe.querySelector(".foe-face");
@@ -1000,7 +1021,7 @@ function runBattle(n) {
                 }
                 if (c.reply) await say(REPLIER, "怒り", c.reply, S.ep);
                 r++; subSave(r);
-                if (r >= total) { S.busy = false; hideTalk(); const bb = bgEl.querySelector(".bbg"); if (bb) bb.remove(); return res(); }
+                if (r >= total) { S.busy = false; hideTalk(); const bb = bgEl.querySelector(".bbg"); if (bb) { bb.classList.add("fadeaway"); setTimeout(() => bb.remove(), 4000); } return res(); }   // 紫は ゆっくり 消える
                 await foeSay(LX ? "怒り" : r === 1 ? "おどろき" : "怒り", (c.foeLine && !(LX && /^…+$/.test(c.foeLine)) ? c.foeLine : "") || (LX ? LEXI_HIT : FOE_HIT)[(r - 1) % 3]);
                 S.busy = false; return draw();
               } else if (c.near && c.near[pick]) {   // おしい：♡は へらさず、本じいが ヒント
@@ -1063,6 +1084,40 @@ async function runAllWhite(n) {
   await sleep(SKIP ? 200 : n.sec * 1000);
   w.classList.add("out"); await sleep(SKIP ? 100 : 1800); w.remove();
 }
+/* @ノイズ 江戸 平安京：ざざざっと ノイズが 入り、ほかの 時代の 背景が 一しゅん うつる */
+async function runNoise(n) {
+  hideTalk(); SE.play("noise");
+  const B = window.BGIMG || {}, list = n.bgs.filter(k => B[k]);
+  const ov = FX.add("noisefx", `<img alt=""><div class="nz"></div>`), im = ov.querySelector("img");
+  const T = SKIP ? 300 : 2200, t0 = Date.now(); let k = 0;
+  while (Date.now() - t0 < T) {
+    const show = list.length && k % 3 === 1;
+    if (show) im.src = B[list[(k >> 1) % list.length]];
+    ov.classList.toggle("pic", !!show); ov.classList.toggle("on", k % 3 !== 2);
+    if (k % 4 === 0) FX.shake("s");
+    k++; await sleep(90 + Math.random() * 120);
+  }
+  ov.remove();
+}
+/* @見せる nafuda 2：まっ白（UIも 消す）→ 絵が ふわっと 出る → 2秒 → 絵が 消えて 白から もどる（クリックでは とばせない） */
+async function runShow(n) {
+  hideTalk();
+  const A = window.ART && window.ART[n.key];
+  const w = h("div", "allwhite showpic"); if (A) w.innerHTML = `<img src="${A.normal || Object.values(A)[0]}" alt="">`;
+  stage.appendChild(w); SE.play("restore");
+  await sleep(30); w.classList.add("on"); await sleep(SKIP ? 200 : 900);
+  w.classList.add("pic"); await sleep(SKIP ? 200 : 900 + n.sec * 1000);
+  w.classList.remove("pic"); await sleep(SKIP ? 200 : 900);
+  w.classList.add("out"); await sleep(SKIP ? 100 : 1800); w.remove();
+}
+/* @きらきら 2：画面の 中央で 光が きらきら */
+async function runTwinkle(n) {
+  hideTalk();
+  for (let k = 0; k < 36; k++) { const d = FX.add("spark twk", "", n.sec * 1000 + 900); d.style.left = (800 - 200 + Math.random() * 400) + "px"; d.style.top = (380 - 160 + Math.random() * 320) + "px"; d.style.animationDelay = (Math.random() * n.sec * 600) + "ms"; }
+  FX.add("twinkle-glow", "", n.sec * 1000 + 600);
+  SE.play("restore");
+  await sleep(SKIP ? 200 : n.sec * 1000 + 400);
+}
 /* @フラッシュ 絵：一しゅんだけ 出す */
 async function runFlash(key) {
   const A = window.ART && window.ART[key]; if (!A) return;
@@ -1072,9 +1127,10 @@ async function runFlash(key) {
 }
 /* 思い出の アイテム：その 時代の 背景と 特異点の 立ち絵を 1秒だけ */
 async function flashBack(rc) {
-  const B = window.BGIMG || {}, c = charOf(rc.who, S.ep);
+  const B = window.BGIMG || {}, c = charOf(rc.who, S.ep), A = window.ART || {};
   FX.flash("#fff", 200); SE.play("restore");
-  FX.add("flashback", `${B[rc.bg] ? `<img class="fb-bg" src="${B[rc.bg]}" alt="">` : ""}<div class="fb-face">${faceHTML(c, "ふつう", rc.who)}</div>`, 1200);
+  const face = rc.look && c.art && A[c.art] && A[c.art][rc.look] ? `<img class="fimg" src="${A[c.art][rc.look]}" alt="">` : faceHTML(c, "ふつう", rc.who);   // 回想=聖火リレーの道:ハナ:old
+  FX.add("flashback", `${B[rc.bg] ? `<img class="fb-bg" src="${B[rc.bg]}" alt="">` : ""}<div class="fb-face">${face}</div>`, 1200);
   await sleep(SKIP ? 100 : 1200);
 }
 
@@ -1169,7 +1225,7 @@ function runSum(n) {
       const p = h("p");
       line.split(/(［[^］]+］)/).forEach(part => {
         const m = part.match(/^［(.+)］$/);
-        if (m) { const s = h("button", "slot", "？"); s.dataset.ans = m[1]; slots.push(s); p.appendChild(s); }
+        if (m) { const [ans, ...nr] = m[1].split("；"), s = h("button", "slot", "？"); s.dataset.ans = ans; s._near = {}; nr.forEach(x => { const q = x.match(/^(.+?)[＝=](.+)$/); if (q) s._near[q[1].trim()] = q[2].trim(); }); slots.push(s); p.appendChild(s); }   // ［ペリー；黒船＝本じいの ヒント］＝おしい カード（♡は へらない）
         else if (part) p.appendChild(h("span", "", fmt(part)));
       });
       paper.appendChild(p);
@@ -1181,6 +1237,7 @@ function runSum(n) {
       try {
         const pick = await chooseCard("ここに 入る カードは？", s.dataset.ans);
         if (pick === s.dataset.ans) { s.textContent = pick; s.classList.add("ok"); filled++; }
+        else if (pick && s._near[pick]) { for (const seg of s._near[pick].split(/\s*／\s*/)) await say("本じい", "ふつう", seg, S.ep); }
         else if (pick) await loseHeart("本じい", "おどろき", "うーむ、そこには 入らないようじゃ");
         hideTalk(); hidePortraits();
       } catch (er) { S.busy = false; return rej(er); }
@@ -1211,9 +1268,18 @@ async function runWhite() { await runFade("wfade", "restore", 700, 400); }
 /* 画面を 白（wfade）や 黒（bfade）で おおう → hold の あいだ ためる → つぎの 場面に かわってから、after 後に 明ける */
 async function runFade(cls, se, hold, after) {
   hideTalk(); if (se) SE.play(se);
+  if (S && S.cover && S.cover.w.classList.contains(cls)) { await sleep(SKIP ? 100 : hold); S.cover.after = after; return; }   // もう おおって いる ときは そのまま ためる
   const w = FX.add(cls, ""); await sleep(30); w.classList.add("on");
   await sleep(SKIP ? 100 : hold);
+  if (S) { await uncover(); S.cover = { w, after }; return; }   // 明けるのは、つぎの 場面が できてから（セリフより 先に 画面を もどす）
   setTimeout(() => { w.classList.remove("on"); setTimeout(() => w.remove(), 1200); }, SKIP ? 50 : after);
+}
+/* おおって いた 白・黒を 明ける。明けきってから 次へ（明ける 前に セリフや ぽぽぽ音が 出ないように） */
+async function uncover() {
+  const c = S && S.cover; if (!c) return; S.cover = null;
+  await sleep(SKIP ? 50 : c.after);
+  c.w.classList.remove("on"); setTimeout(() => c.w.remove(), 1200);
+  await sleep(SKIP ? 100 : c.w.classList.contains("bfade") ? 1000 : 650);
 }
 async function runRestore(n) {
   const pe = n.who ? $(charOf(n.who, S.ep).side === "L" ? "#portL" : "#portR") : null;
@@ -1295,7 +1361,7 @@ async function runTimeJump(n) {
   bo.classList.add("out"); setTimeout(() => bo.remove(), 1300);
   await sleep(fast ? 200 : 900);
   const d = Math.abs(n.to - n.from);
-  banner("", `<div class="tj-ban"><b>${yearLabel(n.to)}</b><span>${back ? (n.to > 0 ? d + "年前" : "") : d ? d + "年後" : "半年後"}</span></div>`);
+  banner("", `<div class="tj-ban"><b>${n.future && n.to > 2023 ? "20XX年" : yearLabel(n.to)}</b><span>${n.future ? "" : back ? (n.to > 0 ? d + "年前" : "") : d ? d + "年後" : "半年後"}</span></div>`);
   SE.play("found");
   await sleep(fast ? 300 : 1900);
 }
@@ -1334,7 +1400,7 @@ function runTesti(n) {
       layer.appendChild(wit);
       const wface = wit.querySelector(".w-face");
       const round = n.rounds[r];
-      layer.appendChild(h("div", "guide", `証言「${esc(round.title || "")}」（${r + 1} / ${n.rounds.length}）`));
+      layer.appendChild(h("div", "guide", `証言「${esc(round.title || "")}」（${r + 1} / ${n.crumble ? "？" : n.rounds.length}）`));
       const box = h("div", "tbox");
       box.innerHTML = `<div class="tname">${esc(who)}</div><div class="ttext"></div><div class="tcount"></div>`;
       layer.appendChild(box);
@@ -1469,7 +1535,7 @@ async function playEpisode(no, resume) {
     const k1 = ep.nodes.findIndex(x => x.t === "say"), early = ep.nodes.slice(0, k1 < 0 ? 0 : k1).some(x => x.t === "bgm");   // 最初の セリフより 前に @BGM が あれば それに まかせる
     if (!early) BGM.play(no === 0 ? "学校" : no >= 23 ? null : "町");   // 最終回は 台本の @BGM に まかせる
   }
-  else { const k = prevBgm(ep, S.idx); BGM.play(k && k !== "なし" ? k : null); }
+  else { let k = prevBgm(ep, S.idx); if (k === "そのまま") for (let i = S.idx - 1; i >= 0; i--) if (ep.nodes[i].t === "bgm" && ep.nodes[i].key !== "そのまま") { k = ep.nodes[i].key; break; } BGM.play(k && k !== "なし" && k !== "そのまま" ? k : null); }
   while (S.idx < ep.nodes.length) {
     const n = ep.nodes[S.idx];
     S.node = n; S.hintLv = 0; S.rej = null; newRound(null);
@@ -1478,18 +1544,19 @@ async function playEpisode(no, resume) {
     S.noSkip = ["inv", "spot", "testi", "battle", "sum", "guard"].includes(n.t); if (S.noSkip) setSkip(false);
     if (interactive) checkpoint();
     const snap = { hand: S.hand.slice() };
+    if (S.cover && !["bg", "pic", "bgm", "se", "disguise", "face", "hand", "tint", "look", "lock", "slow", "aura", "staff"].includes(n.t)) await uncover();   // 背景などを かえおわってから 明ける
     autoBgm(n);
     try {
       switch (n.t) {
         case "se": for (let k = 0; k < n.times; k++) setTimeout(() => SE.play(n.key), k * 1900); break;
         case "disguise": S.disguise[n.who] = n.look || null; break;
-        case "bgm": BGM.play(n.key && n.key !== "なし" ? n.key : null); break;
+        case "bgm": if (n.key !== "そのまま") BGM.play(n.key && n.key !== "なし" ? n.key : null); break;   // @BGM そのまま：前の 曲を 流しつづける（調査でも かえない）
         case "staff": await runStaffRoll(n.key); break;
         case "bg": hidePortraits(true); setBg(n.bg, true, n.tint); showPic(""); break;
         case "tjump": await runTimeJump(n); break;
         case "omen": await runOmen(); break;
         case "white": await runWhite(); break;
-        case "black": await runFade("bfade", null, 1800, 900); break;
+        case "black": await runFade("bfade", null, n.sec ? n.sec * 1000 : 1800, 900); break;
         case "exit": await runExit(n); break;
         case "depart": await runDepart(); break;
         case "pic": showPic(n.key, n.fx); break;
@@ -1500,6 +1567,15 @@ async function playEpisode(no, resume) {
         case "hand": S.hand = n.cards.slice(); renderHud(); break;
         case "quake": { const t0 = Date.now(); while (Date.now() - t0 < n.sec * 1000 && !SKIP) { FX.shake("l"); await sleep(180); } break; }
         case "face": S.noFace = !n.on; if (S.noFace) hidePortraits(true); break;
+        case "lock": S.lockNext = true; break;
+        case "impact": FX.flash("#fff", 240); FX.shake("l"); if (n.se) SE.play(n.se); break;
+        case "look": { S.look = S.look || {}; if (n.who.length) S.look[n.cls] = n.who.slice(); else delete S.look[n.cls]; for (const side of ["L", "R"]) { const pe = $("#port" + side), nm = ports[side]; if (nm) pe.classList.toggle(n.cls, !!(S.look[n.cls] && S.look[n.cls].includes(nm))); } break; }
+        case "noise": await runNoise(n); break;
+        case "twinkle": await runTwinkle(n); break;
+        case "aura": if (n.on && !S.aura.includes(n.who)) S.aura.push(n.who); break;
+        case "wait": hideTalk(); await sleep(SKIP ? 100 : n.sec * 1000); break;
+        case "show": await runShow(n); break;
+        case "tint": bgEl.classList.add("tinting"); setTint(n.tint); setTimeout(() => bgEl.classList.remove("tinting"), 2200); break;
         case "say": await say(n.who, n.expr, n.text, ep); break;
         case "inv": await runInv(n); break;
         case "spot": await runSpot(n); break;
@@ -1522,7 +1598,7 @@ async function playEpisode(no, resume) {
       }
       throw e;
     }
-    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se", "disguise", "tjump"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
+    if (!["say", "bg", "pic", "omen", "exit", "bgm", "se", "disguise", "tjump", "lock", "wait", "aura", "impact", "look", "noise", "twinkle", "tint", "slow", "face", "hand"].includes(n.t)) { hideTalk(); clearLayer(); showPic(""); }
     S.idx++;
   }
   return finishEpisode();
@@ -1554,6 +1630,7 @@ async function titleCard(no) {   // 黒い 画面 → 第〇話（どん！）�
   tc.classList.add("out"); await sleep(500); tc.remove();
 }
 function finishEpisode() {
+  if (S && S.cover) { const c = S.cover; S.cover = null; c.w.remove(); }
   setSkip(false); showPic("");
   bgEl.classList.remove("warped"); stage.classList.remove("danger");
   hideTalk(); hidePortraits(); clearLayer();
@@ -1617,6 +1694,16 @@ function drawTimeline(pi, sel, fx2 = {}) {
   L.disabled = pi === 0; R.disabled = pi >= maxPage;
   L.onclick = () => go(-1); R.onclick = () => go(1);
   layer.append(L, R);
+  // ページの 点（いま どこに いるか）。未来の 点は 行けるように なってから 紫で 出す
+  if (!fx2.noPanel) {
+    const dots = h("div", "tl-dots");
+    for (let k = 0; k <= maxPage; k++) { const d = h("button", "tl-pdot" + (k === pi ? " on" : "") + (PAGES[k].future ? " future" : "")); d.onclick = () => go(k - pi); dots.appendChild(d); }
+    layer.appendChild(dots);
+  }
+  // 何も ない ところを 左右に スワイプしても ページを めくる
+  let sx = null;
+  layer.onpointerdown = e => { sx = e.target.closest("button") ? null : e.clientX; };
+  layer.onpointerup = e => { if (sx == null) return; const k = stage.getBoundingClientRect().width / 1600, dx = (e.clientX - sx) / k; sx = null; if (Math.abs(dx) > 80) go(dx < 0 ? 1 : -1); };
   // 線とノード
   const X0 = 150, X1 = 1450, n = page.eps.length, step = (X1 - X0) / n;
   const xs = page.eps.map((_, i) => X0 + step * (i + .5));
@@ -1650,6 +1737,9 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const hide = !open || (no === TRUE_END && !trueEndOk());
   const [era, year, key] = hide ? ["？？？", "？？？", "？"] : EP_INFO[no];
   const panel = h("div", "tl-panel");
+  // はじめるボタンの 左に、その 話で はじめに 行く 場所の 背景を 小さく 出す（？？？の ときは 出さない）
+  const firstBg = ready ? (EPS[no].nodes.find(x => x.t === "bg" || (x.t === "tjump" && x.bg)) || {}).bg || EP_META[no][1] : null;
+  const thumb = !hide && firstBg && window.BGIMG && window.BGIMG[firstBg];
   panel.innerHTML = `<div class="tp-l"><div class="tp-no">${epName(no)}　<span>${esc(era)}・${esc(year)}</span></div>
     <div class="tp-tt">${!hide && ready ? esc(EP_META[no][0]) : "？？？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
     <div class="tp-r"><div class="tp-st">${no === 0 ? (st ? "クリア" : "") : open && ready ? "★".repeat(st) + "<i>" + "☆".repeat(MAX_HEARTS - st) + "</i>" : ""}</div></div>`;
@@ -1663,6 +1753,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   }
   if (!ready && open && br.firstChild.tagName === "BUTTON") br.firstChild.disabled = true;
   panel.querySelector(".tp-r").appendChild(br);
+  if (thumb) br.prepend(h("div", "tp-thumb", `<img src="${thumb}" alt="">`));
   layer.appendChild(panel);
 }
 /* プロローグのあと：2023年から縄文まで、年表をさかのぼる */
@@ -1705,8 +1796,9 @@ async function playFuture() {
 /* ---------- 画面：クリア一覧（先生に見せる） ---------- */
 function showClearList() {
   const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
-  const rows = EP_META.map(([t], no) => SAVE.stars[no] ? `<tr><td>${epName(no)}</td><td>${esc(t)}</td><td class="st">${"★".repeat(SAVE.stars[no])}</td></tr>` : "").join("");
-  alertBox(`<div class="cl-title">クリア一覧</div><div class="cl-wrap"><table class="cl">${rows || "<tr><td>まだ クリアした おはなしは ありません</td></tr>"}</table></div><div class="cl-total">★の 合計　${total}</div>`);   // 2列・はみ出したら スクロール
+  const eraOf = no => { const e = EP_INFO[no][0]; return /^(令和|未来)$/.test(e) ? e : e + "時代"; };
+  const rows = EP_META.map(([t], no) => SAVE.stars[no] ? `<div class="cl-row"><span>${epName(no)}</span><span>${esc(EP_INFO[no][1])}</span><span>${esc(eraOf(no))}</span><span class="cl-tt">『${esc(t)}』</span><span class="st">${no === 0 ? "クリア" : "★".repeat(SAVE.stars[no])}</span></div>` : "").join("");
+  alertBox(`<div class="cl-title">クリア一覧</div><div class="cl-list">${rows || "<div>まだ クリアした おはなしは ありません</div>"}</div><div class="cl-total">★の 合計　${total}</div>`);   // 1列・はみ出したら スクロール
 }
 
 /* ---------- 画面：けっか ---------- */
@@ -1778,11 +1870,11 @@ function showZukan(tab) {
   const zd = h("div", "zdetail", "カードを タップすると、説明が 出るよ");
   if (ZTAB === "gift") {   // たいせつ：各話の さいごに もらった もの
     zd.innerHTML = "おはなしの さいごに もらった たいせつな ものだよ";
-    const grid = h("div", "pg-grid gift-grid"); grid.style.gridTemplateColumns = "repeat(4, 220px)";
+    const grid = h("div", "pg-grid gift-grid"); grid.style.gridTemplateColumns = "repeat(7, 140px)"; zb.classList.add("gift-body");
     eps.forEach(no => {
       const g = EPS[no].gift; if (!g) return;
       const got = (SAVE.stars[no] || 0) > 0, A = window.ART && window.ART[g.key];
-      const e = h("button", "card large gift" + (got ? "" : " unknown"), got ? `<div class="cicon ph">${A ? `<img src="${A.normal}" alt="" style="object-fit:contain">` : "🎁"}</div><div class="cname${[...g.name].length > 6 ? " long" : ""}">${phr(g.name)}</div>` : `<div class="cicon">？</div><div class="cname">${epName(no)}</div>`);
+      const e = h("button", "card gift" + (got ? "" : " unknown"), got ? `<div class="cicon ph">${A ? `<img src="${A.normal}" alt="" style="object-fit:contain">` : "🎁"}</div><div class="cname${[...g.name].length > 6 ? " long" : ""}">${phr(g.name)}</div>` : `<div class="cicon">？</div><div class="cname">${epName(no)}</div>`);
       e.onclick = () => { grid.querySelectorAll(".card").forEach(c => c.classList.remove("sel")); e.classList.add("sel"); zd.innerHTML = got ? `<b>${esc(g.name)}</b>　${fmt(g.desc)}` : `${epName(no)}を クリアすると 手に入るよ`; };
       grid.appendChild(e);
     });
@@ -1873,26 +1965,24 @@ const STAFF = [
   ["企画・ゲームデザイン", "のち（まなび堂）"],
   ["キャラクターデザイン", "のち（まなび堂）"],
   ["音楽", "ユーフルカ"],
-  ["", "__SONGS__"],
   ["", "https://youfulca.com/music_assets/?scene=dungeon_stage", "url"],
   ["", "Wingless Seraph（ルーファス）"],
-  ["", "__SONGS2__"],
   ["", "https://wingless-seraph.net/", "url"],
-  ["シルエット素材", "イラスト緑花　https://illust-ryokka.jp/"],
-  ["", "イラストカット　https://illustcut.com/"],
   ["効果音", "効果音ラボ　https://soundeffect-lab.info/"],
   ["カードの写真", "ColBase（国立文化財機構）　https://colbase.nich.go.jp/"],
   ["", "ウィキメディア・コモンズ　ほか"],
   ["", "__CARDS__"],
   ["フォント", "Zen Kaku Gothic New（SIL Open Font License 1.1）"],
   ["", "あそんで くれて ありがとう！", "big"],
+  ["", "__PLAYER__", "big"],
 ];
 function runStaffRoll(key) {
+  if (S) { hideTalk(); hidePortraits(); showPic(""); }   // うしろの 場面を 見せない
   return new Promise(res => {
     if (key) BGM.play(key);
     const songs = (window.BGM_TITLES || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("");
-    const cards = (window.CARDIMG_CREDITS || []).map(([n, by, lic]) => `<div class="sr-song small">${esc(n)}：${esc(by)}（${esc(lic)}）</div>`).join("");
-    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` : name === "__SONGS2__" ? `<div class="sr-songs">${(window.BGM_TITLES2 || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("")}</div>` : name === "__CARDS__" ? `<div class="sr-songs">${cards}</div>` :
+    const cards = (window.CARDIMG_CREDITS || []).map(([n, by]) => `<div class="sr-song small">${esc(n)}：${esc(by)}</div>`).join("");   // ライセンスの 表記は 出さない
+    const inner = STAFF.map(([role, name, cls]) => name === "__SONGS__" ? `<div class="sr-songs">${songs}</div>` : name === "__SONGS2__" ? `<div class="sr-songs">${(window.BGM_TITLES2 || []).map(t => `<div class="sr-song">「${esc(t)}」</div>`).join("")}</div>` : name === "__CARDS__" ? `<div class="sr-songs">${cards}</div>` : name === "__PLAYER__" ? `<div class="sr-item big"><div class="sr-role">プレイヤー</div><div class="sr-name">${esc(SAVE.name || "キミ")}</div></div>` :
       `<div class="sr-item ${cls || ""}">${role ? `<div class="sr-role">${esc(role)}</div>` : ""}<div class="sr-name">${esc(name)}</div></div>`).join("");
     const el = h("div", "staffroll", `<div class="sr-inner">${inner}</div><div class="sr-skip">タップで とばす</div>`);
     stage.appendChild(el); stage.classList.add("sr-on");   // スキップの 確認を スタッフロールの 上に 出す
@@ -1956,7 +2046,8 @@ async function enterSpell() {
 /* ---------- あいことば（★5の話を もどす） ---------- */
 const AK = (window.AIKOTOBA || []).map(x => { try { return [...decodeURIComponent(escape(atob(x)))].reverse().join(""); } catch (e) { return ""; } });
 const aikotobaOf = no => {
-  if (no === 24) return "";   // 第22話（読む 回）では 出さない → 第24話（トゥルーエンド）の クリアで 出す
+  if (no === 23 || no === 24) return "";   // 第21話・第22話では 出さない
+  if (no === 25) return AK[20] || "";   // 「みらいはかえられる」は 第23話の クリアで 出す（2026-10-22 先生）
   const n = no === TRUE_END ? 22 : epNum(no);
   return epsOfNum(n).every(k => k === no || SAVE.stars[k] === MAX_HEARTS) ? AK[n - 1] || "" : "";
 };
@@ -1966,12 +2057,12 @@ async function enterAikotoba() {
   const w = normKana(v).replace(/[・･]/g, "");
   const n = AK.indexOf(w) + 1;
   if (n > 0) {
-    const nos = epsOfNum(n);
+    const nos = n === 21 ? [23, 24, 25] : epsOfNum(n);   // 「みらいはかえられる」＝第21〜23話
     const give = (no, st) => { SAVE.stars[no] = Math.max(SAVE.stars[no] || 0, st); if (EPS[no]) EPS[no].cards.forEach(c => SAVE.cards[c] = 1); };
     for (const no of nos) give(no, MAX_HEARTS);
     for (let k = 0; k < Math.min(...nos); k++) if (!SAVE.stars[k]) give(k, k === 0 ? MAX_HEARTS : 1);   // まだの 前の 話は ★1で クリアした ことに する（プロローグは クリア）
     persist();
-    await alertBox(`あいことばが ひかった！<br><b>第${n}話</b>${nos.length > 1 ? "（前編・後編）" : ""}を ★5に もどしたよ！`);
+    await alertBox(`あいことばが ひかった！<br><b>${n === 21 ? "第21〜23話" : `第${n}話`}</b>${nos.length > 1 && n !== 21 ? "（前編・後編）" : ""}を ★5に もどしたよ！`);
   } else await alertBox("あいことばが ちがうようだ……<br>もう一度 たしかめてね。");
 }
 
@@ -1994,6 +2085,6 @@ function boot() {
   };
   addEventListener("resize", fit); setupScreen(); fit();
   showTitle();
-  if (!SAVE.name || !/^[ぁ-ゖー]+$/.test(SAVE.name)) setTimeout(() => askName(), 900);   // 名前が まだ・ひらがなで ない とき   // はじめて 起動した とき：名前を 入れて もらう
+  if (!SAVE.name || !/^[ぁ-ゖー]+$/.test(SAVE.name)) setTimeout(async () => { const first = !SAVE.name; await askName(); if (first) await alertBox("この ゲームは オートセーブに 対応して います。<br>いつ ブラウザを 閉じても、続きから 遊べます。"); }, 900);   // 名前が まだ・ひらがなで ない とき   // はじめて 起動した とき：名前を 入れて もらう
 }
 addEventListener("DOMContentLoaded", boot);

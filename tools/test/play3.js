@@ -12,7 +12,7 @@ const EPN = Number(process.argv[3] || 1);
   await p.evaluate(() => { window.BLOG = []; const o = BGM.play.bind(BGM); BGM.play = (k, x) => { const L = window.BLOG; if (L[L.length-1] !== k) L.push(k); return o(k, x); }; });
   const shot = n => p.screenshot({ path: `${SHOTDIR}b${EPN}_${n}.png` });
   await p.waitForTimeout(1300);
-  if (await p.$('.inbox input')) { await shot('00name'); await p.fill('.inbox input', 'てすと'); await p.click('text=けってい'); await p.waitForTimeout(300); }   // はじめての 起動：名前
+  if (await p.$('.inbox input')) { await shot('00name'); await p.fill('.inbox input', 'てすと'); await p.click('text=けってい'); await p.waitForTimeout(300); if (await p.$('.inbox .btn')) { await p.click('.inbox .btn'); await p.waitForTimeout(200); } }   // オートセーブの お知らせ   // はじめての 起動：名前
   await shot('00title');
   // じゅもん
   await p.evaluate(n => { for (let k = 0; k < n; k++) SAVE.stars[k] = 5; SAVE.flags = { future: true }; persist(); }, EPN);   // 前の 話を ぜんぶ クリアした ことに（エピソードロック）
