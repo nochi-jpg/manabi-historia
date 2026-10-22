@@ -924,6 +924,9 @@ img.mobimg.faceic.flip{transform:scaleX(-1)}
 .cl-list::-webkit-scrollbar-track,.zbody.gift-body::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:5px}
 .cl-list::-webkit-scrollbar-thumb,.zbody.gift-body::-webkit-scrollbar-thumb{background:rgba(255,209,102,.55);border-radius:5px;border:2px solid transparent;background-clip:padding-box}
 .cl-list::-webkit-scrollbar-thumb:hover,.zbody.gift-body::-webkit-scrollbar-thumb:hover{background:rgba(255,209,102,.85);background-clip:padding-box}
+/* 長い 名前（○○の かけら など）は 枠に おさまるよう 小さく（写真の アイテムにも 効かせる） */
+.prop .plabel.long,.prop.photo .plabel.long{font-size:15px;letter-spacing:-.04em}
+.prop .plabel.xlong,.prop.photo .plabel.xlong{font-size:13px;letter-spacing:-.06em}
 </style>
 </head>
 <body>
@@ -2047,7 +2050,7 @@ function runInv(n) {
       const pc = S.ep.chars[it.name] || CHARS[it.name], A = window.ART || {};   // 顔グラの ある 人は、マップでも 顔グラ
       const faceIc = !photo && pc && pc.art && A[pc.art] ? `<img class="sil mobimg faceic${pc.art === "mina" ? " flip" : ""}" src="${(S.disguise && S.disguise[it.name] && A[pc.art][S.disguise[it.name]]) || A[pc.art].normal}" alt="">` : "";
       const nl = [...it.name].length;
-      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : faceIc || iconHTML(it.icon, it.name)}<div class="plabel${nl > 8 ? " long xlong" : nl > 6 ? " long" : ""}">${esc(it.name)}</div>`);
+      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : faceIc || iconHTML(it.icon, it.name)}<div class="plabel${nl > 7 ? " long xlong" : nl > 5 ? " long" : ""}">${esc(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       els.push(e);
       e.onclick = async () => {

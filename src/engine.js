@@ -847,7 +847,7 @@ function runInv(n) {
       const pc = S.ep.chars[it.name] || CHARS[it.name], A = window.ART || {};   // 顔グラの ある 人は、マップでも 顔グラ
       const faceIc = !photo && pc && pc.art && A[pc.art] ? `<img class="sil mobimg faceic${pc.art === "mina" ? " flip" : ""}" src="${(S.disguise && S.disguise[it.name] && A[pc.art][S.disguise[it.name]]) || A[pc.art].normal}" alt="">` : "";
       const nl = [...it.name].length;
-      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : faceIc || iconHTML(it.icon, it.name)}<div class="plabel${nl > 8 ? " long xlong" : nl > 6 ? " long" : ""}">${esc(it.name)}</div>`);
+      const e = h("button", "prop" + (photo ? " photo" : ""), `${photo ? `<div class="pphoto"><img src="${photo[0]}" alt=""></div>` : faceIc || iconHTML(it.icon, it.name)}<div class="plabel${nl > 7 ? " long xlong" : nl > 5 ? " long" : ""}">${esc(it.name)}</div>`);
       placeAt(e, it.pos); if (got.has(it.name)) e.classList.add("done");
       els.push(e);
       e.onclick = async () => {
