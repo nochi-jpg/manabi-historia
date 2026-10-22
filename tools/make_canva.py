@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 """Canva 配信版を作る（GitHub版が できてから）。
-使い方： python3 build.py → python3 tools/make_canva.py  → canva.html（10MB 以内）
+使い方： python3 build.py → python3 tools/make_canva.py  → canva.html（20MB 以内・ダウンロード配布用）。--10mb で canva_10mb.html（Canva に じかに 上げる用・音質が 落ちる）
 index.html の 画像・音を 軽く して、window.CANVA=true（クレジット K.N・1日 5シナリオの スタミナ）を 入れる。
 軽く した ものは .cache_canva/ に 覚えておくので、2回目からは 速い。"""
 import re, json, base64, hashlib, io, pathlib, subprocess, tempfile
 from PIL import Image
 R = pathlib.Path(__file__).resolve().parent.parent
 CACHE = R/".cache_canva"; CACHE.mkdir(exist_ok=True)
-LIMIT = 10 * 1000 * 1000
-# 大きさと 画質（10MB に おさまるよう ここで 調整する）
-BG = (800, 446, 30)      # 背景：はば・高さ・画質
-FACE = (240, 40)         # 顔グラなど：一辺・画質
-PIC = (360, 45)          # おくりもの・記憶のかけら・ロゴなど 大きい 絵
-CARD = (224, 166, 30)    # カードの 写真
-BGM_KBPS, SE_KBPS = "7k", "16k"
+import sys
+SMALL = "--10mb" in sys.argv   # Canva に じかに 上げる 10MB 版（音質は かなり 落ちる）。ふだんは 20MB 版（音は GitHub版と 同じ）
+LIMIT = (10 if SMALL else 20) * 1000 * 1000
+# 大きさと 画質（LIMIT に おさまるよう ここで 調整する）。音の kbps が None なら 作りなおさない（GitHub版と 同じ 音）
+if SMALL:
+    BG, FACE, PIC, CARD = (800, 446, 30), (240, 40), (360, 45), (224, 166, 30)
+    BGM_KBPS, SE_KBPS = "7k", "16k"
+else:
+    BG, FACE, PIC, CARD = (1120, 625, 44), (300, 58), (440, 58), (256, 190, 46)
+    BGM_KBPS, SE_KBPS = None, None
 
 def cached(key, make):
     fp = CACHE/(hashlib.md5(key.encode()).hexdigest() + ".b64")
@@ -64,12 +67,12 @@ put("BGIMG", {k: img(v, BG[0], BG[1], BG[2], "cover") for k, v in bg.items()})
 _, ci = block("CARDIMG")
 put("CARDIMG", {k: [img(v[0], CARD[0], CARD[1], CARD[2], "cover"), v[1]] for k, v in ci.items()})
 _, bgm = block("BGM_DATA")
-put("BGM_DATA", {k: dict(v, d=audio(v["d"], BGM_KBPS)) for k, v in bgm.items()})
+put("BGM_DATA", {k: dict(v, d=audio(v["d"], BGM_KBPS)) if BGM_KBPS else v for k, v in bgm.items()})
 _, se = block("SE_DATA")
-put("SE_DATA", {k: dict(v, d=audio(v["d"], SE_KBPS)) for k, v in se.items()})
-html = re.sub(r"@font-face\{font-family:'Gothic';font-weight:900;[^}]*\}\n?", "", html)   # いちばん 太い 字は のぞく（700で 代わりに 出る）
+put("SE_DATA", {k: dict(v, d=audio(v["d"], SE_KBPS)) if SE_KBPS else v for k, v in se.items()})
+if SMALL: html = re.sub(r"@font-face\{font-family:'Gothic';font-weight:900;[^}]*\}\n?", "", html)   # いちばん 太い 字は のぞく（700で 代わりに 出る）
 html = html.replace("<script>window.SCENARIO_SRC=", "<script>window.CANVA=true;\nwindow.SCENARIO_SRC=", 1)
 assert "window.CANVA=true" in html
-(R/"canva.html").write_text(html, encoding="utf-8")
+(R/("canva_10mb.html" if SMALL else "canva.html")).write_text(html, encoding="utf-8")
 n = len(html.encode())
-print("canva.html", round(n / 1e6, 2), "MB", "OK" if n <= LIMIT else "⚠ 10MB を こえています（上の 大きさ・画質を 下げる）")
+print("canva_10mb.html" if SMALL else "canva.html", round(n / 1e6, 2), "MB", "OK" if n <= LIMIT else "⚠ 上限を こえています（上の 大きさ・画質を 下げる）")

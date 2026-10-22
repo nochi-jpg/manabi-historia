@@ -103,7 +103,7 @@
 1. 先生が 通しで プレイして 見つけた 直しを 流す（BGMの 指定も）
 
 ## Canva 版（2026-10-22 実装）
-- 作り方：`python3 build.py` → `python3 tools/make_canva.py` → `canva.html`（約9.4MB。画像・音を 軽く した もの。.cache_canva/ に 覚えるので 2回目から 速い）。10MBを こえたら make_canva.py の 上の 大きさ・画質を 下げる
+- 作り方：`python3 build.py` → `python3 tools/make_canva.py` → `canva.html`（約19MB。20MB以内の サイトから ダウンロードして 遊ぶ 形。音は GitHub版と 同じ、画像だけ 少し 軽く）。`--10mb` で canva_10mb.html（Canva に じかに 上げる 用。音質が ひどく 落ちるので 先生は 使わない）。.cache_canva/ に 覚えるので 2回目から 速い
 - Canva 版だけ：クレジット「K.N」、スタミナ◆（1日に 新しい シナリオ 5つまで。クリアずみ・中断からの 復帰・プロローグ・第21・22話は 使わない。朝5時に 全回復。◆を おすと 残りの 数。「年表」の「年」を 30回で ◆+1）
 - エンジンの 中では `CANVA`（window.CANVA）で 分けている。index.html（GitHub版）は 今までどおり
 - 台本や エンジンを 直したら、canva.html も 作りなおして いっしょに push する
