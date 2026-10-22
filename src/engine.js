@@ -1231,6 +1231,8 @@ function runSum(n) {
       paper.appendChild(p);
     });
     layer.appendChild(paper);
+    // 文が 長いときは、画面から はみ出さないように 字を 小さく する
+    for (let fs = 38; fs > 20 && paper.offsetTop + paper.offsetHeight > 880; fs -= 2) { paper.style.fontSize = fs + "px"; paper.style.lineHeight = fs < 34 ? "2.1" : ""; paper.style.setProperty("--slot-fs", (fs - 6) + "px"); }
     let filled = 0;
     slots.forEach(s => s.onclick = async () => {
       if (S.busy || s.classList.contains("ok")) return; S.busy = true;
@@ -1663,7 +1665,7 @@ function showTitle() {
   [["おはなしを えらぶ", () => showSelect()], ["カードずかん", () => showZukan()], ["あいことばを 入れる", enterAikotoba], ["せってい", showSettings]]
     .forEach(([t, f]) => { const b = h("button", "titem", esc(t)); b.onclick = f; col.appendChild(b); });
   layer.appendChild(col);
-  layer.appendChild(h("div", "credit", "企画・ゲームデザイン・キャラクターデザイン　のち（まなび堂）"));
+  layer.appendChild(h("div", "credit", "企画・ゲームデザイン　のち（まなび堂）"));
 }
 
 /* ---------- 画面：話をえらぶ（年表） ---------- */
@@ -1963,7 +1965,6 @@ function showSettings() {
 const STAFF = [
   ["", "まなびヒストリア", "big"],
   ["企画・ゲームデザイン", "のち（まなび堂）"],
-  ["キャラクターデザイン", "のち（まなび堂）"],
   ["音楽", "ユーフルカ"],
   ["", "https://youfulca.com/music_assets/?scene=dungeon_stage", "url"],
   ["", "Wingless Seraph（ルーファス）"],

@@ -912,3 +912,4 @@ img.mobimg.faceic.flip{transform:scaleX(-1)}
 /* 長い 名前（○○の かけら など）は 枠に おさまるよう 小さく（写真の アイテムにも 効かせる） */
 .prop .plabel.long,.prop.photo .plabel.long{font-size:15px;letter-spacing:-.04em}
 .prop .plabel.xlong,.prop.photo .plabel.xlong{font-size:13px;letter-spacing:-.06em}
+.paper .slot{font-size:var(--slot-fs,32px);height:auto;min-height:1.7em}
