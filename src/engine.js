@@ -1738,7 +1738,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const [era, year, key] = hide ? ["？？？", "？？？", "？"] : EP_INFO[no];
   const panel = h("div", "tl-panel");
   // はじめるボタンの 左に、その 話で はじめに 行く 場所の 背景を 小さく 出す（？？？の ときは 出さない）
-  const firstBg = ready ? (EPS[no].nodes.find(x => x.t === "bg" || (x.t === "tjump" && x.bg)) || {}).bg || EP_META[no][1] : null;
+  const BI = window.BGIMG || {}, firstBg = ready ? (EPS[no].nodes.find(x => (x.t === "bg" || x.t === "tjump") && BI[x.bg]) || {}).bg || EP_META[no][1] : null;   // 先生の 絵が ある 最初の 背景（第1話は 夜の 森の あとの 縄文）
   const thumb = !hide && firstBg && window.BGIMG && window.BGIMG[firstBg];
   panel.innerHTML = `<div class="tp-l"><div class="tp-no">${epName(no)}　<span>${esc(era)}・${esc(year)}</span></div>
     <div class="tp-tt">${!hide && ready ? esc(EP_META[no][0]) : "？？？？？"}</div><div class="tp-key">${open && no > 0 && key !== "？" ? "重要人物：" + esc(key) : "&nbsp;"}</div></div>
