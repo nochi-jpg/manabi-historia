@@ -913,3 +913,6 @@ img.mobimg.faceic.flip{transform:scaleX(-1)}
 .prop .plabel.long,.prop.photo .plabel.long{font-size:15px;letter-spacing:-.04em}
 .prop .plabel.xlong,.prop.photo .plabel.xlong{font-size:13px;letter-spacing:-.06em}
 .paper .slot{font-size:var(--slot-fs,32px);height:auto;min-height:1.7em}
+/* Canva 版：スタミナ（◆）。題名の 上 */
+.stamina{position:absolute;left:50%;top:58px;transform:translateX(-50%);background:none;border:0;padding:2px 12px;font-size:30px;letter-spacing:.12em;color:#7fd8ff;text-shadow:0 0 10px rgba(80,180,255,.7);cursor:pointer;z-index:4;line-height:1}
+.timeline .tl-head{top:110px}

@@ -44,6 +44,9 @@ const PAGES = [
 ];
 const FUTURE_AFTER = 15;   // この話をクリアすると「未来」があらわれる
 const pageOf = no => PAGES.findIndex(p => p.eps.includes(no));
+/* Canva 配信版（build.py --canva）：クレジットは K.N・1日 5シナリオの スタミナ（◆） */
+const CANVA = !!window.CANVA;
+const AUTHOR = CANVA ? "K.N" : "のち（まなび堂）";
 /* ★デバッグ用：true のあいだは、すべての話がひらく。公開するときは false にもどす */
 const DEBUG_UNLOCK_ALL = false;
 const TRUE_END = 26;
@@ -1665,8 +1668,25 @@ function showTitle() {
   [["おはなしを えらぶ", () => showSelect()], ["カードずかん", () => showZukan()], ["あいことばを 入れる", enterAikotoba], ["せってい", showSettings]]
     .forEach(([t, f]) => { const b = h("button", "titem", esc(t)); b.onclick = f; col.appendChild(b); });
   layer.appendChild(col);
-  layer.appendChild(h("div", "credit", "企画・ゲームデザイン　のち（まなび堂）"));
+  layer.appendChild(h("div", "credit", "企画・ゲームデザイン　" + AUTHOR));
 }
+
+/* ---------- スタミナ（Canva 版だけ）：1日に 新しい シナリオを 5つまで。毎朝 5時に 全回復 ---------- */
+const ST_MAX = 5, ST_FREE = [0, 23, 24];   // プロローグ・第21話・第22話は 使わない
+const stDay = () => { const d = new Date(Date.now() - 5 * 3600e3); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };   // 朝 5時で 日が かわる
+function stamina() {
+  const t = stDay();
+  if (!SAVE.st || SAVE.st.day !== t) { SAVE.st = { day: t, left: ST_MAX, opened: [] }; persist(); }
+  return SAVE.st;
+}
+const stNeeds = no => CANVA && !ST_FREE.includes(no) && !SAVE.stars[no] && !(SAVE.resume && SAVE.resume.no === no) && !stamina().opened.includes(no);   // 中断した 話の「はじめから」も 使わない   // クリアした 話・今日 もう ひらいた 話は 使わない
+async function stSpend(no) {   // はじめる 前に よぶ。足りなければ false
+  if (!stNeeds(no)) return true;
+  const st = stamina();
+  if (st.left <= 0) { await alertBox("◆が 不足している<br><small>毎朝 5時に 全回復するよ</small>"); return false; }
+  st.left--; st.opened.push(no); persist(); return true;
+}
+function stHTML() { const n = stamina().left; return "◆".repeat(n) + "◇".repeat(ST_MAX - n); }
 
 /* ---------- 画面：話をえらぶ（年表） ---------- */
 const futureOpen = () => !!(SAVE.flags && SAVE.flags.future) && isOpen(23);   // 第21話まで 進むと「未来」が あらわれる
@@ -1686,7 +1706,13 @@ function drawTimeline(pi, sel, fx2 = {}) {
   const total = Object.entries(SAVE.stars).reduce((a, [k, v]) => a + (k === "0" ? 0 : v), 0);
   const top = h("div", "topbar");
   top.appendChild(btn("もどる", "", showTitle));
-  top.appendChild(h("div", "topttl", "年表"));
+  const ttl = h("div", "topttl", CANVA ? `<span class="dbg2">年</span>表` : "年表"); top.appendChild(ttl);
+  if (CANVA) {
+    let taps = 0; ttl.querySelector(".dbg2").onclick = () => { if (++taps >= 30) { taps = 0; const st = stamina(); if (st.left < ST_MAX) { st.left++; persist(); } drawTimeline(pi, sel, fx2); } };   // 「年」を 30回：◆を 1つ 回復（メッセージなし）
+    const sb = h("button", "stamina", stHTML());
+    sb.onclick = () => alertBox(`本日の 残りシナリオ開封数：${stamina().left}<br><small>毎朝 5時に 全回復</small>`);
+    layer.appendChild(sb);
+  }
   top.appendChild(btn(`★ ${total}`, "rt", showClearList));
   layer.appendChild(top);
   layer.appendChild(h("div", "tl-head", `<div class="tl-name">${esc(page.name)}</div><div class="tl-sub">${esc(page.sub)}</div>`));
@@ -1751,7 +1777,7 @@ function drawTimeline(pi, sel, fx2 = {}) {
   else if (!ready) br.appendChild(btn("じゅんび中", "", () => { }));
   else {
     if (SAVE.resume && SAVE.resume.no === no) br.appendChild(btn("つづきから", "red startbtn", () => playEpisode(no, true)));
-    br.appendChild(btn(SAVE.resume && SAVE.resume.no === no ? "はじめから" : "はじめる", (SAVE.resume && SAVE.resume.no === no ? "" : "red") + " startbtn", () => playEpisode(no, false)));
+    br.appendChild(btn(SAVE.resume && SAVE.resume.no === no ? "はじめから" : "はじめる", (SAVE.resume && SAVE.resume.no === no ? "" : "red") + " startbtn", async () => { if (await stSpend(no)) playEpisode(no, false); }));
   }
   if (!ready && open && br.firstChild.tagName === "BUTTON") br.firstChild.disabled = true;
   panel.querySelector(".tp-r").appendChild(br);
@@ -1964,7 +1990,7 @@ function showSettings() {
 /* ---------- スタッフロール（エンディングで「@スタッフロール 曲の呼び名」。せっていからも見られる） ---------- */
 const STAFF = [
   ["", "まなびヒストリア", "big"],
-  ["企画・ゲームデザイン", "のち（まなび堂）"],
+  ["企画・ゲームデザイン", AUTHOR],
   ["音楽", "ユーフルカ"],
   ["", "https://youfulca.com/music_assets/?scene=dungeon_stage", "url"],
   ["", "Wingless Seraph（ルーファス）"],
