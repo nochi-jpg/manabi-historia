@@ -357,6 +357,9 @@ function fsEnter() {
 function fsExit() { try { if (fsEl()) (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { } }
 function setupScreen() {
   if (MOBILE) document.documentElement.classList.add("mob");
+  // iPhone・iPad（と、前に 演出の とちゅうで 落ちた 端末）は 軽い 演出にする（重い フィルターで Safari が 落ちて タイトルに もどる ため）
+  if (SAVE.fxCrash) { SAVE.opt.lite = true; SAVE.fxCrash = 0; persist(); }
+  if (IS_IOS || SAVE.opt.lite) document.documentElement.classList.add("lite");
   if (IN_FRAME && window.IntersectionObserver) {
     try {
       new IntersectionObserver(es => { const r = es[es.length - 1].intersectionRect; VIS = r.width > 50 && r.height > 50 ? { x: r.left, y: r.top, w: r.width, h: r.height } : null; fit(); },
@@ -636,6 +639,7 @@ function objLogo(cls, life) {
   else FX.add("big ronpa obj " + (cls || ""), "矛盾 発見！", life);
 }
 function yuukiCutin() {   // ユウキの顔が入った赤い帯（矛盾発見・論破）
+  SAVE.fxCrash = 1; persist(); setTimeout(() => { SAVE.fxCrash = 0; persist(); }, 3000);   // この あいだに 落ちたら、次から 軽い 演出
   const img = window.ART && window.ART.yuuki ? `<img src="${window.ART.yuuki.angry || window.ART.yuuki.normal}" alt="">` : "";
   FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1700); SE.play("whoosh");
 }

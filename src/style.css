@@ -916,3 +916,10 @@ img.mobimg.faceic.flip{transform:scaleX(-1)}
 /* Canva 版：スタミナ（◆）。題名の 上 */
 .stamina{position:absolute;left:50%;top:58px;transform:translateX(-50%);background:none;border:0;padding:2px 12px;font-size:30px;letter-spacing:.12em;color:#7fd8ff;text-shadow:0 0 10px rgba(80,180,255,.7);cursor:pointer;z-index:4;line-height:1}
 .timeline .tl-head{top:110px}
+
+/* 軽い 演出（iPhone・iPad など。.lite）：Safari が 落ちる 重い フィルターを 使わない（2026-10-27） */
+.lite #bg.warped::after,.lite #bg.warped[data-tint]::after{-webkit-backdrop-filter:none;backdrop-filter:none;background:radial-gradient(ellipse at center,rgba(90,30,170,.35),rgba(30,0,70,.75))}
+.lite .big.objimg,.lite .ci-band img{filter:none}
+.lite .port.aura .pface img,.lite .witness.aura .w-face img,.lite .foe.aura .foe-face img{filter:none;animation:none}
+.lite .port.aura .pface,.lite .witness.aura .w-face,.lite .foe.aura .foe-face{box-shadow:0 0 0 4px rgba(155,77,255,.8);animation:none}
+.lite .ci-lines,.lite .speedlines{animation:none}
