@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Canva 配信版を作る（GitHub版が できてから）。
 使い方： python3 build.py → python3 tools/make_canva.py  → canva.html（20MB 以内・ダウンロード配布用）。--10mb で canva_10mb.html（Canva に じかに 上げる用・音質が 落ちる）
-index.html の 画像・音を 軽く して、window.CANVA=true（クレジット K.N・1日 5シナリオの スタミナ）を 入れる。
+index.html の 画像・音を 軽く して、window.CANVA=true（クレジット K.nom・1日 5シナリオの スタミナ）を 入れる。
 軽く した ものは .cache_canva/ に 覚えておくので、2回目からは 速い。"""
 import re, json, base64, hashlib, io, pathlib, subprocess, tempfile
 from PIL import Image

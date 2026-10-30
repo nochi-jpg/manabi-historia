@@ -1,6 +1,6 @@
 # クレジット
 
-- 企画・ゲームデザイン・キャラクターデザイン：K.nomura
+- 企画・ゲームデザイン・キャラクターデザイン：K.nom
 - 音楽：ユーフルカ https://youfulca.com/music_assets/?scene=dungeon_stage
   - 曲名はゲーム内のスタッフロールに表示（data/bgm.txt）
   - ※素材の再配布にあたるので、音のファイル（audio/）はリポジトリに入れていません。作り直すときは `python3 tools/make_bgm.py 素材のフォルダ`
