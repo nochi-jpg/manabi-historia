@@ -638,8 +638,9 @@ function objLogo(cls, life) {
   if (A) FX.add("big obj objimg " + (cls || ""), `<img src="${A.normal}" alt="矛盾発見！！">`, life);
   else FX.add("big ronpa obj " + (cls || ""), "矛盾 発見！", life);
 }
+function heavyFx() { SAVE.fxCrash = 1; persist(); setTimeout(() => { SAVE.fxCrash = 0; persist(); }, 4000); }   // 重い 演出の あいだに 落ちたら、次から 軽い 演出
 function yuukiCutin() {   // ユウキの顔が入った赤い帯（矛盾発見・論破）
-  SAVE.fxCrash = 1; persist(); setTimeout(() => { SAVE.fxCrash = 0; persist(); }, 3000);   // この あいだに 落ちたら、次から 軽い 演出
+  heavyFx();
   const img = window.ART && window.ART.yuuki ? `<img src="${window.ART.yuuki.angry || window.ART.yuuki.normal}" alt="">` : "";
   FX.add("cutin", `<div class="ci-band"><div class="ci-lines"></div>${img}</div>`, 1700); SE.play("whoosh");
 }
@@ -1262,7 +1263,7 @@ async function runWarp(n) {
   if (n.who && !S.aura.includes(n.who)) S.aura.push(n.who);
   if (n.who) showPortrait(n.who, "ふつう", S.ep);
   const pe = n.who ? $(charOf(n.who, S.ep).side === "L" ? "#portL" : "#portR") : null;
-  SE.play("warp");
+  heavyFx(); SE.play("warp");
   FX.add("warp-invert", "", 900); FX.shake("m");
   if (pe) pe.classList.add("glitch");
   FX.add("glitchbars", "<i></i><i></i><i></i><i></i><i></i><i></i>", 1500);
